@@ -9,8 +9,8 @@
 
 <table>
   <tr align="center">
-    <th>Earth's Timeline with Human Population Explosion</th>
-    <th>Earthquake Timeline: Magnitude vs. Human Impact</th>
+    <th>Flexibility vs Interpretability</th>
+    <th> ... </th>
   </tr>
   
   <tr align="center">
