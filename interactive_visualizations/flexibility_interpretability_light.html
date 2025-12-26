@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flexibility vs Interpretability Tradeoff in Machine Learning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0f172a;
+            margin-bottom: 8px;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 25px;
+            font-size: 1rem;
+        }
+
+        .chart-container {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 500px;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .axis-label {
+            font-size: 14px;
+            fill: #64748b;
+            font-weight: 500;
+        }
+
+        .axis-title {
+            font-size: 15px;
+            fill: #334155;
+            font-weight: 600;
+        }
+
+        .grid-line {
+            stroke: #e2e8f0;
+            stroke-width: 1;
+        }
+
+        .tradeoff-curve {
+            fill: none;
+            stroke: url(#curveGradient);
+            stroke-width: 3;
+            opacity: 0.7;
+        }
+
+        .tradeoff-area {
+            fill: url(#areaGradient);
+            opacity: 0.1;
+        }
+
+        .method-point {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .method-point:hover {
+            filter: brightness(1.1);
+        }
+
+        .method-label {
+            font-size: 11px;
+            fill: #334155;
+            pointer-events: none;
+            font-weight: 500;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            max-width: 280px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        .tooltip h3 {
+            color: #0891b2;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .tooltip p {
+            color: #475569;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .tooltip .stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .tooltip .stat {
+            text-align: center;
+        }
+
+        .tooltip .stat-value {
+            color: #0f172a;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .tooltip .stat-label {
+            color: #64748b;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .insight-box {
+            background: #f0fdfa;
+            border: 1px solid #99f6e4;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .insight-box h3 {
+            color: #0891b2;
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .insight-box p {
+            color: #475569;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .insight-box strong {
+            color: #0f172a;
+        }
+
+        .arrow-annotation {
+            fill: none;
+            stroke: #0891b2;
+            stroke-width: 1.5;
+            opacity: 0.6;
+        }
+
+        .arrow-head {
+            fill: #0891b2;
+            opacity: 0.6;
+        }
+
+        .annotation-text {
+            font-size: 12px;
+            fill: #0891b2;
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        .zone-label {
+            font-size: 11px;
+            fill: rgba(100, 116, 139, 0.5);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span style="color: #64748b; font-weight: 500;">Harvard EPS-210 |</span> The Flexibility–Interpretability Tradeoff</h1>
+        <p class="subtitle">How model complexity affects our ability to understand predictions</p>
+
+        <div class="chart-container">
+            <div class="chart-wrapper">
+                <svg id="chart"></svg>
+                <div class="tooltip" id="tooltip"></div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #0891b2;"></div>
+                    <span>Linear Methods</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ca8a04;"></div>
+                    <span>Tree-Based Methods</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #dc2626;"></div>
+                    <span>Kernel & Instance-Based</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #7c3aed;"></div>
+                    <span>Neural Networks</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #2563eb;"></div>
+                    <span>Ensemble Methods</span>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h3>💡 Key Insight</h3>
+                <p>This fundamental tradeoff in machine learning reflects a tension between <strong>predictive power</strong> and <strong>explainability</strong>. Simple models like linear regression allow us to directly interpret how each feature affects the outcome, while complex models like deep neural networks can capture intricate patterns but operate as "black boxes." The choice depends on whether you prioritize understanding the mechanism (scientific discovery, regulatory compliance) or maximizing prediction accuracy (image recognition, recommendation systems).</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const methods = [
+            {
+                name: "Linear Regression",
+                flexibility: 0.1,
+                interpretability: 0.95,
+                category: "linear",
+                description: "Coefficients directly show feature importance and direction of effect. Each unit change in input produces a fixed change in output.",
+                color: "#0891b2"
+            },
+            {
+                name: "Logistic Regression",
+                flexibility: 0.15,
+                interpretability: 0.9,
+                category: "linear",
+                description: "Log-odds coefficients are interpretable. Probability outputs are intuitive, though the relationship is nonlinear.",
+                color: "#0891b2"
+            },
+            {
+                name: "LASSO",
+                flexibility: 0.18,
+                interpretability: 0.88,
+                category: "linear",
+                description: "Performs automatic feature selection by shrinking coefficients to zero. Sparse solutions enhance interpretability.",
+                color: "#0891b2"
+            },
+            {
+                name: "Ridge Regression",
+                flexibility: 0.2,
+                interpretability: 0.85,
+                category: "linear",
+                description: "Regularized linear model that handles multicollinearity. Coefficients remain interpretable but are shrunk.",
+                color: "#0891b2"
+            },
+            {
+                name: "Decision Tree",
+                flexibility: 0.35,
+                interpretability: 0.82,
+                category: "tree",
+                description: "If-then rules are easy to visualize and explain. Single trees can be printed and followed step-by-step.",
+                color: "#ca8a04"
+            },
+            {
+                name: "Naive Bayes",
+                flexibility: 0.25,
+                interpretability: 0.78,
+                category: "linear",
+                description: "Probabilistic model based on feature independence. Class probabilities from each feature are transparent.",
+                color: "#0891b2"
+            },
+            {
+                name: "K-Nearest Neighbors",
+                flexibility: 0.45,
+                interpretability: 0.55,
+                category: "kernel",
+                description: "Predictions based on similar examples. Intuitive concept but high-dimensional neighbors are hard to visualize.",
+                color: "#dc2626"
+            },
+            {
+                name: "GAMs",
+                flexibility: 0.4,
+                interpretability: 0.7,
+                category: "linear",
+                description: "Generalized Additive Models allow nonlinear effects per feature while maintaining additive structure for interpretation.",
+                color: "#0891b2"
+            },
+            {
+                name: "Elastic Net",
+                flexibility: 0.22,
+                interpretability: 0.83,
+                category: "linear",
+                description: "Combines L1 and L2 penalties. Balances feature selection with coefficient stability.",
+                color: "#0891b2"
+            },
+            {
+                name: "Random Forest",
+                flexibility: 0.7,
+                interpretability: 0.35,
+                category: "ensemble",
+                description: "Aggregates many trees, losing single-tree interpretability. Feature importance scores provide partial insight.",
+                color: "#2563eb"
+            },
+            {
+                name: "Gradient Boosting",
+                flexibility: 0.75,
+                interpretability: 0.3,
+                category: "ensemble",
+                description: "Sequential ensemble of weak learners. SHAP values can help explain but the model itself is opaque.",
+                color: "#2563eb"
+            },
+            {
+                name: "XGBoost",
+                flexibility: 0.78,
+                interpretability: 0.28,
+                category: "ensemble",
+                description: "Highly optimized gradient boosting. Excellent performance but requires post-hoc explanation methods.",
+                color: "#2563eb"
+            },
+            {
+                name: "SVM (Linear)",
+                flexibility: 0.3,
+                interpretability: 0.65,
+                category: "kernel",
+                description: "Linear decision boundary with margin maximization. Support vectors and weights are interpretable.",
+                color: "#dc2626"
+            },
+            {
+                name: "SVM (RBF Kernel)",
+                flexibility: 0.65,
+                interpretability: 0.25,
+                category: "kernel",
+                description: "Kernel trick enables complex boundaries but operates in infinite-dimensional feature space.",
+                color: "#dc2626"
+            },
+            {
+                name: "Shallow Neural Net",
+                flexibility: 0.6,
+                interpretability: 0.3,
+                category: "neural",
+                description: "Single hidden layer can approximate any function. Hidden representations are difficult to interpret.",
+                color: "#7c3aed"
+            },
+            {
+                name: "Deep Neural Network",
+                flexibility: 0.88,
+                interpretability: 0.12,
+                category: "neural",
+                description: "Multiple layers learn hierarchical representations. Extremely powerful but essentially a black box.",
+                color: "#7c3aed"
+            },
+            {
+                name: "Convolutional NN",
+                flexibility: 0.92,
+                interpretability: 0.15,
+                category: "neural",
+                description: "Learns spatial hierarchies in images. Filters can be visualized but full model reasoning is opaque.",
+                color: "#7c3aed"
+            },
+            {
+                name: "Transformer",
+                flexibility: 0.95,
+                interpretability: 0.08,
+                category: "neural",
+                description: "Attention mechanisms offer some interpretability via attention weights, but billions of parameters remain opaque.",
+                color: "#7c3aed"
+            },
+            {
+                name: "Bagging",
+                flexibility: 0.55,
+                interpretability: 0.4,
+                category: "ensemble",
+                description: "Bootstrap aggregating reduces variance. Averaging obscures individual model contributions.",
+                color: "#2563eb"
+            },
+            {
+                name: "AdaBoost",
+                flexibility: 0.6,
+                interpretability: 0.35,
+                category: "ensemble",
+                description: "Adaptive boosting focuses on hard examples. Weighted combination of weak learners is hard to trace.",
+                color: "#2563eb"
+            }
+        ];
+
+        const svg = document.getElementById('chart');
+        const tooltip = document.getElementById('tooltip');
+        const container = document.querySelector('.chart-wrapper');
+
+        const margin = { top: 40, right: 50, bottom: 70, left: 80 };
+        const width = container.clientWidth - margin.left - margin.right;
+        const height = 500 - margin.top - margin.bottom;
+
+        // Create gradients
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        
+        // Curve gradient
+        const curveGradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+        curveGradient.setAttribute('id', 'curveGradient');
+        curveGradient.setAttribute('x1', '0%');
+        curveGradient.setAttribute('y1', '0%');
+        curveGradient.setAttribute('x2', '100%');
+        curveGradient.setAttribute('y2', '0%');
+        curveGradient.innerHTML = `
+            <stop offset="0%" stop-color="#0891b2"/>
+            <stop offset="50%" stop-color="#ca8a04"/>
+            <stop offset="100%" stop-color="#7c3aed"/>
+        `;
+        defs.appendChild(curveGradient);
+
+        // Area gradient
+        const areaGradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+        areaGradient.setAttribute('id', 'areaGradient');
+        areaGradient.setAttribute('x1', '0%');
+        areaGradient.setAttribute('y1', '0%');
+        areaGradient.setAttribute('x2', '100%');
+        areaGradient.setAttribute('y2', '100%');
+        areaGradient.innerHTML = `
+            <stop offset="0%" stop-color="#0891b2"/>
+            <stop offset="100%" stop-color="#7c3aed"/>
+        `;
+        defs.appendChild(areaGradient);
+
+        svg.appendChild(defs);
+
+        // Create main group
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('transform', `translate(${margin.left}, ${margin.top})`);
+        svg.appendChild(g);
+
+        // Scale functions
+        const scaleX = (val) => val * width;
+        const scaleY = (val) => height - (val * height);
+
+        // Draw grid lines
+        for (let i = 0; i <= 10; i++) {
+            const y = (i / 10) * height;
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', 0);
+            line.setAttribute('y1', y);
+            line.setAttribute('x2', width);
+            line.setAttribute('y2', y);
+            line.setAttribute('class', 'grid-line');
+            g.appendChild(line);
+        }
+
+        for (let i = 0; i <= 10; i++) {
+            const x = (i / 10) * width;
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x);
+            line.setAttribute('y1', 0);
+            line.setAttribute('x2', x);
+            line.setAttribute('y2', height);
+            line.setAttribute('class', 'grid-line');
+            g.appendChild(line);
+        }
+
+        // Draw tradeoff curve (inverse relationship)
+        const curvePoints = [];
+        for (let x = 0.05; x <= 1; x += 0.01) {
+            const y = Math.pow(1 - x, 1.2) * 0.9 + 0.05;
+            curvePoints.push(`${scaleX(x)},${scaleY(y)}`);
+        }
+
+        // Area under curve
+        const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const areaPath = `M ${scaleX(0.05)},${height} L ${curvePoints.join(' L ')} L ${scaleX(1)},${height} Z`;
+        area.setAttribute('d', areaPath);
+        area.setAttribute('class', 'tradeoff-area');
+        g.appendChild(area);
+
+        // Curve line
+        const curve = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        curve.setAttribute('d', `M ${curvePoints.join(' L ')}`);
+        curve.setAttribute('class', 'tradeoff-curve');
+        g.appendChild(curve);
+
+        // Zone labels
+        const zones = [
+            { x: 0.15, y: 0.15, text: "High Accuracy Zone" },
+            { x: 0.85, y: 0.85, text: "High Explainability Zone" }
+        ];
+
+        zones.forEach(zone => {
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', scaleX(zone.x));
+            text.setAttribute('y', scaleY(zone.y));
+            text.setAttribute('class', 'zone-label');
+            text.setAttribute('text-anchor', 'middle');
+            text.textContent = zone.text;
+            g.appendChild(text);
+        });
+
+        // Draw axes
+        // X-axis
+        const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        xAxis.setAttribute('x1', 0);
+        xAxis.setAttribute('y1', height);
+        xAxis.setAttribute('x2', width);
+        xAxis.setAttribute('y2', height);
+        xAxis.setAttribute('stroke', '#94a3b8');
+        xAxis.setAttribute('stroke-width', '2');
+        g.appendChild(xAxis);
+
+        // Y-axis
+        const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        yAxis.setAttribute('x1', 0);
+        yAxis.setAttribute('y1', 0);
+        yAxis.setAttribute('x2', 0);
+        yAxis.setAttribute('y2', height);
+        yAxis.setAttribute('stroke', '#94a3b8');
+        yAxis.setAttribute('stroke-width', '2');
+        g.appendChild(yAxis);
+
+        // Axis labels
+        const xLabels = ['Low', 'Medium', 'High'];
+        xLabels.forEach((label, i) => {
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', (i / 2) * width);
+            text.setAttribute('y', height + 25);
+            text.setAttribute('class', 'axis-label');
+            text.setAttribute('text-anchor', 'middle');
+            text.textContent = label;
+            g.appendChild(text);
+        });
+
+        const yLabels = ['Low', 'Medium', 'High'];
+        yLabels.forEach((label, i) => {
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', -15);
+            text.setAttribute('y', height - (i / 2) * height);
+            text.setAttribute('class', 'axis-label');
+            text.setAttribute('text-anchor', 'end');
+            text.setAttribute('dominant-baseline', 'middle');
+            text.textContent = label;
+            g.appendChild(text);
+        });
+
+        // Axis titles
+        const xTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        xTitle.setAttribute('x', width / 2);
+        xTitle.setAttribute('y', height + 50);
+        xTitle.setAttribute('class', 'axis-title');
+        xTitle.setAttribute('text-anchor', 'middle');
+        xTitle.textContent = 'Flexibility (Model Complexity)';
+        g.appendChild(xTitle);
+
+        const yTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        yTitle.setAttribute('x', -height / 2);
+        yTitle.setAttribute('y', -50);
+        yTitle.setAttribute('class', 'axis-title');
+        yTitle.setAttribute('text-anchor', 'middle');
+        yTitle.setAttribute('transform', 'rotate(-90)');
+        yTitle.textContent = 'Interpretability';
+        g.appendChild(yTitle);
+
+        // Draw method points
+        methods.forEach((method, index) => {
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            group.setAttribute('class', 'method-point');
+            group.setAttribute('data-index', index);
+
+            // Outer glow
+            const glow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            glow.setAttribute('cx', scaleX(method.flexibility));
+            glow.setAttribute('cy', scaleY(method.interpretability));
+            glow.setAttribute('r', 12);
+            glow.setAttribute('fill', method.color);
+            glow.setAttribute('opacity', '0.2');
+            group.appendChild(glow);
+
+            // Main point
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', scaleX(method.flexibility));
+            circle.setAttribute('cy', scaleY(method.interpretability));
+            circle.setAttribute('r', 7);
+            circle.setAttribute('fill', method.color);
+            circle.setAttribute('stroke', '#fff');
+            circle.setAttribute('stroke-width', '2');
+            group.appendChild(circle);
+
+            // Label
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            const labelX = scaleX(method.flexibility);
+            const labelY = scaleY(method.interpretability) - 14;
+            label.setAttribute('x', labelX);
+            label.setAttribute('y', labelY);
+            label.setAttribute('class', 'method-label');
+            label.setAttribute('text-anchor', 'middle');
+            label.textContent = method.name;
+            group.appendChild(label);
+
+            g.appendChild(group);
+
+            // Event listeners
+            group.addEventListener('mouseenter', (e) => {
+                const rect = container.getBoundingClientRect();
+                const x = scaleX(method.flexibility) + margin.left;
+                const y = scaleY(method.interpretability) + margin.top;
+
+                tooltip.innerHTML = `
+                    <h3>${method.name}</h3>
+                    <p>${method.description}</p>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value">${(method.flexibility * 100).toFixed(0)}%</div>
+                            <div class="stat-label">Flexibility</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${(method.interpretability * 100).toFixed(0)}%</div>
+                            <div class="stat-label">Interpretability</div>
+                        </div>
+                    </div>
+                `;
+
+                let tooltipX = x + 15;
+                let tooltipY = y - 10;
+
+                if (tooltipX + 280 > container.clientWidth) {
+                    tooltipX = x - 295;
+                }
+                if (tooltipY + 150 > container.clientHeight) {
+                    tooltipY = y - 150;
+                }
+
+                tooltip.style.left = tooltipX + 'px';
+                tooltip.style.top = tooltipY + 'px';
+                tooltip.classList.add('visible');
+            });
+
+            group.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('visible');
+            });
+        });
+    </script>
+</body>
+</html>
