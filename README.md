@@ -16,12 +16,12 @@
   <tr align="center">
     <td>
       <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_flexibility_interpretability_dark.html">
-        <img src="interactive_visualizations/L3_flexibility_interpretability_dark.png" alt="Interactive Figure Preview" width="200">
+        <img src="interactive_visualizations/L3_flexibility_interpretability_dark.png" alt="flexibility_interpretability" width="200">
       </a>
     </td>
     <td>
       <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_Bias-Variance_Trade-Off.html">
-        <img src="interactive_visualizations/L3_Bias-Variance_Trade-Off.png" alt="The Bias Variance Trade Off" width="200">
+        <img src="interactive_visualizations/L3_Bias-Variance_Trade-Off.png" alt="Bias Variance" width="200">
       </a>
     </td>
   </tr>
