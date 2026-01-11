@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Vector Machine (SVM) - Interactive Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a0a0a 0%, #2d1b4e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+        
+        .visualizations {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .viz-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .panel h2 {
+            font-size: 1rem;
+            color: #8b5cf6;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        canvas {
+            background: #0a0a1a;
+            border-radius: 12px;
+            cursor: crosshair;
+            display: block;
+            width: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .control-section h3 {
+            font-size: 0.85rem;
+            color: #ec4899;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .class-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .class-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .class-btn.class-0 {
+            background: rgba(236,72,153,0.2);
+            color: #ec4899;
+        }
+        
+        .class-btn.class-1 {
+            background: rgba(139,92,246,0.2);
+            color: #8b5cf6;
+        }
+        
+        .class-btn.active {
+            border-color: currentColor;
+            transform: scale(1.02);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(236,72,153,0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(139,92,246,0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #888;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        
+        .slider-group {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .slider-value {
+            color: #8b5cf6;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #2a2a4a;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            cursor: pointer;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            font-family: monospace;
+        }
+        
+        .equation-box {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            margin: 10px 0;
+            border-left: 3px solid #8b5cf6;
+        }
+        
+        .equation-box .main-eq {
+            font-size: 1rem;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        
+        .equation-box .sub-eq {
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        
+        .info-box {
+            background: rgba(139,92,246,0.1);
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .legend-line {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+        
+        .kernel-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            background: #2a2a4a;
+            color: #e0e0e0;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        .margin-display {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .margin-display .margin-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .margin-display .margin-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .sv-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        
+        .sv-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 3px solid #fbbf24;
+            background: transparent;
+        }
+        
+        .sv-text {
+            font-size: 0.85rem;
+            color: #fbbf24;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .viz-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Support Vector Machine (SVM)</h1>
+        <p class="subtitle">Harvard EPS-210 | Interactive tutorial — Explore maximum margin classification</p>
+        
+        <div class="main-layout">
+            <div class="visualizations">
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Classification Space & Margin</h2>
+                        <canvas id="classCanvas" width="400" height="350"></canvas>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #ec4899;"></div>
+                                <span>Class -1</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #8b5cf6;"></div>
+                                <span>Class +1</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="border: 3px solid #fbbf24; width: 10px; height: 10px; background: transparent;"></div>
+                                <span>Support Vector</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>Decision Function f(x)</h2>
+                        <canvas id="decisionCanvas" width="400" height="350"></canvas>
+                        <div class="equation-box">
+                            <div class="main-eq">f(x) = w·x + b</div>
+                            <div class="sub-eq">Classify: sign(f(x))</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Hinge Loss Visualization</h2>
+                        <canvas id="lossCanvas" width="400" height="280"></canvas>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>Training Progress</h2>
+                        <canvas id="progressCanvas" width="400" height="280"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-section">
+                    <h3>Add Data Points</h3>
+                    <div class="class-selector">
+                        <button class="class-btn class-0 active" id="class0Btn">Class -1 (●)</button>
+                        <button class="class-btn class-1" id="class1Btn">Class +1 (●)</button>
+                    </div>
+                    <button class="btn btn-primary" id="trainBtn">▶ Train SVM</button>
+                    <button class="btn btn-outline" id="clearBtn">Clear All Data</button>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Margin Width</h3>
+                    <div class="margin-display">
+                        <div class="margin-value" id="marginValue">--</div>
+                        <div class="margin-label">2 / ||w||</div>
+                    </div>
+                    <div class="sv-indicator">
+                        <div class="sv-dot"></div>
+                        <span class="sv-text" id="svCount">0 Support Vectors</span>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Regularization (C)</h3>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>C Parameter</span>
+                            <span class="slider-value" id="cValue">1.00</span>
+                        </div>
+                        <input type="range" id="cSlider" min="-2" max="3" step="0.1" value="0">
+                    </div>
+                    <p style="font-size: 0.75rem; color: #666;">
+                        Small C → wider margin, more errors<br>
+                        Large C → narrower margin, fewer errors
+                    </p>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Kernel Function</h3>
+                    <select class="kernel-select" id="kernelSelect">
+                        <option value="linear">Linear: K(x,y) = x·y</option>
+                        <option value="poly">Polynomial: K(x,y) = (x·y + 1)ᵈ</option>
+                        <option value="rbf">RBF: K(x,y) = exp(-γ||x-y||²)</option>
+                    </select>
+                    
+                    <div id="kernelParams">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Model Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Accuracy</div>
+                            <div class="stat-value" id="accuracy">--</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Loss</div>
+                            <div class="stat-value" id="loss">--</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Class -1</div>
+                            <div class="stat-value" id="count0" style="color: #ec4899;">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Class +1</div>
+                            <div class="stat-value" id="count1">0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Quick Examples</h3>
+                    <button class="btn btn-outline" id="linearBtn">Linearly Separable</button>
+                    <button class="btn btn-outline" id="overlapBtn">Overlapping</button>
+                    <button class="btn btn-outline" id="circleBtn">Circular (use RBF)</button>
+                </div>
+                
+                <div class="info-box">
+                    <strong>How it works:</strong> SVM finds the hyperplane that maximizes the margin between classes. Support vectors are the critical points that define this margin. The kernel trick enables nonlinear boundaries.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========== CANVAS SETUP ==========
+        const classCanvas = document.getElementById('classCanvas');
+        const decisionCanvas = document.getElementById('decisionCanvas');
+        const lossCanvas = document.getElementById('lossCanvas');
+        const progressCanvas = document.getElementById('progressCanvas');
+        
+        const classCtx = classCanvas.getContext('2d');
+        const decisionCtx = decisionCanvas.getContext('2d');
+        const lossCtx = lossCanvas.getContext('2d');
+        const progressCtx = progressCanvas.getContext('2d');
+        
+        // ========== STATE ==========
+        let data = [];
+        let selectedClass = -1;  // SVM uses -1, +1
+        let C = 1.0;
+        let kernel = 'linear';
+        let gamma = 0.5;
+        let degree = 2;
+        
+        // Model parameters
+        let weights = { w1: 0, w2: 0, b: 0 };
+        let alphas = [];  // Lagrange multipliers for kernel SVM
+        let supportVectors = [];
+        let lossHistory = [];
+        let isTraining = false;
+        let trainInterval = null;
+        
+        // Coordinate ranges
+        const xMin = -5, xMax = 5;
+        const yMin = -5, yMax = 5;
+        
+        // Colors
+        const colors = {
+            class0: '#ec4899',
+            class1: '#8b5cf6',
+            class0Light: 'rgba(236,72,153,0.2)',
+            class1Light: 'rgba(139,92,246,0.2)',
+            sv: '#fbbf24'
+        };
+        
+        // ========== KERNEL FUNCTIONS ==========
+        function linearKernel(x1, y1, x2, y2) {
+            return x1 * x2 + y1 * y2;
+        }
+        
+        function polyKernel(x1, y1, x2, y2) {
+            return Math.pow(x1 * x2 + y1 * y2 + 1, degree);
+        }
+        
+        function rbfKernel(x1, y1, x2, y2) {
+            const dist = (x1 - x2) ** 2 + (y1 - y2) ** 2;
+            return Math.exp(-gamma * dist);
+        }
+        
+        function getKernel(x1, y1, x2, y2) {
+            switch (kernel) {
+                case 'poly': return polyKernel(x1, y1, x2, y2);
+                case 'rbf': return rbfKernel(x1, y1, x2, y2);
+                default: return linearKernel(x1, y1, x2, y2);
+            }
+        }
+        
+        // ========== SVM FUNCTIONS ==========
+        function predict(x, y) {
+            if (kernel === 'linear') {
+                return weights.w1 * x + weights.w2 * y + weights.b;
+            } else {
+                // Kernel prediction
+                let sum = weights.b;
+                for (let i = 0; i < data.length; i++) {
+                    if (alphas[i] > 1e-6) {
+                        sum += alphas[i] * data[i].label * getKernel(data[i].x, data[i].y, x, y);
+                    }
+                }
+                return sum;
+            }
+        }
+        
+        function classify(x, y) {
+            return predict(x, y) >= 0 ? 1 : -1;
+        }
+        
+        function hingeLoss(margin) {
+            return Math.max(0, 1 - margin);
+        }
+        
+        function computeTotalLoss() {
+            if (data.length === 0) return 0;
+            
+            let loss = 0;
+            
+            // Regularization term
+            if (kernel === 'linear') {
+                loss = 0.5 * (weights.w1 ** 2 + weights.w2 ** 2);
+            }
+            
+            // Hinge loss
+            for (const point of data) {
+                const margin = point.label * predict(point.x, point.y);
+                loss += C * hingeLoss(margin);
+            }
+            
+            return loss;
+        }
+        
+        function computeAccuracy() {
+            if (data.length === 0) return 0;
+            
+            let correct = 0;
+            for (const point of data) {
+                if (classify(point.x, point.y) === point.label) correct++;
+            }
+            return correct / data.length;
+        }
+        
+        function findSupportVectors() {
+            supportVectors = [];
+            
+            if (kernel === 'linear') {
+                const wNorm = Math.sqrt(weights.w1 ** 2 + weights.w2 ** 2);
+                if (wNorm < 1e-6) return;
+                
+                for (let i = 0; i < data.length; i++) {
+                    const point = data[i];
+                    const margin = point.label * predict(point.x, point.y);
+                    // Support vectors are on or within the margin
+                    if (margin <= 1.01) {
+                        supportVectors.push(i);
+                    }
+                }
+            } else {
+                for (let i = 0; i < data.length; i++) {
+                    if (alphas[i] > 1e-6) {
+                        supportVectors.push(i);
+                    }
+                }
+            }
+        }
+        
+        function getMarginWidth() {
+            if (kernel === 'linear') {
+                const wNorm = Math.sqrt(weights.w1 ** 2 + weights.w2 ** 2);
+                return wNorm > 1e-6 ? 2 / wNorm : 0;
+            }
+            return 0;  // Margin not well-defined for nonlinear kernels
+        }
+        
+        // ========== TRAINING ==========
+        function trainStepLinear() {
+            if (data.length === 0) return;
+            
+            const lr = 0.01;
+            let dw1 = weights.w1;  // Regularization gradient
+            let dw2 = weights.w2;
+            let db = 0;
+            
+            for (const point of data) {
+                const margin = point.label * predict(point.x, point.y);
+                
+                if (margin < 1) {
+                    // Hinge loss is active
+                    dw1 -= C * point.label * point.x;
+                    dw2 -= C * point.label * point.y;
+                    db -= C * point.label;
+                }
+            }
+            
+            weights.w1 -= lr * dw1;
+            weights.w2 -= lr * dw2;
+            weights.b -= lr * db;
+            
+            lossHistory.push(computeTotalLoss());
+            if (lossHistory.length > 200) lossHistory.shift();
+        }
+        
+        function trainStepKernel() {
+            if (data.length === 0) return;
+            
+            const lr = 0.001;
+            const n = data.length;
+            
+            // Initialize alphas if needed
+            if (alphas.length !== n) {
+                alphas = new Array(n).fill(0);
+            }
+            
+            // SMO-like update
+            for (let i = 0; i < n; i++) {
+                const point = data[i];
+                const margin = point.label * predict(point.x, point.y);
+                
+                if (margin < 1) {
+                    alphas[i] = Math.min(C, alphas[i] + lr);
+                } else {
+                    alphas[i] = Math.max(0, alphas[i] - lr * 0.1);
+                }
+            }
+            
+            // Update bias
+            let bSum = 0;
+            let bCount = 0;
+            for (let i = 0; i < n; i++) {
+                if (alphas[i] > 1e-6 && alphas[i] < C - 1e-6) {
+                    let sum = 0;
+                    for (let j = 0; j < n; j++) {
+                        if (alphas[j] > 1e-6) {
+                            sum += alphas[j] * data[j].label * getKernel(data[j].x, data[j].y, data[i].x, data[i].y);
+                        }
+                    }
+                    bSum += data[i].label - sum;
+                    bCount++;
+                }
+            }
+            if (bCount > 0) {
+                weights.b = bSum / bCount;
+            }
+            
+            lossHistory.push(computeTotalLoss());
+            if (lossHistory.length > 200) lossHistory.shift();
+        }
+        
+        function trainStep() {
+            if (kernel === 'linear') {
+                trainStepLinear();
+            } else {
+                trainStepKernel();
+            }
+            findSupportVectors();
+            updateStats();
+        }
+        
+        function resetModel() {
+            weights = { w1: 0.1, w2: 0.1, b: 0 };
+            alphas = [];
+            supportVectors = [];
+            lossHistory = [];
+        }
+        
+        // ========== COORDINATE TRANSFORMS ==========
+        function toCanvasX(canvas, x, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return margin + (x - xMin) / (xMax - xMin) * w;
+        }
+        
+        function toCanvasY(canvas, y, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return margin + (yMax - y) / (yMax - yMin) * h;
+        }
+        
+        function toDataX(canvas, cx, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return xMin + (cx - margin) / w * (xMax - xMin);
+        }
+        
+        function toDataY(canvas, cy, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return yMax - (cy - margin) / h * (yMax - yMin);
+        }
+        
+        // ========== DRAWING: CLASSIFICATION SPACE ==========
+        function drawClassificationSpace() {
+            const W = classCanvas.width;
+            const H = classCanvas.height;
+            const margin = 40;
+            
+            classCtx.fillStyle = '#0a0a1a';
+            classCtx.fillRect(0, 0, W, H);
+            
+            // Draw decision regions
+            if (data.length > 0 && (Math.abs(weights.w1) > 0.01 || Math.abs(weights.w2) > 0.01 || kernel !== 'linear')) {
+                const resolution = 4;
+                for (let px = margin; px < W - margin; px += resolution) {
+                    for (let py = margin; py < H - margin; py += resolution) {
+                        const x = toDataX(classCanvas, px);
+                        const y = toDataY(classCanvas, py);
+                        const pred = predict(x, y);
+                        
+                        if (pred > 0) {
+                            classCtx.fillStyle = colors.class1Light;
+                        } else {
+                            classCtx.fillStyle = colors.class0Light;
+                        }
+                        classCtx.fillRect(px, py, resolution, resolution);
+                    }
+                }
+                
+                // Draw decision boundary and margins
+                if (kernel === 'linear') {
+                    const wNorm = Math.sqrt(weights.w1 ** 2 + weights.w2 ** 2);
+                    
+                    if (wNorm > 0.01) {
+                        // Decision boundary: w·x + b = 0
+                        // Margins: w·x + b = ±1
+                        for (const offset of [0, 1, -1]) {
+                            const style = offset === 0 ? '#fff' : 'rgba(255,255,255,0.4)';
+                            const width = offset === 0 ? 3 : 2;
+                            const dash = offset === 0 ? [] : [6, 4];
+                            
+                            classCtx.strokeStyle = style;
+                            classCtx.lineWidth = width;
+                            classCtx.setLineDash(dash);
+                            classCtx.beginPath();
+                            
+                            // Find line endpoints
+                            if (Math.abs(weights.w2) > Math.abs(weights.w1)) {
+                                // More horizontal, solve for y
+                                for (const x of [xMin, xMax]) {
+                                    const y = -(weights.w1 * x + weights.b - offset) / weights.w2;
+                                    const px = toCanvasX(classCanvas, x);
+                                    const py = toCanvasY(classCanvas, y);
+                                    if (x === xMin) classCtx.moveTo(px, py);
+                                    else classCtx.lineTo(px, py);
+                                }
+                            } else {
+                                // More vertical, solve for x
+                                for (const y of [yMin, yMax]) {
+                                    const x = -(weights.w2 * y + weights.b - offset) / weights.w1;
+                                    const px = toCanvasX(classCanvas, x);
+                                    const py = toCanvasY(classCanvas, y);
+                                    if (y === yMin) classCtx.moveTo(px, py);
+                                    else classCtx.lineTo(px, py);
+                                }
+                            }
+                            classCtx.stroke();
+                        }
+                        classCtx.setLineDash([]);
+                        
+                        // Draw margin width indicator
+                        const marginW = getMarginWidth();
+                        if (marginW > 0 && marginW < 10) {
+                            // Find a point on the decision boundary
+                            const cx = 0;
+                            const cy = -weights.b / weights.w2;
+                            
+                            if (cy > yMin && cy < yMax) {
+                                const px = toCanvasX(classCanvas, cx);
+                                const py = toCanvasY(classCanvas, cy);
+                                
+                                // Normal vector direction
+                                const nx = weights.w1 / wNorm;
+                                const ny = weights.w2 / wNorm;
+                                
+                                // Draw margin arrows
+                                const marginPx = marginW / 2 / (xMax - xMin) * (W - 2 * margin);
+                                
+                                classCtx.strokeStyle = colors.sv;
+                                classCtx.lineWidth = 2;
+                                classCtx.beginPath();
+                                classCtx.moveTo(px - nx * marginPx, py + ny * marginPx);
+                                classCtx.lineTo(px + nx * marginPx, py - ny * marginPx);
+                                classCtx.stroke();
+                            }
+                        }
+                    }
+                } else {
+                    // Nonlinear decision boundary
+                    classCtx.fillStyle = 'rgba(255,255,255,0.6)';
+                    const step = 3;
+                    for (let px = margin; px < W - margin - step; px += step) {
+                        for (let py = margin; py < H - margin - step; py += step) {
+                            const p1 = predict(toDataX(classCanvas, px), toDataY(classCanvas, py));
+                            const p2 = predict(toDataX(classCanvas, px + step), toDataY(classCanvas, py));
+                            const p3 = predict(toDataX(classCanvas, px), toDataY(classCanvas, py + step));
+                            
+                            if ((p1 * p2 < 0) || (p1 * p3 < 0)) {
+                                classCtx.fillRect(px, py, 2, 2);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Draw axes
+            classCtx.strokeStyle = '#333';
+            classCtx.lineWidth = 1;
+            
+            const y0 = toCanvasY(classCanvas, 0);
+            classCtx.beginPath();
+            classCtx.moveTo(margin, y0);
+            classCtx.lineTo(W - margin, y0);
+            classCtx.stroke();
+            
+            const x0 = toCanvasX(classCanvas, 0);
+            classCtx.beginPath();
+            classCtx.moveTo(x0, margin);
+            classCtx.lineTo(x0, H - margin);
+            classCtx.stroke();
+            
+            // Axis labels
+            classCtx.fillStyle = '#555';
+            classCtx.font = '10px sans-serif';
+            classCtx.textAlign = 'center';
+            for (let x = Math.ceil(xMin); x <= xMax; x += 2) {
+                classCtx.fillText(x.toString(), toCanvasX(classCanvas, x), H - margin + 15);
+            }
+            
+            // Draw data points
+            for (let i = 0; i < data.length; i++) {
+                const point = data[i];
+                const cx = toCanvasX(classCanvas, point.x);
+                const cy = toCanvasY(classCanvas, point.y);
+                
+                const isSV = supportVectors.includes(i);
+                
+                // Support vector ring
+                if (isSV) {
+                    classCtx.strokeStyle = colors.sv;
+                    classCtx.lineWidth = 3;
+                    classCtx.beginPath();
+                    classCtx.arc(cx, cy, 12, 0, Math.PI * 2);
+                    classCtx.stroke();
+                }
+                
+                // Point
+                classCtx.fillStyle = point.label === -1 ? colors.class0 : colors.class1;
+                classCtx.strokeStyle = '#fff';
+                classCtx.lineWidth = 1.5;
+                classCtx.beginPath();
+                classCtx.arc(cx, cy, 6, 0, Math.PI * 2);
+                classCtx.fill();
+                classCtx.stroke();
+            }
+            
+            // Title
+            classCtx.fillStyle = '#fff';
+            classCtx.font = 'bold 12px sans-serif';
+            classCtx.textAlign = 'left';
+            classCtx.fillText('Click to add points', margin, 25);
+        }
+        
+        // ========== DRAWING: DECISION FUNCTION ==========
+        function drawDecisionFunction() {
+            const W = decisionCanvas.width;
+            const H = decisionCanvas.height;
+            const margin = 40;
+            
+            decisionCtx.fillStyle = '#0a0a1a';
+            decisionCtx.fillRect(0, 0, W, H);
+            
+            if (data.length === 0) {
+                decisionCtx.fillStyle = '#555';
+                decisionCtx.font = '14px sans-serif';
+                decisionCtx.textAlign = 'center';
+                decisionCtx.fillText('Add data and train to see decision function', W / 2, H / 2);
+                return;
+            }
+            
+            // 3D-ish visualization of f(x) as height
+            const resolution = 5;
+            const maxF = 3;
+            
+            // Draw as heatmap with contours
+            for (let px = margin; px < W - margin; px += resolution) {
+                for (let py = margin; py < H - margin; py += resolution) {
+                    const x = toDataX(decisionCanvas, px);
+                    const y = toDataY(decisionCanvas, py);
+                    const f = predict(x, y);
+                    
+                    // Map f to color
+                    const t = (Math.tanh(f) + 1) / 2;  // 0 to 1
+                    
+                    const r = Math.round(236 * (1 - t) + 139 * t);
+                    const g = Math.round(72 * (1 - t) + 92 * t);
+                    const b = Math.round(153 * (1 - t) + 246 * t);
+                    
+                    decisionCtx.fillStyle = `rgb(${r},${g},${b})`;
+                    decisionCtx.fillRect(px, py, resolution, resolution);
+                }
+            }
+            
+            // Contour lines
+            decisionCtx.strokeStyle = 'rgba(255,255,255,0.4)';
+            decisionCtx.lineWidth = 1;
+            
+            for (const level of [-2, -1, 0, 1, 2]) {
+                if (level === 0) {
+                    decisionCtx.strokeStyle = '#fff';
+                    decisionCtx.lineWidth = 2;
+                } else {
+                    decisionCtx.strokeStyle = 'rgba(255,255,255,0.3)';
+                    decisionCtx.lineWidth = 1;
+                }
+                
+                const step = 3;
+                for (let px = margin; px < W - margin - step; px += step) {
+                    for (let py = margin; py < H - margin - step; py += step) {
+                        const f1 = predict(toDataX(decisionCanvas, px), toDataY(decisionCanvas, py));
+                        const f2 = predict(toDataX(decisionCanvas, px + step), toDataY(decisionCanvas, py));
+                        const f3 = predict(toDataX(decisionCanvas, px), toDataY(decisionCanvas, py + step));
+                        
+                        if ((f1 - level) * (f2 - level) < 0 || (f1 - level) * (f3 - level) < 0) {
+                            decisionCtx.fillStyle = decisionCtx.strokeStyle;
+                            decisionCtx.fillRect(px, py, 2, 2);
+                        }
+                    }
+                }
+            }
+            
+            // Draw data points
+            for (const point of data) {
+                const cx = toCanvasX(decisionCanvas, point.x);
+                const cy = toCanvasY(decisionCanvas, point.y);
+                
+                decisionCtx.fillStyle = point.label === -1 ? colors.class0 : colors.class1;
+                decisionCtx.strokeStyle = '#fff';
+                decisionCtx.lineWidth = 1;
+                decisionCtx.beginPath();
+                decisionCtx.arc(cx, cy, 4, 0, Math.PI * 2);
+                decisionCtx.fill();
+                decisionCtx.stroke();
+            }
+            
+            // Color bar
+            const barW = 15;
+            const barH = H - 2 * margin;
+            const barX = W - margin + 5;
+            
+            for (let i = 0; i <= barH; i++) {
+                const t = 1 - i / barH;
+                const r = Math.round(236 * (1 - t) + 139 * t);
+                const g = Math.round(72 * (1 - t) + 92 * t);
+                const b = Math.round(153 * (1 - t) + 246 * t);
+                decisionCtx.fillStyle = `rgb(${r},${g},${b})`;
+                decisionCtx.fillRect(barX, margin + i, barW, 1);
+            }
+            
+            decisionCtx.fillStyle = '#888';
+            decisionCtx.font = '10px sans-serif';
+            decisionCtx.textAlign = 'left';
+            decisionCtx.fillText('+', barX + barW + 3, margin + 8);
+            decisionCtx.fillText('0', barX + barW + 3, margin + barH / 2 + 3);
+            decisionCtx.fillText('-', barX + barW + 3, margin + barH);
+            
+            // Title
+            decisionCtx.fillStyle = '#fff';
+            decisionCtx.font = 'bold 11px sans-serif';
+            decisionCtx.textAlign = 'left';
+            decisionCtx.fillText('f(x) = w·x + b', margin, 20);
+        }
+        
+        // ========== DRAWING: HINGE LOSS ==========
+        function drawHingeLoss() {
+            const W = lossCanvas.width;
+            const H = lossCanvas.height;
+            const margin = 40;
+            const plotW = W - 2 * margin;
+            const plotH = H - 2 * margin;
+            
+            lossCtx.fillStyle = '#0a0a1a';
+            lossCtx.fillRect(0, 0, W, H);
+            
+            // Draw hinge loss function
+            const zMin = -3, zMax = 3;
+            
+            // Grid
+            lossCtx.strokeStyle = '#222';
+            lossCtx.lineWidth = 1;
+            for (let z = zMin; z <= zMax; z++) {
+                const px = margin + (z - zMin) / (zMax - zMin) * plotW;
+                lossCtx.beginPath();
+                lossCtx.moveTo(px, margin);
+                lossCtx.lineTo(px, H - margin);
+                lossCtx.stroke();
+            }
+            
+            // Axes
+            lossCtx.strokeStyle = '#555';
+            lossCtx.lineWidth = 2;
+            lossCtx.beginPath();
+            lossCtx.moveTo(margin, H - margin);
+            lossCtx.lineTo(W - margin, H - margin);
+            lossCtx.stroke();
+            
+            const z0px = margin + (0 - zMin) / (zMax - zMin) * plotW;
+            lossCtx.beginPath();
+            lossCtx.moveTo(z0px, margin);
+            lossCtx.lineTo(z0px, H - margin);
+            lossCtx.stroke();
+            
+            // z=1 line (margin boundary)
+            const z1px = margin + (1 - zMin) / (zMax - zMin) * plotW;
+            lossCtx.strokeStyle = colors.sv;
+            lossCtx.lineWidth = 1;
+            lossCtx.setLineDash([4, 4]);
+            lossCtx.beginPath();
+            lossCtx.moveTo(z1px, margin);
+            lossCtx.lineTo(z1px, H - margin);
+            lossCtx.stroke();
+            lossCtx.setLineDash([]);
+            
+            // Hinge loss curve
+            lossCtx.strokeStyle = '#8b5cf6';
+            lossCtx.lineWidth = 3;
+            lossCtx.beginPath();
+            
+            const maxLoss = 4;
+            for (let i = 0; i <= 200; i++) {
+                const z = zMin + (zMax - zMin) * i / 200;
+                const loss = Math.max(0, 1 - z);
+                const px = margin + i / 200 * plotW;
+                const py = H - margin - (loss / maxLoss) * plotH;
+                
+                if (i === 0) lossCtx.moveTo(px, py);
+                else lossCtx.lineTo(px, py);
+            }
+            lossCtx.stroke();
+            
+            // Draw data points on the curve
+            for (let i = 0; i < data.length; i++) {
+                const point = data[i];
+                const margin_val = point.label * predict(point.x, point.y);
+                const loss = Math.max(0, 1 - margin_val);
+                
+                if (margin_val >= zMin && margin_val <= zMax) {
+                    const px = margin + (margin_val - zMin) / (zMax - zMin) * plotW;
+                    const py = H - margin - (loss / maxLoss) * plotH;
+                    
+                    const isSV = supportVectors.includes(i);
+                    
+                    lossCtx.fillStyle = point.label === -1 ? colors.class0 : colors.class1;
+                    lossCtx.strokeStyle = isSV ? colors.sv : '#fff';
+                    lossCtx.lineWidth = isSV ? 3 : 1;
+                    lossCtx.beginPath();
+                    lossCtx.arc(px, py, 5, 0, Math.PI * 2);
+                    lossCtx.fill();
+                    lossCtx.stroke();
+                }
+            }
+            
+            // Labels
+            lossCtx.fillStyle = '#888';
+            lossCtx.font = '10px sans-serif';
+            lossCtx.textAlign = 'center';
+            for (let z = zMin; z <= zMax; z++) {
+                const px = margin + (z - zMin) / (zMax - zMin) * plotW;
+                lossCtx.fillText(z.toString(), px, H - margin + 15);
+            }
+            
+            lossCtx.fillStyle = colors.sv;
+            lossCtx.fillText('margin=1', z1px, margin - 5);
+            
+            // Axis labels
+            lossCtx.fillStyle = '#aaa';
+            lossCtx.font = '11px sans-serif';
+            lossCtx.fillText('y·f(x) (functional margin)', W / 2, H - 5);
+            
+            lossCtx.save();
+            lossCtx.translate(12, H / 2);
+            lossCtx.rotate(-Math.PI / 2);
+            lossCtx.fillText('Hinge Loss', 0, 0);
+            lossCtx.restore();
+            
+            // Title
+            lossCtx.fillStyle = '#fff';
+            lossCtx.font = 'bold 11px sans-serif';
+            lossCtx.textAlign = 'left';
+            lossCtx.fillText('L(y, f(x)) = max(0, 1 - y·f(x))', margin, 20);
+        }
+        
+        // ========== DRAWING: TRAINING PROGRESS ==========
+        function drawProgress() {
+            const W = progressCanvas.width;
+            const H = progressCanvas.height;
+            const margin = 40;
+            const plotW = W - 2 * margin;
+            const plotH = H - 2 * margin;
+            
+            progressCtx.fillStyle = '#0a0a1a';
+            progressCtx.fillRect(0, 0, W, H);
+            
+            if (lossHistory.length < 2) {
+                progressCtx.fillStyle = '#555';
+                progressCtx.font = '14px sans-serif';
+                progressCtx.textAlign = 'center';
+                progressCtx.fillText('Train to see progress', W / 2, H / 2);
+                return;
+            }
+            
+            const maxLoss = Math.max(...lossHistory) * 1.1;
+            const minLoss = Math.min(...lossHistory) * 0.9;
+            
+            // Grid
+            progressCtx.strokeStyle = '#222';
+            progressCtx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = margin + i * plotH / 4;
+                progressCtx.beginPath();
+                progressCtx.moveTo(margin, y);
+                progressCtx.lineTo(W - margin, y);
+                progressCtx.stroke();
+            }
+            
+            // Axes
+            progressCtx.strokeStyle = '#555';
+            progressCtx.lineWidth = 2;
+            progressCtx.beginPath();
+            progressCtx.moveTo(margin, margin);
+            progressCtx.lineTo(margin, H - margin);
+            progressCtx.lineTo(W - margin, H - margin);
+            progressCtx.stroke();
+            
+            // Loss curve
+            progressCtx.strokeStyle = '#ec4899';
+            progressCtx.lineWidth = 2;
+            progressCtx.beginPath();
+            
+            for (let i = 0; i < lossHistory.length; i++) {
+                const px = margin + i / (lossHistory.length - 1) * plotW;
+                const py = margin + (1 - (lossHistory[i] - minLoss) / (maxLoss - minLoss)) * plotH;
+                
+                if (i === 0) progressCtx.moveTo(px, py);
+                else progressCtx.lineTo(px, py);
+            }
+            progressCtx.stroke();
+            
+            // Labels
+            progressCtx.fillStyle = '#888';
+            progressCtx.font = '10px sans-serif';
+            progressCtx.textAlign = 'right';
+            
+            for (let i = 0; i <= 4; i++) {
+                const val = maxLoss - i * (maxLoss - minLoss) / 4;
+                const y = margin + i * plotH / 4;
+                progressCtx.fillText(val.toFixed(2), margin - 5, y + 4);
+            }
+            
+            // Current loss
+            progressCtx.fillStyle = '#ec4899';
+            progressCtx.textAlign = 'right';
+            progressCtx.font = 'bold 11px sans-serif';
+            progressCtx.fillText(`Loss: ${lossHistory[lossHistory.length - 1].toFixed(3)}`, W - margin, 20);
+            
+            // Title
+            progressCtx.fillStyle = '#fff';
+            progressCtx.textAlign = 'left';
+            progressCtx.fillText('Objective: ½||w||² + C·Σξᵢ', margin, 20);
+        }
+        
+        // ========== UPDATE FUNCTIONS ==========
+        function updateStats() {
+            document.getElementById('count0').textContent = data.filter(d => d.label === -1).length;
+            document.getElementById('count1').textContent = data.filter(d => d.label === 1).length;
+            
+            if (data.length > 0 && lossHistory.length > 0) {
+                document.getElementById('accuracy').textContent = (computeAccuracy() * 100).toFixed(1) + '%';
+                document.getElementById('loss').textContent = lossHistory[lossHistory.length - 1].toFixed(3);
+            } else {
+                document.getElementById('accuracy').textContent = '--';
+                document.getElementById('loss').textContent = '--';
+            }
+            
+            const marginW = getMarginWidth();
+            document.getElementById('marginValue').textContent = marginW > 0 ? marginW.toFixed(2) : '--';
+            document.getElementById('svCount').textContent = `${supportVectors.length} Support Vector${supportVectors.length !== 1 ? 's' : ''}`;
+        }
+        
+        function updateKernelParams() {
+            const container = document.getElementById('kernelParams');
+            
+            if (kernel === 'poly') {
+                container.innerHTML = `
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Degree (d)</span>
+                            <span class="slider-value" id="degreeValue">${degree}</span>
+                        </div>
+                        <input type="range" id="degreeSlider" min="2" max="5" step="1" value="${degree}">
+                    </div>
+                `;
+                document.getElementById('degreeSlider').addEventListener('input', function(e) {
+                    degree = parseInt(e.target.value);
+                    document.getElementById('degreeValue').textContent = degree;
+                });
+            } else if (kernel === 'rbf') {
+                container.innerHTML = `
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Gamma (γ)</span>
+                            <span class="slider-value" id="gammaValue">${gamma.toFixed(2)}</span>
+                        </div>
+                        <input type="range" id="gammaSlider" min="0.1" max="5" step="0.1" value="${gamma}">
+                    </div>
+                `;
+                document.getElementById('gammaSlider').addEventListener('input', function(e) {
+                    gamma = parseFloat(e.target.value);
+                    document.getElementById('gammaValue').textContent = gamma.toFixed(2);
+                });
+            } else {
+                container.innerHTML = '';
+            }
+        }
+        
+        function drawAll() {
+            drawClassificationSpace();
+            drawDecisionFunction();
+            drawHingeLoss();
+            drawProgress();
+        }
+        
+        // ========== EVENT HANDLERS ==========
+        classCanvas.addEventListener('click', function(e) {
+            const rect = classCanvas.getBoundingClientRect();
+            const scaleX = classCanvas.width / rect.width;
+            const scaleY = classCanvas.height / rect.height;
+            
+            const cx = (e.clientX - rect.left) * scaleX;
+            const cy = (e.clientY - rect.top) * scaleY;
+            
+            const margin = 40;
+            if (cx >= margin && cx <= classCanvas.width - margin &&
+                cy >= margin && cy <= classCanvas.height - margin) {
+                
+                const x = toDataX(classCanvas, cx);
+                const y = toDataY(classCanvas, cy);
+                
+                data.push({ x, y, label: selectedClass });
+                updateStats();
+                drawAll();
+            }
+        });
+        
+        document.getElementById('class0Btn').addEventListener('click', function() {
+            selectedClass = -1;
+            this.classList.add('active');
+            document.getElementById('class1Btn').classList.remove('active');
+        });
+        
+        document.getElementById('class1Btn').addEventListener('click', function() {
+            selectedClass = 1;
+            this.classList.add('active');
+            document.getElementById('class0Btn').classList.remove('active');
+        });
+        
+        document.getElementById('trainBtn').addEventListener('click', function() {
+            if (data.length < 2) return;
+            
+            if (isTraining) {
+                isTraining = false;
+                clearInterval(trainInterval);
+                this.textContent = '▶ Train SVM';
+            } else {
+                resetModel();
+                isTraining = true;
+                this.textContent = '⏸ Stop Training';
+                
+                trainInterval = setInterval(function() {
+                    for (let i = 0; i < 10; i++) trainStep();
+                    drawAll();
+                }, 50);
+            }
+        });
+        
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            data = [];
+            resetModel();
+            isTraining = false;
+            clearInterval(trainInterval);
+            document.getElementById('trainBtn').textContent = '▶ Train SVM';
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('cSlider').addEventListener('input', function(e) {
+            C = Math.pow(10, parseFloat(e.target.value));
+            document.getElementById('cValue').textContent = C.toFixed(2);
+        });
+        
+        document.getElementById('kernelSelect').addEventListener('change', function(e) {
+            kernel = e.target.value;
+            resetModel();
+            updateKernelParams();
+            updateStats();
+            drawAll();
+        });
+        
+        // Example datasets
+        document.getElementById('linearBtn').addEventListener('click', function() {
+            data = [];
+            resetModel();
+            
+            for (let i = 0; i < 15; i++) {
+                data.push({ x: -3 + Math.random() * 2, y: -2 + Math.random() * 4, label: -1 });
+                data.push({ x: 1 + Math.random() * 2, y: -2 + Math.random() * 4, label: 1 });
+            }
+            
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('overlapBtn').addEventListener('click', function() {
+            data = [];
+            resetModel();
+            
+            for (let i = 0; i < 20; i++) {
+                data.push({ x: -1.5 + Math.random() * 3, y: -1.5 + Math.random() * 3, label: -1 });
+                data.push({ x: 0 + Math.random() * 3, y: 0 + Math.random() * 3, label: 1 });
+            }
+            
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('circleBtn').addEventListener('click', function() {
+            data = [];
+            resetModel();
+            
+            // Inner circle (class -1)
+            for (let i = 0; i < 20; i++) {
+                const r = Math.random() * 1.5;
+                const theta = Math.random() * 2 * Math.PI;
+                data.push({ x: r * Math.cos(theta), y: r * Math.sin(theta), label: -1 });
+            }
+            
+            // Outer ring (class +1)
+            for (let i = 0; i < 25; i++) {
+                const r = 2.5 + Math.random() * 1.5;
+                const theta = Math.random() * 2 * Math.PI;
+                data.push({ x: r * Math.cos(theta), y: r * Math.sin(theta), label: 1 });
+            }
+            
+            // Switch to RBF kernel
+            kernel = 'rbf';
+            document.getElementById('kernelSelect').value = 'rbf';
+            updateKernelParams();
+            
+            updateStats();
+            drawAll();
+        });
+        
+        // Initialize
+        updateKernelParams();
+        updateStats();
+        drawAll();
+    </script>
+</body>
+</html>
