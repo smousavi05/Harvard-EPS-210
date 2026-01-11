@@ -26,20 +26,19 @@
       <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_Bias-Variance_Trade-Off.html">
         <img src="interactive_visualizations/L3_Bias-Variance_Trade-Off.png" alt="Bias Variance" width="200">
       </a>
-    </td>
     <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/.html">
-        <img src="interactive_visualizations/.png" alt=" " width="200">
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_logistic_regression.html">
+        <img src="interactive_visualizations/L3_logistic_regression.png" alt="logistic_regression" width="200">
       </a>
     </td>
     <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/.html">
-        <img src="interactive_visualizations/ .png" alt=" " width="200">
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_naive_bayes.html">
+        <img src="interactive_visualizations/L3_naive_bayes.png" alt="L3_naive_bayes" width="200">
       </a>
     </td>
     <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/ .html">
-        <img src="interactive_visualizations/ .png" alt=" " width="200">
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_knn.html">
+        <img src="interactive_visualizations/L3_knn.png" alt="L3_knn" width="200">
       </a>
     </td>
   </tr>
