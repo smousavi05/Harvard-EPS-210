@@ -12,6 +12,7 @@
     <th>Flexibility vs Interpretability</th>
     <th>Bias-Variance Trade-Off</th>
     <th>Logistic Regression</th>
+    <th>Naive Bayes</th>
 
   </tr>
   
@@ -29,6 +30,11 @@
     <td>
       <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_logistic_regression.html">
         <img src="interactive_visualizations/L3_logistic_regression.png" alt="logistic_regression" width="200">
+      </a>
+    </td>
+    <td>
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_naive_bayes.html">
+        <img src="interactive_visualizations/L3_naive_bayes.png" alt="L3_naive_bayes" width="200">
       </a>
     </td>
   </tr>
