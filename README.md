@@ -48,6 +48,9 @@
 <table>
   <tr align="center">
     <th>Support Vector Machines</th>
+    <th>Decision Trees</th>
+
+
 
   </tr>
   
@@ -58,8 +61,8 @@
       </a>
     </td>
     <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/.html">
-        <img src="interactive_visualizations/.png" alt=" " width="200">
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_decision_tree.html">
+        <img src="interactive_visualizations/L3_decision_tree.png" alt="L3_decision_tree" width="200">
       </a>
     </td>
     <td>
