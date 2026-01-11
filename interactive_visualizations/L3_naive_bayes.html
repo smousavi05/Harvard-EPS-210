@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naive Bayes Classification - Interactive Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #f472b6, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+        
+        .visualizations {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .viz-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .panel h2 {
+            font-size: 1rem;
+            color: #38bdf8;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        canvas {
+            background: #0a0a1a;
+            border-radius: 12px;
+            cursor: crosshair;
+            display: block;
+            width: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .control-section h3 {
+            font-size: 0.85rem;
+            color: #f472b6;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .class-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .class-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .class-btn.class-0 {
+            background: rgba(244,114,182,0.2);
+            color: #f472b6;
+        }
+        
+        .class-btn.class-1 {
+            background: rgba(56,189,248,0.2);
+            color: #38bdf8;
+        }
+        
+        .class-btn.active {
+            border-color: currentColor;
+            transform: scale(1.02);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #f472b6, #e879a9);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(244,114,182,0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #38bdf8, #22a5e0);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(56,189,248,0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #888;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #38bdf8;
+            font-family: monospace;
+        }
+        
+        .equation-box {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            margin: 10px 0;
+            border-left: 3px solid #38bdf8;
+        }
+        
+        .equation-box .main-eq {
+            font-size: 1rem;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        
+        .equation-box .sub-eq {
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        
+        .info-box {
+            background: rgba(56,189,248,0.1);
+            border: 1px solid rgba(56,189,248,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 0.8rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .prior-display {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .prior-bar {
+            flex: 1;
+            height: 30px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        
+        .prior-bar.class-0 {
+            background: rgba(244,114,182,0.3);
+            color: #f472b6;
+        }
+        
+        .prior-bar.class-1 {
+            background: rgba(56,189,248,0.3);
+            color: #38bdf8;
+        }
+        
+        .probe-info {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        
+        .probe-info .label {
+            color: #888;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .probe-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        
+        .probe-row .val {
+            font-family: monospace;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .viz-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Naive Bayes Classification</h1>
+        <p class="subtitle">Harvard EPS-210 | Interactive tutorial — Click to add data points and explore probabilistic classification</p>
+        
+        <div class="main-layout">
+            <div class="visualizations">
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Classification Space</h2>
+                        <canvas id="classCanvas" width="400" height="350"></canvas>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #f472b6;"></div>
+                                <span>Class 0</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #38bdf8;"></div>
+                                <span>Class 1</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #fff; width: 8px; height: 8px;"></div>
+                                <span>Probe Point</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>Class-Conditional Distributions P(x|C)</h2>
+                        <canvas id="distCanvas" width="400" height="350"></canvas>
+                        <div class="equation-box">
+                            <div class="main-eq">P(x|C) = P(x₁|C) × P(x₂|C)</div>
+                            <div class="sub-eq">"Naive" independence assumption</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Feature Distributions (1D Marginals)</h2>
+                        <canvas id="marginalCanvas" width="400" height="280"></canvas>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>Posterior Probability P(C|x)</h2>
+                        <canvas id="posteriorCanvas" width="400" height="280"></canvas>
+                        <div class="equation-box">
+                            <div class="main-eq">P(C|x) = P(x|C) × P(C) / P(x)</div>
+                            <div class="sub-eq">Bayes' Theorem</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-section">
+                    <h3>Add Data Points</h3>
+                    <div class="class-selector">
+                        <button class="class-btn class-0 active" id="class0Btn">Class 0 (●)</button>
+                        <button class="class-btn class-1" id="class1Btn">Class 1 (●)</button>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">
+                        Click on the classification canvas to add points
+                    </p>
+                    <button class="btn btn-secondary" id="fitBtn">📊 Fit Model</button>
+                    <button class="btn btn-outline" id="clearBtn">Clear All Data</button>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Prior Probabilities P(C)</h3>
+                    <div class="prior-display">
+                        <div class="prior-bar class-0" id="prior0">P(C₀) = 0.50</div>
+                        <div class="prior-bar class-1" id="prior1">P(C₁) = 0.50</div>
+                    </div>
+                    <p style="font-size: 0.75rem; color: #666;">Computed from class frequencies</p>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Model Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Accuracy</div>
+                            <div class="stat-value" id="accuracy">--</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Total Points</div>
+                            <div class="stat-value" id="totalPoints">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Class 0</div>
+                            <div class="stat-value" id="count0" style="color: #f472b6;">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Class 1</div>
+                            <div class="stat-value" id="count1">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="probe-info" id="probeInfo">
+                        <div class="label">Hover over classification space to probe</div>
+                        <div class="probe-row">
+                            <span>Position:</span>
+                            <span class="val" id="probePos">--</span>
+                        </div>
+                        <div class="probe-row">
+                            <span>P(C₀|x):</span>
+                            <span class="val" id="probeP0" style="color: #f472b6;">--</span>
+                        </div>
+                        <div class="probe-row">
+                            <span>P(C₁|x):</span>
+                            <span class="val" id="probeP1" style="color: #38bdf8;">--</span>
+                        </div>
+                        <div class="probe-row">
+                            <span>Prediction:</span>
+                            <span class="val" id="probePred">--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Quick Examples</h3>
+                    <button class="btn btn-outline" id="separableBtn">Well Separated</button>
+                    <button class="btn btn-outline" id="overlapBtn">Overlapping</button>
+                    <button class="btn btn-outline" id="diagonalBtn">Diagonal Split</button>
+                </div>
+                
+                <div class="info-box">
+                    <strong>How it works:</strong> Naive Bayes assumes features are conditionally independent given the class. It estimates P(x|class) from data, then uses Bayes' theorem to compute P(class|x) for classification.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========== CANVAS SETUP ==========
+        const classCanvas = document.getElementById('classCanvas');
+        const distCanvas = document.getElementById('distCanvas');
+        const marginalCanvas = document.getElementById('marginalCanvas');
+        const posteriorCanvas = document.getElementById('posteriorCanvas');
+        
+        const classCtx = classCanvas.getContext('2d');
+        const distCtx = distCanvas.getContext('2d');
+        const marginalCtx = marginalCanvas.getContext('2d');
+        const posteriorCtx = posteriorCanvas.getContext('2d');
+        
+        // ========== STATE ==========
+        let data = [];
+        let selectedClass = 0;
+        let probePoint = null;
+        
+        // Model parameters (Gaussian NB)
+        let model = {
+            fitted: false,
+            priors: [0.5, 0.5],
+            means: [[0, 0], [0, 0]],      // [class][feature]
+            variances: [[1, 1], [1, 1]]   // [class][feature]
+        };
+        
+        // Coordinate ranges
+        const xMin = -5, xMax = 5;
+        const yMin = -5, yMax = 5;
+        
+        // ========== MATH FUNCTIONS ==========
+        function gaussian(x, mean, variance) {
+            const std = Math.sqrt(variance);
+            const coef = 1 / (std * Math.sqrt(2 * Math.PI));
+            const exp = Math.exp(-0.5 * Math.pow((x - mean) / std, 2));
+            return coef * exp;
+        }
+        
+        function logGaussian(x, mean, variance) {
+            const std = Math.sqrt(variance);
+            return -0.5 * Math.log(2 * Math.PI) - Math.log(std) - 0.5 * Math.pow((x - mean) / std, 2);
+        }
+        
+        function predictProba(x1, x2) {
+            if (!model.fitted) return [0.5, 0.5];
+            
+            // Log probabilities for numerical stability
+            const logProbs = [0, 1].map(c => {
+                const logPrior = Math.log(model.priors[c] + 1e-10);
+                const logLik1 = logGaussian(x1, model.means[c][0], model.variances[c][0]);
+                const logLik2 = logGaussian(x2, model.means[c][1], model.variances[c][1]);
+                return logPrior + logLik1 + logLik2;
+            });
+            
+            // Softmax for normalization
+            const maxLog = Math.max(...logProbs);
+            const expProbs = logProbs.map(lp => Math.exp(lp - maxLog));
+            const sum = expProbs[0] + expProbs[1];
+            
+            return [expProbs[0] / sum, expProbs[1] / sum];
+        }
+        
+        function predict(x1, x2) {
+            const probs = predictProba(x1, x2);
+            return probs[1] > probs[0] ? 1 : 0;
+        }
+        
+        function fitModel() {
+            if (data.length < 2) {
+                model.fitted = false;
+                return;
+            }
+            
+            const class0 = data.filter(d => d.label === 0);
+            const class1 = data.filter(d => d.label === 1);
+            
+            if (class0.length === 0 || class1.length === 0) {
+                model.fitted = false;
+                return;
+            }
+            
+            // Priors
+            model.priors[0] = class0.length / data.length;
+            model.priors[1] = class1.length / data.length;
+            
+            // Means
+            model.means[0][0] = class0.reduce((s, d) => s + d.x, 0) / class0.length;
+            model.means[0][1] = class0.reduce((s, d) => s + d.y, 0) / class0.length;
+            model.means[1][0] = class1.reduce((s, d) => s + d.x, 0) / class1.length;
+            model.means[1][1] = class1.reduce((s, d) => s + d.y, 0) / class1.length;
+            
+            // Variances (with minimum variance for stability)
+            const minVar = 0.1;
+            model.variances[0][0] = Math.max(minVar, class0.reduce((s, d) => s + Math.pow(d.x - model.means[0][0], 2), 0) / class0.length);
+            model.variances[0][1] = Math.max(minVar, class0.reduce((s, d) => s + Math.pow(d.y - model.means[0][1], 2), 0) / class0.length);
+            model.variances[1][0] = Math.max(minVar, class1.reduce((s, d) => s + Math.pow(d.x - model.means[1][0], 2), 0) / class1.length);
+            model.variances[1][1] = Math.max(minVar, class1.reduce((s, d) => s + Math.pow(d.y - model.means[1][1], 2), 0) / class1.length);
+            
+            model.fitted = true;
+        }
+        
+        function computeAccuracy() {
+            if (!model.fitted || data.length === 0) return 0;
+            
+            let correct = 0;
+            for (const point of data) {
+                if (predict(point.x, point.y) === point.label) correct++;
+            }
+            return correct / data.length;
+        }
+        
+        // ========== COORDINATE TRANSFORMS ==========
+        function toCanvasX(canvas, x, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return margin + (x - xMin) / (xMax - xMin) * w;
+        }
+        
+        function toCanvasY(canvas, y, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return margin + (yMax - y) / (yMax - yMin) * h;
+        }
+        
+        function toDataX(canvas, cx, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return xMin + (cx - margin) / w * (xMax - xMin);
+        }
+        
+        function toDataY(canvas, cy, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return yMax - (cy - margin) / h * (yMax - yMin);
+        }
+        
+        // ========== DRAWING: CLASSIFICATION SPACE ==========
+        function drawClassificationSpace() {
+            const W = classCanvas.width;
+            const H = classCanvas.height;
+            const margin = 40;
+            
+            classCtx.fillStyle = '#0a0a1a';
+            classCtx.fillRect(0, 0, W, H);
+            
+            // Draw posterior probability heatmap
+            if (model.fitted) {
+                const resolution = 4;
+                for (let px = margin; px < W - margin; px += resolution) {
+                    for (let py = margin; py < H - margin; py += resolution) {
+                        const x = toDataX(classCanvas, px);
+                        const y = toDataY(classCanvas, py);
+                        const probs = predictProba(x, y);
+                        
+                        // Interpolate between class colors
+                        const p1 = probs[1];
+                        const r = Math.round(244 * (1 - p1) + 56 * p1);
+                        const g = Math.round(114 * (1 - p1) + 189 * p1);
+                        const b = Math.round(182 * (1 - p1) + 248 * p1);
+                        
+                        classCtx.fillStyle = `rgba(${r},${g},${b},0.3)`;
+                        classCtx.fillRect(px, py, resolution, resolution);
+                    }
+                }
+                
+                // Draw decision boundary (where P(C0|x) = P(C1|x))
+                classCtx.strokeStyle = '#fff';
+                classCtx.lineWidth = 2;
+                classCtx.setLineDash([6, 4]);
+                
+                const step = 2;
+                for (let px = margin; px < W - margin - step; px += step) {
+                    for (let py = margin; py < H - margin - step; py += step) {
+                        const x1 = toDataX(classCanvas, px);
+                        const y1 = toDataY(classCanvas, py);
+                        const x2 = toDataX(classCanvas, px + step);
+                        const y2 = toDataY(classCanvas, py + step);
+                        
+                        const p1 = predictProba(x1, y1);
+                        const p2 = predictProba(x2, y1);
+                        const p3 = predictProba(x1, y2);
+                        
+                        // Check for sign change in (p[1] - 0.5)
+                        const s1 = p1[1] - 0.5;
+                        const s2 = p2[1] - 0.5;
+                        const s3 = p3[1] - 0.5;
+                        
+                        if ((s1 * s2 < 0) || (s1 * s3 < 0)) {
+                            classCtx.fillStyle = '#fff';
+                            classCtx.fillRect(px, py, 2, 2);
+                        }
+                    }
+                }
+                classCtx.setLineDash([]);
+            }
+            
+            // Draw axes
+            classCtx.strokeStyle = '#444';
+            classCtx.lineWidth = 1;
+            
+            const y0 = toCanvasY(classCanvas, 0);
+            if (y0 >= margin && y0 <= H - margin) {
+                classCtx.beginPath();
+                classCtx.moveTo(margin, y0);
+                classCtx.lineTo(W - margin, y0);
+                classCtx.stroke();
+            }
+            
+            const x0 = toCanvasX(classCanvas, 0);
+            if (x0 >= margin && x0 <= W - margin) {
+                classCtx.beginPath();
+                classCtx.moveTo(x0, margin);
+                classCtx.lineTo(x0, H - margin);
+                classCtx.stroke();
+            }
+            
+            // Axis labels
+            classCtx.fillStyle = '#666';
+            classCtx.font = '11px sans-serif';
+            classCtx.textAlign = 'center';
+            for (let x = Math.ceil(xMin); x <= xMax; x += 2) {
+                classCtx.fillText(x.toString(), toCanvasX(classCanvas, x), H - margin + 15);
+            }
+            classCtx.textAlign = 'right';
+            for (let y = Math.ceil(yMin); y <= yMax; y += 2) {
+                classCtx.fillText(y.toString(), margin - 8, toCanvasY(classCanvas, y) + 4);
+            }
+            
+            // Axis titles
+            classCtx.fillStyle = '#888';
+            classCtx.font = '12px sans-serif';
+            classCtx.textAlign = 'center';
+            classCtx.fillText('x₁', W / 2, H - 8);
+            classCtx.save();
+            classCtx.translate(12, H / 2);
+            classCtx.rotate(-Math.PI / 2);
+            classCtx.fillText('x₂', 0, 0);
+            classCtx.restore();
+            
+            // Draw Gaussian ellipses for each class
+            if (model.fitted) {
+                [0, 1].forEach(c => {
+                    const color = c === 0 ? '#f472b6' : '#38bdf8';
+                    classCtx.strokeStyle = color;
+                    classCtx.lineWidth = 2;
+                    
+                    // Draw 1-sigma and 2-sigma ellipses
+                    [1, 2].forEach(nSigma => {
+                        classCtx.globalAlpha = nSigma === 1 ? 0.8 : 0.4;
+                        classCtx.beginPath();
+                        
+                        for (let theta = 0; theta <= 2 * Math.PI; theta += 0.05) {
+                            const dx = nSigma * Math.sqrt(model.variances[c][0]) * Math.cos(theta);
+                            const dy = nSigma * Math.sqrt(model.variances[c][1]) * Math.sin(theta);
+                            const px = toCanvasX(classCanvas, model.means[c][0] + dx);
+                            const py = toCanvasY(classCanvas, model.means[c][1] + dy);
+                            
+                            if (theta === 0) classCtx.moveTo(px, py);
+                            else classCtx.lineTo(px, py);
+                        }
+                        classCtx.closePath();
+                        classCtx.stroke();
+                    });
+                    classCtx.globalAlpha = 1;
+                    
+                    // Draw mean point
+                    const mx = toCanvasX(classCanvas, model.means[c][0]);
+                    const my = toCanvasY(classCanvas, model.means[c][1]);
+                    classCtx.fillStyle = color;
+                    classCtx.beginPath();
+                    classCtx.arc(mx, my, 5, 0, Math.PI * 2);
+                    classCtx.fill();
+                    classCtx.strokeStyle = '#fff';
+                    classCtx.lineWidth = 2;
+                    classCtx.stroke();
+                });
+            }
+            
+            // Draw data points
+            for (const point of data) {
+                const cx = toCanvasX(classCanvas, point.x);
+                const cy = toCanvasY(classCanvas, point.y);
+                
+                classCtx.fillStyle = point.label === 0 ? '#f472b6' : '#38bdf8';
+                classCtx.strokeStyle = '#fff';
+                classCtx.lineWidth = 1.5;
+                classCtx.beginPath();
+                classCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+                classCtx.fill();
+                classCtx.stroke();
+            }
+            
+            // Draw probe point
+            if (probePoint) {
+                const px = toCanvasX(classCanvas, probePoint.x);
+                const py = toCanvasY(classCanvas, probePoint.y);
+                
+                classCtx.fillStyle = '#fff';
+                classCtx.strokeStyle = '#000';
+                classCtx.lineWidth = 2;
+                classCtx.beginPath();
+                classCtx.arc(px, py, 6, 0, Math.PI * 2);
+                classCtx.fill();
+                classCtx.stroke();
+                
+                // Crosshair
+                classCtx.strokeStyle = 'rgba(255,255,255,0.5)';
+                classCtx.lineWidth = 1;
+                classCtx.setLineDash([4, 4]);
+                classCtx.beginPath();
+                classCtx.moveTo(margin, py);
+                classCtx.lineTo(W - margin, py);
+                classCtx.moveTo(px, margin);
+                classCtx.lineTo(px, H - margin);
+                classCtx.stroke();
+                classCtx.setLineDash([]);
+            }
+            
+            // Title
+            classCtx.fillStyle = '#fff';
+            classCtx.font = 'bold 12px sans-serif';
+            classCtx.textAlign = 'left';
+            classCtx.fillText('Click to add points, hover to probe', margin, 25);
+        }
+        
+        // ========== DRAWING: CLASS-CONDITIONAL DISTRIBUTIONS ==========
+        function drawDistributions() {
+            const W = distCanvas.width;
+            const H = distCanvas.height;
+            const margin = 40;
+            
+            distCtx.fillStyle = '#0a0a1a';
+            distCtx.fillRect(0, 0, W, H);
+            
+            if (!model.fitted) {
+                distCtx.fillStyle = '#555';
+                distCtx.font = '14px sans-serif';
+                distCtx.textAlign = 'center';
+                distCtx.fillText('Add data from both classes and fit model', W / 2, H / 2);
+                return;
+            }
+            
+            // Draw 2D Gaussian contours
+            const resolution = 3;
+            
+            // First pass: compute max density for normalization
+            let maxDensity = [0, 0];
+            for (let c = 0; c < 2; c++) {
+                for (let px = margin; px < W - margin; px += resolution) {
+                    for (let py = margin; py < H - margin; py += resolution) {
+                        const x = toDataX(distCanvas, px);
+                        const y = toDataY(distCanvas, py);
+                        const density = gaussian(x, model.means[c][0], model.variances[c][0]) *
+                                       gaussian(y, model.means[c][1], model.variances[c][1]);
+                        maxDensity[c] = Math.max(maxDensity[c], density);
+                    }
+                }
+            }
+            
+            // Draw each class distribution
+            for (let c = 0; c < 2; c++) {
+                const baseColor = c === 0 ? [244, 114, 182] : [56, 189, 248];
+                
+                for (let px = margin; px < W - margin; px += resolution) {
+                    for (let py = margin; py < H - margin; py += resolution) {
+                        const x = toDataX(distCanvas, px);
+                        const y = toDataY(distCanvas, py);
+                        const density = gaussian(x, model.means[c][0], model.variances[c][0]) *
+                                       gaussian(y, model.means[c][1], model.variances[c][1]);
+                        const alpha = (density / maxDensity[c]) * 0.5;
+                        
+                        if (alpha > 0.02) {
+                            distCtx.fillStyle = `rgba(${baseColor[0]},${baseColor[1]},${baseColor[2]},${alpha})`;
+                            distCtx.fillRect(px, py, resolution, resolution);
+                        }
+                    }
+                }
+                
+                // Contour lines
+                distCtx.strokeStyle = c === 0 ? '#f472b6' : '#38bdf8';
+                distCtx.lineWidth = 2;
+                
+                [0.5, 0.25, 0.1].forEach((level, i) => {
+                    distCtx.globalAlpha = 1 - i * 0.25;
+                    const targetDensity = maxDensity[c] * level;
+                    
+                    // Find contour by checking density threshold
+                    const nSigma = Math.sqrt(-2 * Math.log(level));
+                    
+                    distCtx.beginPath();
+                    for (let theta = 0; theta <= 2 * Math.PI; theta += 0.05) {
+                        const dx = nSigma * Math.sqrt(model.variances[c][0]) * Math.cos(theta);
+                        const dy = nSigma * Math.sqrt(model.variances[c][1]) * Math.sin(theta);
+                        const px = toCanvasX(distCanvas, model.means[c][0] + dx);
+                        const py = toCanvasY(distCanvas, model.means[c][1] + dy);
+                        
+                        if (theta === 0) distCtx.moveTo(px, py);
+                        else distCtx.lineTo(px, py);
+                    }
+                    distCtx.closePath();
+                    distCtx.stroke();
+                });
+                distCtx.globalAlpha = 1;
+            }
+            
+            // Axes
+            distCtx.strokeStyle = '#444';
+            distCtx.lineWidth = 1;
+            
+            const y0 = toCanvasY(distCanvas, 0);
+            distCtx.beginPath();
+            distCtx.moveTo(margin, y0);
+            distCtx.lineTo(W - margin, y0);
+            distCtx.stroke();
+            
+            const x0 = toCanvasX(distCanvas, 0);
+            distCtx.beginPath();
+            distCtx.moveTo(x0, margin);
+            distCtx.lineTo(x0, H - margin);
+            distCtx.stroke();
+            
+            // Labels
+            distCtx.fillStyle = '#666';
+            distCtx.font = '11px sans-serif';
+            distCtx.textAlign = 'center';
+            for (let x = Math.ceil(xMin); x <= xMax; x += 2) {
+                distCtx.fillText(x.toString(), toCanvasX(distCanvas, x), H - margin + 15);
+            }
+            
+            // Title
+            distCtx.fillStyle = '#fff';
+            distCtx.font = 'bold 12px sans-serif';
+            distCtx.textAlign = 'left';
+            distCtx.fillText('Gaussian likelihood P(x|C)', margin, 25);
+        }
+        
+        // ========== DRAWING: MARGINAL DISTRIBUTIONS ==========
+        function drawMarginals() {
+            const W = marginalCanvas.width;
+            const H = marginalCanvas.height;
+            const margin = 40;
+            const plotH = (H - 3 * margin) / 2;
+            
+            marginalCtx.fillStyle = '#0a0a1a';
+            marginalCtx.fillRect(0, 0, W, H);
+            
+            if (!model.fitted) {
+                marginalCtx.fillStyle = '#555';
+                marginalCtx.font = '14px sans-serif';
+                marginalCtx.textAlign = 'center';
+                marginalCtx.fillText('Fit model to see marginal distributions', W / 2, H / 2);
+                return;
+            }
+            
+            // Draw two plots: x1 marginal and x2 marginal
+            const features = ['x₁', 'x₂'];
+            
+            features.forEach((fname, fidx) => {
+                const plotY = margin + fidx * (plotH + margin);
+                
+                // Background
+                marginalCtx.fillStyle = 'rgba(255,255,255,0.02)';
+                marginalCtx.fillRect(margin, plotY, W - 2 * margin, plotH);
+                
+                // Find max density for scaling
+                let maxD = 0;
+                for (let c = 0; c < 2; c++) {
+                    const peakD = 1 / Math.sqrt(2 * Math.PI * model.variances[c][fidx]);
+                    maxD = Math.max(maxD, peakD);
+                }
+                
+                // Draw distributions
+                for (let c = 0; c < 2; c++) {
+                    const color = c === 0 ? '#f472b6' : '#38bdf8';
+                    const mean = model.means[c][fidx];
+                    const variance = model.variances[c][fidx];
+                    
+                    // Filled area
+                    marginalCtx.fillStyle = c === 0 ? 'rgba(244,114,182,0.2)' : 'rgba(56,189,248,0.2)';
+                    marginalCtx.beginPath();
+                    marginalCtx.moveTo(margin, plotY + plotH);
+                    
+                    for (let px = margin; px <= W - margin; px += 2) {
+                        const x = toDataX(marginalCanvas, px);
+                        const d = gaussian(x, mean, variance);
+                        const py = plotY + plotH - (d / maxD) * plotH * 0.9;
+                        marginalCtx.lineTo(px, py);
+                    }
+                    
+                    marginalCtx.lineTo(W - margin, plotY + plotH);
+                    marginalCtx.closePath();
+                    marginalCtx.fill();
+                    
+                    // Line
+                    marginalCtx.strokeStyle = color;
+                    marginalCtx.lineWidth = 2;
+                    marginalCtx.beginPath();
+                    
+                    for (let px = margin; px <= W - margin; px += 2) {
+                        const x = toDataX(marginalCanvas, px);
+                        const d = gaussian(x, mean, variance);
+                        const py = plotY + plotH - (d / maxD) * plotH * 0.9;
+                        
+                        if (px === margin) marginalCtx.moveTo(px, py);
+                        else marginalCtx.lineTo(px, py);
+                    }
+                    marginalCtx.stroke();
+                    
+                    // Mean line
+                    marginalCtx.strokeStyle = color;
+                    marginalCtx.lineWidth = 1;
+                    marginalCtx.setLineDash([4, 4]);
+                    const mx = toCanvasX(marginalCanvas, mean);
+                    marginalCtx.beginPath();
+                    marginalCtx.moveTo(mx, plotY);
+                    marginalCtx.lineTo(mx, plotY + plotH);
+                    marginalCtx.stroke();
+                    marginalCtx.setLineDash([]);
+                }
+                
+                // Draw probe line if exists
+                if (probePoint) {
+                    const probeVal = fidx === 0 ? probePoint.x : probePoint.y;
+                    const probePx = toCanvasX(marginalCanvas, probeVal);
+                    
+                    marginalCtx.strokeStyle = '#fff';
+                    marginalCtx.lineWidth = 2;
+                    marginalCtx.beginPath();
+                    marginalCtx.moveTo(probePx, plotY);
+                    marginalCtx.lineTo(probePx, plotY + plotH);
+                    marginalCtx.stroke();
+                }
+                
+                // Axis
+                marginalCtx.strokeStyle = '#444';
+                marginalCtx.lineWidth = 1;
+                marginalCtx.beginPath();
+                marginalCtx.moveTo(margin, plotY + plotH);
+                marginalCtx.lineTo(W - margin, plotY + plotH);
+                marginalCtx.stroke();
+                
+                // Labels
+                marginalCtx.fillStyle = '#888';
+                marginalCtx.font = '10px sans-serif';
+                marginalCtx.textAlign = 'center';
+                for (let x = Math.ceil(xMin); x <= xMax; x += 2) {
+                    marginalCtx.fillText(x.toString(), toCanvasX(marginalCanvas, x), plotY + plotH + 12);
+                }
+                
+                // Feature label
+                marginalCtx.fillStyle = '#fff';
+                marginalCtx.font = 'bold 11px sans-serif';
+                marginalCtx.textAlign = 'left';
+                marginalCtx.fillText(`P(${fname}|C)`, margin, plotY - 5);
+            });
+        }
+        
+        // ========== DRAWING: POSTERIOR ==========
+        function drawPosterior() {
+            const W = posteriorCanvas.width;
+            const H = posteriorCanvas.height;
+            const margin = 40;
+            
+            posteriorCtx.fillStyle = '#0a0a1a';
+            posteriorCtx.fillRect(0, 0, W, H);
+            
+            if (!model.fitted) {
+                posteriorCtx.fillStyle = '#555';
+                posteriorCtx.font = '14px sans-serif';
+                posteriorCtx.textAlign = 'center';
+                posteriorCtx.fillText('Fit model to see posterior', W / 2, H / 2);
+                return;
+            }
+            
+            // Draw P(C1|x) heatmap
+            const resolution = 3;
+            for (let px = margin; px < W - margin; px += resolution) {
+                for (let py = margin; py < H - margin; py += resolution) {
+                    const x = toDataX(posteriorCanvas, px);
+                    const y = toDataY(posteriorCanvas, py);
+                    const probs = predictProba(x, y);
+                    
+                    const hue = probs[1] * 200;  // 0=pink, 200=cyan
+                    posteriorCtx.fillStyle = `hsl(${hue}, 70%, ${30 + probs[1] * 25}%)`;
+                    posteriorCtx.fillRect(px, py, resolution, resolution);
+                }
+            }
+            
+            // Decision boundary
+            posteriorCtx.fillStyle = '#fff';
+            const step = 2;
+            for (let px = margin; px < W - margin - step; px += step) {
+                for (let py = margin; py < H - margin - step; py += step) {
+                    const x1 = toDataX(posteriorCanvas, px);
+                    const y1 = toDataY(posteriorCanvas, py);
+                    const x2 = toDataX(posteriorCanvas, px + step);
+                    const y2 = toDataY(posteriorCanvas, py + step);
+                    
+                    const p1 = predictProba(x1, y1)[1];
+                    const p2 = predictProba(x2, y1)[1];
+                    const p3 = predictProba(x1, y2)[1];
+                    
+                    if ((p1 - 0.5) * (p2 - 0.5) < 0 || (p1 - 0.5) * (p3 - 0.5) < 0) {
+                        posteriorCtx.fillRect(px, py, 2, 2);
+                    }
+                }
+            }
+            
+            // Probe point
+            if (probePoint) {
+                const px = toCanvasX(posteriorCanvas, probePoint.x);
+                const py = toCanvasY(posteriorCanvas, probePoint.y);
+                
+                posteriorCtx.fillStyle = '#fff';
+                posteriorCtx.strokeStyle = '#000';
+                posteriorCtx.lineWidth = 2;
+                posteriorCtx.beginPath();
+                posteriorCtx.arc(px, py, 5, 0, Math.PI * 2);
+                posteriorCtx.fill();
+                posteriorCtx.stroke();
+            }
+            
+            // Color bar
+            const barW = 15;
+            const barH = H - 2 * margin;
+            const barX = W - margin + 5;
+            
+            for (let i = 0; i <= barH; i++) {
+                const p = 1 - i / barH;
+                const hue = p * 200;
+                posteriorCtx.fillStyle = `hsl(${hue}, 70%, ${30 + p * 25}%)`;
+                posteriorCtx.fillRect(barX, margin + i, barW, 1);
+            }
+            
+            posteriorCtx.fillStyle = '#888';
+            posteriorCtx.font = '10px sans-serif';
+            posteriorCtx.textAlign = 'left';
+            posteriorCtx.fillText('C₁', barX + barW + 3, margin + 5);
+            posteriorCtx.fillText('0.5', barX + barW + 3, margin + barH / 2 + 3);
+            posteriorCtx.fillText('C₀', barX + barW + 3, margin + barH);
+            
+            // Title
+            posteriorCtx.fillStyle = '#fff';
+            posteriorCtx.font = 'bold 11px sans-serif';
+            posteriorCtx.textAlign = 'left';
+            posteriorCtx.fillText('Decision regions', margin, 18);
+        }
+        
+        // ========== UPDATE FUNCTIONS ==========
+        function updateStats() {
+            const class0 = data.filter(d => d.label === 0);
+            const class1 = data.filter(d => d.label === 1);
+            
+            document.getElementById('count0').textContent = class0.length;
+            document.getElementById('count1').textContent = class1.length;
+            document.getElementById('totalPoints').textContent = data.length;
+            
+            if (model.fitted) {
+                document.getElementById('accuracy').textContent = (computeAccuracy() * 100).toFixed(1) + '%';
+                document.getElementById('prior0').textContent = `P(C₀) = ${model.priors[0].toFixed(2)}`;
+                document.getElementById('prior1').textContent = `P(C₁) = ${model.priors[1].toFixed(2)}`;
+                document.getElementById('prior0').style.flex = model.priors[0];
+                document.getElementById('prior1').style.flex = model.priors[1];
+            } else {
+                document.getElementById('accuracy').textContent = '--';
+                document.getElementById('prior0').textContent = 'P(C₀) = --';
+                document.getElementById('prior1').textContent = 'P(C₁) = --';
+            }
+        }
+        
+        function updateProbeInfo() {
+            if (!probePoint || !model.fitted) {
+                document.getElementById('probePos').textContent = '--';
+                document.getElementById('probeP0').textContent = '--';
+                document.getElementById('probeP1').textContent = '--';
+                document.getElementById('probePred').textContent = '--';
+                return;
+            }
+            
+            const probs = predictProba(probePoint.x, probePoint.y);
+            const pred = probs[1] > probs[0] ? 1 : 0;
+            
+            document.getElementById('probePos').textContent = `(${probePoint.x.toFixed(2)}, ${probePoint.y.toFixed(2)})`;
+            document.getElementById('probeP0').textContent = probs[0].toFixed(3);
+            document.getElementById('probeP1').textContent = probs[1].toFixed(3);
+            document.getElementById('probePred').textContent = `Class ${pred}`;
+            document.getElementById('probePred').style.color = pred === 0 ? '#f472b6' : '#38bdf8';
+        }
+        
+        function drawAll() {
+            drawClassificationSpace();
+            drawDistributions();
+            drawMarginals();
+            drawPosterior();
+        }
+        
+        // ========== EVENT HANDLERS ==========
+        classCanvas.addEventListener('click', function(e) {
+            const rect = classCanvas.getBoundingClientRect();
+            const scaleX = classCanvas.width / rect.width;
+            const scaleY = classCanvas.height / rect.height;
+            
+            const cx = (e.clientX - rect.left) * scaleX;
+            const cy = (e.clientY - rect.top) * scaleY;
+            
+            const margin = 40;
+            if (cx >= margin && cx <= classCanvas.width - margin &&
+                cy >= margin && cy <= classCanvas.height - margin) {
+                
+                const x = toDataX(classCanvas, cx);
+                const y = toDataY(classCanvas, cy);
+                
+                data.push({ x, y, label: selectedClass });
+                updateStats();
+                drawAll();
+            }
+        });
+        
+        classCanvas.addEventListener('mousemove', function(e) {
+            const rect = classCanvas.getBoundingClientRect();
+            const scaleX = classCanvas.width / rect.width;
+            const scaleY = classCanvas.height / rect.height;
+            
+            const cx = (e.clientX - rect.left) * scaleX;
+            const cy = (e.clientY - rect.top) * scaleY;
+            
+            const margin = 40;
+            if (cx >= margin && cx <= classCanvas.width - margin &&
+                cy >= margin && cy <= classCanvas.height - margin) {
+                
+                probePoint = {
+                    x: toDataX(classCanvas, cx),
+                    y: toDataY(classCanvas, cy)
+                };
+            } else {
+                probePoint = null;
+            }
+            
+            updateProbeInfo();
+            drawAll();
+        });
+        
+        classCanvas.addEventListener('mouseleave', function() {
+            probePoint = null;
+            updateProbeInfo();
+            drawAll();
+        });
+        
+        document.getElementById('class0Btn').addEventListener('click', function() {
+            selectedClass = 0;
+            this.classList.add('active');
+            document.getElementById('class1Btn').classList.remove('active');
+        });
+        
+        document.getElementById('class1Btn').addEventListener('click', function() {
+            selectedClass = 1;
+            this.classList.add('active');
+            document.getElementById('class0Btn').classList.remove('active');
+        });
+        
+        document.getElementById('fitBtn').addEventListener('click', function() {
+            fitModel();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            data = [];
+            model.fitted = false;
+            probePoint = null;
+            updateStats();
+            updateProbeInfo();
+            drawAll();
+        });
+        
+        // Example datasets
+        document.getElementById('separableBtn').addEventListener('click', function() {
+            data = [];
+            model.fitted = false;
+            
+            for (let i = 0; i < 20; i++) {
+                data.push({ x: -2.5 + Math.random() * 2, y: -2 + Math.random() * 4, label: 0 });
+                data.push({ x: 1.5 + Math.random() * 2, y: -2 + Math.random() * 4, label: 1 });
+            }
+            
+            fitModel();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('overlapBtn').addEventListener('click', function() {
+            data = [];
+            model.fitted = false;
+            
+            for (let i = 0; i < 25; i++) {
+                data.push({ x: -1 + Math.random() * 3, y: -1 + Math.random() * 3, label: 0 });
+                data.push({ x: 0.5 + Math.random() * 3, y: 0.5 + Math.random() * 3, label: 1 });
+            }
+            
+            fitModel();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('diagonalBtn').addEventListener('click', function() {
+            data = [];
+            model.fitted = false;
+            
+            for (let i = 0; i < 20; i++) {
+                const t0 = Math.random() * 4 - 2;
+                data.push({ x: t0 - 1 + Math.random() * 0.8, y: t0 - 1 + Math.random() * 0.8, label: 0 });
+                
+                const t1 = Math.random() * 4 - 2;
+                data.push({ x: t1 + 1 + Math.random() * 0.8, y: t1 + 1 + Math.random() * 0.8, label: 1 });
+            }
+            
+            fitModel();
+            updateStats();
+            drawAll();
+        });
+        
+        // Initialize
+        updateStats();
+        drawAll();
+    </script>
+</body>
+</html>
