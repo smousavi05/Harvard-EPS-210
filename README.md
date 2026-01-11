@@ -5,7 +5,7 @@
 ### Click on each image to see the live interactive version:
 
 ---------------------------------------------------------
-## Lecture 1: ...
+## Lecture 3: Traditional Machine Learning (Statistical Learning) Methods
 
 <table>
   <tr align="center">
@@ -15,8 +15,8 @@
   
   <tr align="center">
     <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/flexibility_interpretability_light.html">
-        <img src="interactive_visualizations/flexibility_interpretability_light.png" alt="Interactive Figure Preview" width="200">
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_flexibility_interpretability_dark.html">
+        <img src="interactive_visualizations/L3_flexibility_interpretability_dark.png" alt="Interactive Figure Preview" width="200">
       </a>
     </td>
     <td>
