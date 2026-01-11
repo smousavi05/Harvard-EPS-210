@@ -10,7 +10,7 @@
 <table>
   <tr align="center">
     <th>Flexibility vs Interpretability</th>
-    <th> ... </th>
+    <th>Bias-Variance Trade-Off</th>
   </tr>
   
   <tr align="center">
