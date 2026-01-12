@@ -49,6 +49,7 @@
   <tr align="center">
     <th>Support Vector Machines</th>
     <th>Decision Trees</th>
+    <th>Random Forest</th>
 
 
 
@@ -66,8 +67,8 @@
       </a>
     </td>
     <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/ .html">
-        <img src="interactive_visualizations/ .png" alt=" " width="200">
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_random_forest.html">
+        <img src="interactive_visualizations/L3_random_forest.png" alt="L3_random_forest" width="200">
       </a>
     </td>
     <td>
@@ -80,6 +81,7 @@
         <img src="interactive_visualizations/ .png" alt=" " width="200">
       </a>
     </td>
+
   </tr>
 </table>
 ---------------------------------------------------------
