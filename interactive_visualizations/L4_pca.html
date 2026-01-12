@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Principal Component Analysis - Interactive Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0a18 0%, #1a1a30 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #fbbf24, #a855f7, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+        
+        .visualizations {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .viz-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .panel h2 {
+            font-size: 1rem;
+            color: #a855f7;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        canvas {
+            background: #0a0a1a;
+            border-radius: 12px;
+            cursor: crosshair;
+            display: block;
+            width: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .control-section h3 {
+            font-size: 0.85rem;
+            color: #fbbf24;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(168,85,247,0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(6,182,212,0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #888;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        
+        .slider-group {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .slider-value {
+            color: #a855f7;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #2a2a4a;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fbbf24, #a855f7);
+            cursor: pointer;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #a855f7;
+            font-family: monospace;
+        }
+        
+        .info-box {
+            background: rgba(168,85,247,0.1);
+            border: 1px solid rgba(168,85,247,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-line {
+            width: 20px;
+            height: 3px;
+        }
+        
+        .equation-box {
+            background: rgba(0,0,0,0.4);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            margin: 10px 0;
+            border-left: 3px solid #a855f7;
+        }
+        
+        .equation-box .main-eq {
+            font-size: 0.9rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .equation-box .sub-eq {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        .pc-list {
+            margin-top: 10px;
+        }
+        
+        .pc-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .pc-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+        
+        .pc-info {
+            flex: 1;
+            font-size: 0.85rem;
+        }
+        
+        .pc-var {
+            font-family: monospace;
+            font-weight: 600;
+        }
+        
+        .pc-bar {
+            height: 6px;
+            background: #2a2a4a;
+            border-radius: 3px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        
+        .pc-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+        
+        .toggle-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .toggle-btn {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: transparent;
+            color: #888;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .toggle-btn.active {
+            background: rgba(168,85,247,0.3);
+            border-color: #a855f7;
+            color: #fff;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        
+        .checkbox-group input {
+            accent-color: #a855f7;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .viz-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Principal Component Analysis</h1>
+        <p class="subtitle">Harvard EPS-210 | Interactive tutorial — Explore dimensionality reduction and variance maximization</p>
+        
+        <div class="main-layout">
+            <div class="visualizations">
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Original Data with Principal Components</h2>
+                        <canvas id="dataCanvas" width="400" height="350"></canvas>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-line" style="background: #fbbf24;"></div>
+                                <span>PC1</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-line" style="background: #06b6d4;"></div>
+                                <span>PC2</span>
+                            </div>
+                            <div class="legend-item">
+                                <div style="width: 8px; height: 8px; background: #a855f7; border-radius: 50%;"></div>
+                                <span>Mean</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>Projected Data (PC Space)</h2>
+                        <canvas id="projectedCanvas" width="400" height="350"></canvas>
+                        <div class="equation-box">
+                            <div class="main-eq">z = Wᵀ(x - μ)</div>
+                            <div class="sub-eq">Project centered data onto eigenvectors</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Variance Explained (Scree Plot)</h2>
+                        <canvas id="varianceCanvas" width="400" height="280"></canvas>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>Reconstruction</h2>
+                        <canvas id="reconstructCanvas" width="400" height="280"></canvas>
+                        <div class="equation-box">
+                            <div class="main-eq">x̂ = μ + Wz</div>
+                            <div class="sub-eq">Reconstruct from k principal components</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-section">
+                    <h3>Data Points</h3>
+                    <p style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">
+                        Click on the data canvas to add points
+                    </p>
+                    <button class="btn btn-outline" id="clearDataBtn">Clear All Points</button>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Visualization Options</h3>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="showMeanCheck" checked>
+                        <span>Show mean point</span>
+                    </label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="showPCsCheck" checked>
+                        <span>Show PC vectors</span>
+                    </label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="showProjectionsCheck" checked>
+                        <span>Show projection lines</span>
+                    </label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="showEllipseCheck" checked>
+                        <span>Show covariance ellipse</span>
+                    </label>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Reconstruction</h3>
+                    <div class="toggle-group">
+                        <button class="toggle-btn active" id="reconstruct2Btn">Use 2 PCs</button>
+                        <button class="toggle-btn" id="reconstruct1Btn">Use 1 PC</button>
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Reconstruction Error</span>
+                            <span class="slider-value" id="reconErrorValue">0.00%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Principal Components</h3>
+                    <div class="pc-list" id="pcList">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Points</div>
+                            <div class="stat-value" id="totalPoints">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Total Var</div>
+                            <div class="stat-value" id="totalVar">--</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Quick Examples</h3>
+                    <button class="btn btn-outline" id="elongatedBtn">Elongated Cluster</button>
+                    <button class="btn btn-outline" id="circularBtn">Circular Cluster</button>
+                    <button class="btn btn-outline" id="diagonalBtn">Diagonal Line</button>
+                </div>
+                
+                <div class="info-box">
+                    <strong>How it works:</strong> PCA finds orthogonal directions (principal components) that maximize variance. PC1 captures the most variance, PC2 the second most (perpendicular to PC1), etc. It's computed via eigendecomposition of the covariance matrix.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========== CANVAS SETUP ==========
+        const dataCanvas = document.getElementById('dataCanvas');
+        const projectedCanvas = document.getElementById('projectedCanvas');
+        const varianceCanvas = document.getElementById('varianceCanvas');
+        const reconstructCanvas = document.getElementById('reconstructCanvas');
+        
+        const dataCtx = dataCanvas.getContext('2d');
+        const projCtx = projectedCanvas.getContext('2d');
+        const varCtx = varianceCanvas.getContext('2d');
+        const reconCtx = reconstructCanvas.getContext('2d');
+        
+        // ========== STATE ==========
+        let data = [];
+        let mean = [0, 0];
+        let eigenvalues = [1, 1];
+        let eigenvectors = [[1, 0], [0, 1]];
+        let projectedData = [];
+        let reconstructedData = [];
+        let numPCsForReconstruction = 2;
+        
+        // Visualization options
+        let showMean = true;
+        let showPCs = true;
+        let showProjections = true;
+        let showEllipse = true;
+        
+        // Coordinate ranges
+        const xMin = -5, xMax = 5;
+        const yMin = -5, yMax = 5;
+        
+        // Colors
+        const pc1Color = '#fbbf24';
+        const pc2Color = '#06b6d4';
+        const dataColor = '#a855f7';
+        
+        // ========== PCA COMPUTATION ==========
+        function computePCA() {
+            if (data.length < 2) {
+                mean = [0, 0];
+                eigenvalues = [1, 1];
+                eigenvectors = [[1, 0], [0, 1]];
+                projectedData = [];
+                reconstructedData = [];
+                return;
+            }
+            
+            // Compute mean
+            mean = [0, 0];
+            for (const p of data) {
+                mean[0] += p.x;
+                mean[1] += p.y;
+            }
+            mean[0] /= data.length;
+            mean[1] /= data.length;
+            
+            // Compute covariance matrix
+            let cov00 = 0, cov01 = 0, cov11 = 0;
+            for (const p of data) {
+                const dx = p.x - mean[0];
+                const dy = p.y - mean[1];
+                cov00 += dx * dx;
+                cov01 += dx * dy;
+                cov11 += dy * dy;
+            }
+            cov00 /= data.length;
+            cov01 /= data.length;
+            cov11 /= data.length;
+            
+            // Eigendecomposition of 2x2 symmetric matrix
+            // Using analytical solution
+            const trace = cov00 + cov11;
+            const det = cov00 * cov11 - cov01 * cov01;
+            const discriminant = Math.sqrt(Math.max(trace * trace / 4 - det, 0));
+            
+            eigenvalues = [
+                trace / 2 + discriminant,
+                trace / 2 - discriminant
+            ];
+            
+            // Compute eigenvectors
+            if (Math.abs(cov01) > 1e-10) {
+                eigenvectors = [
+                    normalize([eigenvalues[0] - cov11, cov01]),
+                    normalize([eigenvalues[1] - cov11, cov01])
+                ];
+            } else if (cov00 >= cov11) {
+                eigenvectors = [[1, 0], [0, 1]];
+            } else {
+                eigenvectors = [[0, 1], [1, 0]];
+                [eigenvalues[0], eigenvalues[1]] = [eigenvalues[1], eigenvalues[0]];
+            }
+            
+            // Project data
+            projectedData = data.map(p => {
+                const centered = [p.x - mean[0], p.y - mean[1]];
+                return {
+                    pc1: centered[0] * eigenvectors[0][0] + centered[1] * eigenvectors[0][1],
+                    pc2: centered[0] * eigenvectors[1][0] + centered[1] * eigenvectors[1][1]
+                };
+            });
+            
+            // Reconstruct
+            computeReconstruction();
+        }
+        
+        function normalize(v) {
+            const len = Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+            if (len < 1e-10) return [1, 0];
+            return [v[0] / len, v[1] / len];
+        }
+        
+        function computeReconstruction() {
+            if (projectedData.length === 0) {
+                reconstructedData = [];
+                return;
+            }
+            
+            reconstructedData = projectedData.map(p => {
+                if (!p) return null;
+                
+                if (numPCsForReconstruction === 2) {
+                    return {
+                        x: mean[0] + p.pc1 * eigenvectors[0][0] + p.pc2 * eigenvectors[1][0],
+                        y: mean[1] + p.pc1 * eigenvectors[0][1] + p.pc2 * eigenvectors[1][1]
+                    };
+                } else {
+                    return {
+                        x: mean[0] + p.pc1 * eigenvectors[0][0],
+                        y: mean[1] + p.pc1 * eigenvectors[0][1]
+                    };
+                }
+            });
+        }
+        
+        function computeReconstructionError() {
+            if (data.length === 0 || reconstructedData.length === 0) return 0;
+            
+            let totalError = 0;
+            let totalVariance = 0;
+            
+            for (let i = 0; i < data.length; i++) {
+                if (!reconstructedData[i]) continue;
+                
+                const dx = data[i].x - reconstructedData[i].x;
+                const dy = data[i].y - reconstructedData[i].y;
+                totalError += dx * dx + dy * dy;
+                
+                const mx = data[i].x - mean[0];
+                const my = data[i].y - mean[1];
+                totalVariance += mx * mx + my * my;
+            }
+            
+            if (totalVariance < 1e-10) return 0;
+            return (totalError / totalVariance) * 100;
+        }
+        
+        // ========== COORDINATE TRANSFORMS ==========
+        function toCanvasX(canvas, x, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return margin + (x - xMin) / (xMax - xMin) * w;
+        }
+        
+        function toCanvasY(canvas, y, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return margin + (yMax - y) / (yMax - yMin) * h;
+        }
+        
+        function toDataX(canvas, cx, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return xMin + (cx - margin) / w * (xMax - xMin);
+        }
+        
+        function toDataY(canvas, cy, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return yMax - (cy - margin) / h * (yMax - yMin);
+        }
+        
+        // ========== DRAWING: DATA WITH PCs ==========
+        function drawDataWithPCs() {
+            const W = dataCanvas.width;
+            const H = dataCanvas.height;
+            const margin = 40;
+            
+            dataCtx.fillStyle = '#0a0a1a';
+            dataCtx.fillRect(0, 0, W, H);
+            
+            // Draw axes
+            dataCtx.strokeStyle = '#333';
+            dataCtx.lineWidth = 1;
+            
+            const y0 = toCanvasY(dataCanvas, 0);
+            dataCtx.beginPath();
+            dataCtx.moveTo(margin, y0);
+            dataCtx.lineTo(W - margin, y0);
+            dataCtx.stroke();
+            
+            const x0 = toCanvasX(dataCanvas, 0);
+            dataCtx.beginPath();
+            dataCtx.moveTo(x0, margin);
+            dataCtx.lineTo(x0, H - margin);
+            dataCtx.stroke();
+            
+            // Axis labels
+            dataCtx.fillStyle = '#555';
+            dataCtx.font = '10px sans-serif';
+            dataCtx.textAlign = 'center';
+            for (let x = Math.ceil(xMin); x <= xMax; x += 2) {
+                dataCtx.fillText(x.toString(), toCanvasX(dataCanvas, x), H - margin + 15);
+            }
+            
+            if (data.length >= 2) {
+                const meanCx = toCanvasX(dataCanvas, mean[0]);
+                const meanCy = toCanvasY(dataCanvas, mean[1]);
+                
+                // Draw covariance ellipse
+                if (showEllipse) {
+                    const scale = 2;  // 2 sigma
+                    const rx = Math.sqrt(eigenvalues[0]) * scale;
+                    const ry = Math.sqrt(eigenvalues[1]) * scale;
+                    const angle = Math.atan2(eigenvectors[0][1], eigenvectors[0][0]);
+                    
+                    const scaleX = (W - 2 * margin) / (xMax - xMin);
+                    const scaleY = (H - 2 * margin) / (yMax - yMin);
+                    
+                    dataCtx.strokeStyle = 'rgba(168, 85, 247, 0.3)';
+                    dataCtx.lineWidth = 2;
+                    dataCtx.beginPath();
+                    dataCtx.ellipse(meanCx, meanCy, rx * scaleX, ry * scaleY, -angle, 0, 2 * Math.PI);
+                    dataCtx.stroke();
+                    
+                    dataCtx.fillStyle = 'rgba(168, 85, 247, 0.05)';
+                    dataCtx.fill();
+                }
+                
+                // Draw projection lines
+                if (showProjections && data.length > 0 && projectedData.length === data.length) {
+                    dataCtx.strokeStyle = 'rgba(251, 191, 36, 0.3)';
+                    dataCtx.lineWidth = 1;
+                    
+                    for (let i = 0; i < data.length; i++) {
+                        if (!projectedData[i]) continue;
+                        
+                        const px = toCanvasX(dataCanvas, data[i].x);
+                        const py = toCanvasY(dataCanvas, data[i].y);
+                        
+                        // Project onto PC1
+                        const proj1X = mean[0] + projectedData[i].pc1 * eigenvectors[0][0];
+                        const proj1Y = mean[1] + projectedData[i].pc1 * eigenvectors[0][1];
+                        
+                        const proj1Cx = toCanvasX(dataCanvas, proj1X);
+                        const proj1Cy = toCanvasY(dataCanvas, proj1Y);
+                        
+                        dataCtx.beginPath();
+                        dataCtx.moveTo(px, py);
+                        dataCtx.lineTo(proj1Cx, proj1Cy);
+                        dataCtx.stroke();
+                    }
+                }
+                
+                // Draw PC vectors
+                if (showPCs) {
+                    const vectorScale = 3;
+                    
+                    // PC1
+                    const pc1Len = Math.sqrt(eigenvalues[0]) * vectorScale;
+                    const pc1EndX = mean[0] + eigenvectors[0][0] * pc1Len;
+                    const pc1EndY = mean[1] + eigenvectors[0][1] * pc1Len;
+                    const pc1StartX = mean[0] - eigenvectors[0][0] * pc1Len;
+                    const pc1StartY = mean[1] - eigenvectors[0][1] * pc1Len;
+                    
+                    dataCtx.strokeStyle = pc1Color;
+                    dataCtx.lineWidth = 3;
+                    dataCtx.beginPath();
+                    dataCtx.moveTo(toCanvasX(dataCanvas, pc1StartX), toCanvasY(dataCanvas, pc1StartY));
+                    dataCtx.lineTo(toCanvasX(dataCanvas, pc1EndX), toCanvasY(dataCanvas, pc1EndY));
+                    dataCtx.stroke();
+                    
+                    // Arrow head
+                    drawArrowHead(dataCtx, dataCanvas, pc1EndX, pc1EndY, eigenvectors[0], pc1Color);
+                    
+                    // Label
+                    dataCtx.fillStyle = pc1Color;
+                    dataCtx.font = 'bold 12px sans-serif';
+                    dataCtx.textAlign = 'left';
+                    dataCtx.fillText('PC1', toCanvasX(dataCanvas, pc1EndX) + 5, toCanvasY(dataCanvas, pc1EndY) - 5);
+                    
+                    // PC2
+                    const pc2Len = Math.sqrt(eigenvalues[1]) * vectorScale;
+                    const pc2EndX = mean[0] + eigenvectors[1][0] * pc2Len;
+                    const pc2EndY = mean[1] + eigenvectors[1][1] * pc2Len;
+                    const pc2StartX = mean[0] - eigenvectors[1][0] * pc2Len;
+                    const pc2StartY = mean[1] - eigenvectors[1][1] * pc2Len;
+                    
+                    dataCtx.strokeStyle = pc2Color;
+                    dataCtx.lineWidth = 3;
+                    dataCtx.beginPath();
+                    dataCtx.moveTo(toCanvasX(dataCanvas, pc2StartX), toCanvasY(dataCanvas, pc2StartY));
+                    dataCtx.lineTo(toCanvasX(dataCanvas, pc2EndX), toCanvasY(dataCanvas, pc2EndY));
+                    dataCtx.stroke();
+                    
+                    // Arrow head
+                    drawArrowHead(dataCtx, dataCanvas, pc2EndX, pc2EndY, eigenvectors[1], pc2Color);
+                    
+                    // Label
+                    dataCtx.fillStyle = pc2Color;
+                    dataCtx.fillText('PC2', toCanvasX(dataCanvas, pc2EndX) + 5, toCanvasY(dataCanvas, pc2EndY) - 5);
+                }
+                
+                // Draw mean point
+                if (showMean) {
+                    dataCtx.fillStyle = dataColor;
+                    dataCtx.strokeStyle = '#fff';
+                    dataCtx.lineWidth = 2;
+                    dataCtx.beginPath();
+                    dataCtx.arc(meanCx, meanCy, 8, 0, Math.PI * 2);
+                    dataCtx.fill();
+                    dataCtx.stroke();
+                }
+            }
+            
+            // Draw data points
+            for (const point of data) {
+                const cx = toCanvasX(dataCanvas, point.x);
+                const cy = toCanvasY(dataCanvas, point.y);
+                
+                dataCtx.fillStyle = '#e0e0e0';
+                dataCtx.strokeStyle = dataColor;
+                dataCtx.lineWidth = 2;
+                dataCtx.beginPath();
+                dataCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+                dataCtx.fill();
+                dataCtx.stroke();
+            }
+            
+            // Title
+            dataCtx.fillStyle = '#fff';
+            dataCtx.font = 'bold 12px sans-serif';
+            dataCtx.textAlign = 'left';
+            dataCtx.fillText('Click to add points', margin, 25);
+        }
+        
+        function drawArrowHead(ctx, canvas, x, y, direction, color) {
+            const cx = toCanvasX(canvas, x);
+            const cy = toCanvasY(canvas, y);
+            
+            const angle = Math.atan2(-direction[1], direction[0]);
+            const size = 10;
+            
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx - size * Math.cos(angle - 0.4), cy - size * Math.sin(angle - 0.4));
+            ctx.lineTo(cx - size * Math.cos(angle + 0.4), cy - size * Math.sin(angle + 0.4));
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // ========== DRAWING: PROJECTED DATA ==========
+        function drawProjectedData() {
+            const W = projectedCanvas.width;
+            const H = projectedCanvas.height;
+            const margin = 40;
+            
+            projCtx.fillStyle = '#0a0a1a';
+            projCtx.fillRect(0, 0, W, H);
+            
+            // Compute range for projected data
+            let pc1Min = -3, pc1Max = 3, pc2Min = -3, pc2Max = 3;
+            
+            if (projectedData.length > 0) {
+                const validData = projectedData.filter(p => p && typeof p.pc1 === 'number' && typeof p.pc2 === 'number');
+                
+                if (validData.length > 0) {
+                    const pc1Values = validData.map(p => p.pc1);
+                    const pc2Values = validData.map(p => p.pc2);
+                    
+                    const pc1Range = Math.max(...pc1Values) - Math.min(...pc1Values);
+                    const pc2Range = Math.max(...pc2Values) - Math.min(...pc2Values);
+                    const maxRange = Math.max(pc1Range, pc2Range, 2) * 0.7;
+                    
+                    const pc1Center = (Math.max(...pc1Values) + Math.min(...pc1Values)) / 2;
+                    const pc2Center = (Math.max(...pc2Values) + Math.min(...pc2Values)) / 2;
+                    
+                    pc1Min = pc1Center - maxRange;
+                    pc1Max = pc1Center + maxRange;
+                    pc2Min = pc2Center - maxRange;
+                    pc2Max = pc2Center + maxRange;
+                }
+            }
+            
+            // Helper functions for this coordinate system
+            const toProjX = (pc1) => margin + (pc1 - pc1Min) / (pc1Max - pc1Min) * (W - 2 * margin);
+            const toProjY = (pc2) => margin + (pc2Max - pc2) / (pc2Max - pc2Min) * (H - 2 * margin);
+            
+            // Draw axes
+            projCtx.strokeStyle = '#555';
+            projCtx.lineWidth = 2;
+            
+            // PC1 axis (horizontal)
+            const y0 = toProjY(0);
+            if (y0 >= margin && y0 <= H - margin) {
+                projCtx.beginPath();
+                projCtx.moveTo(margin, y0);
+                projCtx.lineTo(W - margin, y0);
+                projCtx.stroke();
+            }
+            
+            // PC2 axis (vertical)
+            const x0 = toProjX(0);
+            if (x0 >= margin && x0 <= W - margin) {
+                projCtx.beginPath();
+                projCtx.moveTo(x0, margin);
+                projCtx.lineTo(x0, H - margin);
+                projCtx.stroke();
+            }
+            
+            // Axis labels
+            projCtx.fillStyle = pc1Color;
+            projCtx.font = 'bold 11px sans-serif';
+            projCtx.textAlign = 'center';
+            projCtx.fillText('PC1', W - margin - 20, H - margin + 25);
+            
+            projCtx.fillStyle = pc2Color;
+            projCtx.save();
+            projCtx.translate(margin - 25, margin + 20);
+            projCtx.rotate(-Math.PI / 2);
+            projCtx.fillText('PC2', 0, 0);
+            projCtx.restore();
+            
+            // Draw projected points
+            for (const p of projectedData) {
+                if (!p) continue;
+                
+                const cx = toProjX(p.pc1);
+                const cy = toProjY(p.pc2);
+                
+                // Blend color based on PC contributions
+                projCtx.fillStyle = '#e0e0e0';
+                projCtx.strokeStyle = dataColor;
+                projCtx.lineWidth = 2;
+                projCtx.beginPath();
+                projCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+                projCtx.fill();
+                projCtx.stroke();
+            }
+            
+            // If using 1 PC for reconstruction, show projection onto PC1 axis
+            if (numPCsForReconstruction === 1 && projectedData.length > 0) {
+                projCtx.fillStyle = pc1Color + '80';
+                for (const p of projectedData) {
+                    if (!p) continue;
+                    
+                    const cx = toProjX(p.pc1);
+                    const cy = toProjY(0);
+                    
+                    projCtx.beginPath();
+                    projCtx.arc(cx, cy, 4, 0, Math.PI * 2);
+                    projCtx.fill();
+                }
+            }
+            
+            // Title
+            projCtx.fillStyle = '#fff';
+            projCtx.font = 'bold 11px sans-serif';
+            projCtx.textAlign = 'left';
+            projCtx.fillText('Data in principal component coordinates', margin, 25);
+        }
+        
+        // ========== DRAWING: VARIANCE ==========
+        function drawVarianceExplained() {
+            const W = varianceCanvas.width;
+            const H = varianceCanvas.height;
+            const margin = 50;
+            const plotW = W - 2 * margin;
+            const plotH = H - 2 * margin;
+            
+            varCtx.fillStyle = '#0a0a1a';
+            varCtx.fillRect(0, 0, W, H);
+            
+            if (data.length < 2) {
+                varCtx.fillStyle = '#555';
+                varCtx.font = '14px sans-serif';
+                varCtx.textAlign = 'center';
+                varCtx.fillText('Add points to see variance explained', W / 2, H / 2);
+                return;
+            }
+            
+            const totalVar = eigenvalues[0] + eigenvalues[1];
+            const varExplained = [
+                eigenvalues[0] / totalVar,
+                eigenvalues[1] / totalVar
+            ];
+            const cumVar = [
+                varExplained[0],
+                varExplained[0] + varExplained[1]
+            ];
+            
+            // Grid
+            varCtx.strokeStyle = '#222';
+            varCtx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = margin + i * plotH / 4;
+                varCtx.beginPath();
+                varCtx.moveTo(margin, y);
+                varCtx.lineTo(W - margin, y);
+                varCtx.stroke();
+            }
+            
+            // Y-axis labels
+            varCtx.fillStyle = '#888';
+            varCtx.font = '10px sans-serif';
+            varCtx.textAlign = 'right';
+            for (let i = 0; i <= 4; i++) {
+                const val = (1 - i / 4) * 100;
+                const y = margin + i * plotH / 4;
+                varCtx.fillText(val.toFixed(0) + '%', margin - 5, y + 3);
+            }
+            
+            // Axes
+            varCtx.strokeStyle = '#555';
+            varCtx.lineWidth = 2;
+            varCtx.beginPath();
+            varCtx.moveTo(margin, margin);
+            varCtx.lineTo(margin, H - margin);
+            varCtx.lineTo(W - margin, H - margin);
+            varCtx.stroke();
+            
+            // Bar width
+            const barWidth = plotW / 4;
+            const gap = plotW / 8;
+            
+            // PC1 bar
+            const bar1X = margin + gap;
+            const bar1Height = varExplained[0] * plotH;
+            varCtx.fillStyle = pc1Color;
+            varCtx.fillRect(bar1X, H - margin - bar1Height, barWidth, bar1Height);
+            
+            varCtx.fillStyle = '#fff';
+            varCtx.font = 'bold 11px sans-serif';
+            varCtx.textAlign = 'center';
+            varCtx.fillText((varExplained[0] * 100).toFixed(1) + '%', bar1X + barWidth / 2, H - margin - bar1Height - 8);
+            
+            // PC2 bar
+            const bar2X = margin + gap * 3 + barWidth;
+            const bar2Height = varExplained[1] * plotH;
+            varCtx.fillStyle = pc2Color;
+            varCtx.fillRect(bar2X, H - margin - bar2Height, barWidth, bar2Height);
+            
+            varCtx.fillText((varExplained[1] * 100).toFixed(1) + '%', bar2X + barWidth / 2, H - margin - bar2Height - 8);
+            
+            // X-axis labels
+            varCtx.fillStyle = pc1Color;
+            varCtx.fillText('PC1', bar1X + barWidth / 2, H - margin + 20);
+            
+            varCtx.fillStyle = pc2Color;
+            varCtx.fillText('PC2', bar2X + barWidth / 2, H - margin + 20);
+            
+            // Cumulative line
+            varCtx.strokeStyle = '#f472b6';
+            varCtx.lineWidth = 3;
+            varCtx.beginPath();
+            varCtx.moveTo(bar1X + barWidth / 2, H - margin - cumVar[0] * plotH);
+            varCtx.lineTo(bar2X + barWidth / 2, H - margin - cumVar[1] * plotH);
+            varCtx.stroke();
+            
+            // Points on cumulative line
+            varCtx.fillStyle = '#f472b6';
+            varCtx.beginPath();
+            varCtx.arc(bar1X + barWidth / 2, H - margin - cumVar[0] * plotH, 5, 0, Math.PI * 2);
+            varCtx.fill();
+            varCtx.beginPath();
+            varCtx.arc(bar2X + barWidth / 2, H - margin - cumVar[1] * plotH, 5, 0, Math.PI * 2);
+            varCtx.fill();
+            
+            // Title
+            varCtx.fillStyle = '#fff';
+            varCtx.font = 'bold 11px sans-serif';
+            varCtx.textAlign = 'left';
+            varCtx.fillText('Variance explained by each PC', margin, 20);
+            
+            varCtx.fillStyle = '#f472b6';
+            varCtx.textAlign = 'right';
+            varCtx.fillText('— Cumulative', W - margin, 20);
+        }
+        
+        // ========== DRAWING: RECONSTRUCTION ==========
+        function drawReconstruction() {
+            const W = reconstructCanvas.width;
+            const H = reconstructCanvas.height;
+            const margin = 40;
+            
+            reconCtx.fillStyle = '#0a0a1a';
+            reconCtx.fillRect(0, 0, W, H);
+            
+            if (data.length < 2 || reconstructedData.length === 0) {
+                reconCtx.fillStyle = '#555';
+                reconCtx.font = '14px sans-serif';
+                reconCtx.textAlign = 'center';
+                reconCtx.fillText('Add points to see reconstruction', W / 2, H / 2);
+                return;
+            }
+            
+            // Draw axes
+            reconCtx.strokeStyle = '#333';
+            reconCtx.lineWidth = 1;
+            
+            const y0 = toCanvasY(reconstructCanvas, 0, margin);
+            reconCtx.beginPath();
+            reconCtx.moveTo(margin, y0);
+            reconCtx.lineTo(W - margin, y0);
+            reconCtx.stroke();
+            
+            const x0 = toCanvasX(reconstructCanvas, 0, margin);
+            reconCtx.beginPath();
+            reconCtx.moveTo(x0, margin);
+            reconCtx.lineTo(x0, H - margin);
+            reconCtx.stroke();
+            
+            // Draw reconstruction errors (lines from original to reconstructed)
+            reconCtx.strokeStyle = '#f43f5e';
+            reconCtx.lineWidth = 1;
+            
+            for (let i = 0; i < data.length; i++) {
+                if (!reconstructedData[i]) continue;
+                
+                const ox = toCanvasX(reconstructCanvas, data[i].x, margin);
+                const oy = toCanvasY(reconstructCanvas, data[i].y, margin);
+                const rx = toCanvasX(reconstructCanvas, reconstructedData[i].x, margin);
+                const ry = toCanvasY(reconstructCanvas, reconstructedData[i].y, margin);
+                
+                reconCtx.beginPath();
+                reconCtx.moveTo(ox, oy);
+                reconCtx.lineTo(rx, ry);
+                reconCtx.stroke();
+            }
+            
+            // Draw PC1 line if using 1 PC
+            if (numPCsForReconstruction === 1) {
+                const lineLen = 10;
+                const x1 = mean[0] - eigenvectors[0][0] * lineLen;
+                const y1 = mean[1] - eigenvectors[0][1] * lineLen;
+                const x2 = mean[0] + eigenvectors[0][0] * lineLen;
+                const y2 = mean[1] + eigenvectors[0][1] * lineLen;
+                
+                reconCtx.strokeStyle = pc1Color + '60';
+                reconCtx.lineWidth = 3;
+                reconCtx.beginPath();
+                reconCtx.moveTo(toCanvasX(reconstructCanvas, x1, margin), toCanvasY(reconstructCanvas, y1, margin));
+                reconCtx.lineTo(toCanvasX(reconstructCanvas, x2, margin), toCanvasY(reconstructCanvas, y2, margin));
+                reconCtx.stroke();
+            }
+            
+            // Draw original points (faded)
+            for (const point of data) {
+                const cx = toCanvasX(reconstructCanvas, point.x, margin);
+                const cy = toCanvasY(reconstructCanvas, point.y, margin);
+                
+                reconCtx.fillStyle = '#666';
+                reconCtx.beginPath();
+                reconCtx.arc(cx, cy, 4, 0, Math.PI * 2);
+                reconCtx.fill();
+            }
+            
+            // Draw reconstructed points
+            for (const point of reconstructedData) {
+                if (!point) continue;
+                
+                const cx = toCanvasX(reconstructCanvas, point.x, margin);
+                const cy = toCanvasY(reconstructCanvas, point.y, margin);
+                
+                reconCtx.fillStyle = '#34d399';
+                reconCtx.strokeStyle = '#fff';
+                reconCtx.lineWidth = 1.5;
+                reconCtx.beginPath();
+                reconCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+                reconCtx.fill();
+                reconCtx.stroke();
+            }
+            
+            // Legend
+            reconCtx.font = '10px sans-serif';
+            reconCtx.textAlign = 'left';
+            
+            reconCtx.fillStyle = '#666';
+            reconCtx.beginPath();
+            reconCtx.arc(margin + 10, 22, 4, 0, Math.PI * 2);
+            reconCtx.fill();
+            reconCtx.fillStyle = '#888';
+            reconCtx.fillText('Original', margin + 20, 25);
+            
+            reconCtx.fillStyle = '#34d399';
+            reconCtx.beginPath();
+            reconCtx.arc(margin + 80, 22, 4, 0, Math.PI * 2);
+            reconCtx.fill();
+            reconCtx.fillStyle = '#888';
+            reconCtx.fillText('Reconstructed', margin + 90, 25);
+            
+            reconCtx.strokeStyle = '#f43f5e';
+            reconCtx.lineWidth = 2;
+            reconCtx.beginPath();
+            reconCtx.moveTo(margin + 175, 22);
+            reconCtx.lineTo(margin + 190, 22);
+            reconCtx.stroke();
+            reconCtx.fillStyle = '#888';
+            reconCtx.fillText('Error', margin + 195, 25);
+        }
+        
+        // ========== UPDATE FUNCTIONS ==========
+        function updateStats() {
+            document.getElementById('totalPoints').textContent = data.length;
+            
+            if (data.length >= 2) {
+                const totalVar = eigenvalues[0] + eigenvalues[1];
+                document.getElementById('totalVar').textContent = totalVar.toFixed(2);
+            } else {
+                document.getElementById('totalVar').textContent = '--';
+            }
+            
+            // Update reconstruction error
+            const error = computeReconstructionError();
+            document.getElementById('reconErrorValue').textContent = error.toFixed(1) + '%';
+            
+            // Update PC list
+            updatePCList();
+        }
+        
+        function updatePCList() {
+            const list = document.getElementById('pcList');
+            
+            if (data.length < 2) {
+                list.innerHTML = '<div style="color: #666; font-size: 0.8rem;">Add points to compute PCs</div>';
+                return;
+            }
+            
+            const totalVar = eigenvalues[0] + eigenvalues[1];
+            const varExplained = [
+                eigenvalues[0] / totalVar * 100,
+                eigenvalues[1] / totalVar * 100
+            ];
+            
+            list.innerHTML = `
+                <div class="pc-item">
+                    <div class="pc-color" style="background: ${pc1Color};"></div>
+                    <div class="pc-info">
+                        <div>PC1: <span class="pc-var">${varExplained[0].toFixed(1)}%</span> variance</div>
+                        <div class="pc-bar">
+                            <div class="pc-bar-fill" style="width: ${varExplained[0]}%; background: ${pc1Color};"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pc-item">
+                    <div class="pc-color" style="background: ${pc2Color};"></div>
+                    <div class="pc-info">
+                        <div>PC2: <span class="pc-var">${varExplained[1].toFixed(1)}%</span> variance</div>
+                        <div class="pc-bar">
+                            <div class="pc-bar-fill" style="width: ${varExplained[1]}%; background: ${pc2Color};"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function drawAll() {
+            computePCA();
+            drawDataWithPCs();
+            drawProjectedData();
+            drawVarianceExplained();
+            drawReconstruction();
+        }
+        
+        // ========== EVENT HANDLERS ==========
+        dataCanvas.addEventListener('click', function(e) {
+            const rect = dataCanvas.getBoundingClientRect();
+            const scaleX = dataCanvas.width / rect.width;
+            const scaleY = dataCanvas.height / rect.height;
+            
+            const cx = (e.clientX - rect.left) * scaleX;
+            const cy = (e.clientY - rect.top) * scaleY;
+            
+            const margin = 40;
+            if (cx >= margin && cx <= dataCanvas.width - margin &&
+                cy >= margin && cy <= dataCanvas.height - margin) {
+                
+                const x = toDataX(dataCanvas, cx);
+                const y = toDataY(dataCanvas, cy);
+                
+                data.push({ x, y });
+                
+                updateStats();
+                drawAll();
+            }
+        });
+        
+        // Visualization options
+        document.getElementById('showMeanCheck').addEventListener('change', function(e) {
+            showMean = e.target.checked;
+            drawAll();
+        });
+        
+        document.getElementById('showPCsCheck').addEventListener('change', function(e) {
+            showPCs = e.target.checked;
+            drawAll();
+        });
+        
+        document.getElementById('showProjectionsCheck').addEventListener('change', function(e) {
+            showProjections = e.target.checked;
+            drawAll();
+        });
+        
+        document.getElementById('showEllipseCheck').addEventListener('change', function(e) {
+            showEllipse = e.target.checked;
+            drawAll();
+        });
+        
+        // Reconstruction toggle
+        document.getElementById('reconstruct2Btn').addEventListener('click', function() {
+            numPCsForReconstruction = 2;
+            this.classList.add('active');
+            document.getElementById('reconstruct1Btn').classList.remove('active');
+            computeReconstruction();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('reconstruct1Btn').addEventListener('click', function() {
+            numPCsForReconstruction = 1;
+            this.classList.add('active');
+            document.getElementById('reconstruct2Btn').classList.remove('active');
+            computeReconstruction();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('clearDataBtn').addEventListener('click', function() {
+            data = [];
+            projectedData = [];
+            reconstructedData = [];
+            updateStats();
+            drawAll();
+        });
+        
+        // Example datasets
+        document.getElementById('elongatedBtn').addEventListener('click', function() {
+            data = [];
+            
+            // Elongated cluster along a diagonal
+            for (let i = 0; i < 40; i++) {
+                const t = (Math.random() - 0.5) * 6;
+                data.push({
+                    x: t * 0.8 + (Math.random() - 0.5) * 0.8,
+                    y: t * 0.6 + (Math.random() - 0.5) * 0.8
+                });
+            }
+            
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('circularBtn').addEventListener('click', function() {
+            data = [];
+            
+            // Circular cluster (equal variance in all directions)
+            for (let i = 0; i < 40; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const r = Math.sqrt(-2 * Math.log(Math.random())) * 1.5;
+                data.push({
+                    x: r * Math.cos(angle),
+                    y: r * Math.sin(angle)
+                });
+            }
+            
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('diagonalBtn').addEventListener('click', function() {
+            data = [];
+            
+            // Points along a line with very little noise
+            for (let i = 0; i < 30; i++) {
+                const t = -3 + i * 0.2;
+                data.push({
+                    x: t + (Math.random() - 0.5) * 0.15,
+                    y: t * 0.7 + 0.5 + (Math.random() - 0.5) * 0.15
+                });
+            }
+            
+            updateStats();
+            drawAll();
+        });
+        
+        // Initialize
+        updateStats();
+        drawAll();
+    </script>
+</body>
+</html>
