@@ -30,7 +30,6 @@
     <th>Bias-Variance Trade-Off</th>
     <th>Logistic Regression</th>
     <th>Naive Bayes</th>
-    <th>K-Nearest Neighbors</th>
   </tr>
   
   <tr align="center">
@@ -53,23 +52,24 @@
         <img src="interactive_visualizations/L3_naive_bayes.png" alt="L3_naive_bayes" width="200">
       </a>
     </td>
-    <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_knn.html">
-        <img src="interactive_visualizations/L3_knn.png" alt="L3_knn" width="200">
-      </a>
-    </td>
   </tr>
 </table>
 
 
 <table>
   <tr align="center">
+    <th>K-Nearest Neighbors</th>
     <th>Support Vector Machines</th>
     <th>Decision Trees</th>
     <th>Random Forest</th>
   </tr>
   
   <tr align="center">
+    <td>
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_knn.html">
+        <img src="interactive_visualizations/L3_knn.png" alt="L3_knn" width="200">
+      </a>
+    </td>
     <td>
       <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_svm.html">
         <img src="interactive_visualizations/L3_svm.png" alt="L3_svm" width="200">
@@ -94,17 +94,14 @@
 
 <table>
   <tr align="center">
-    <th>Flexibility vs Interpretability</th>
-    <th>Bias-Variance Trade-Off</th>
-    <th>Logistic Regression</th>
-    <th>Naive Bayes</th>
-    <th>K-Nearest Neighbors</th>
+    <th>K-Means Clustering</th>
+
   </tr>
   
   <tr align="center">
     <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_flexibility_interpretability_dark.html">
-        <img src="interactive_visualizations/L3_flexibility_interpretability_dark.png" alt="flexibility_interpretability" width="200">
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L4_kmeans.html">
+        <img src="interactive_visualizations/L4_kmeans.png" alt="kmeans" width="200">
       </a>
     </td>
     <td>
@@ -119,11 +116,6 @@
     <td>
       <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_naive_bayes.html">
         <img src="interactive_visualizations/L3_naive_bayes.png" alt="L3_naive_bayes" width="200">
-      </a>
-    </td>
-    <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_knn.html">
-        <img src="interactive_visualizations/L3_knn.png" alt="L3_knn" width="200">
       </a>
     </td>
   </tr>
@@ -151,6 +143,11 @@
     <td>
       <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_random_forest.html">
         <img src="interactive_visualizations/L3_random_forest.png" alt="L3_random_forest" width="200">
+      </a>
+    </td>
+    <td>
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_knn.html">
+        <img src="interactive_visualizations/L3_knn.png" alt="L3_knn" width="200">
       </a>
     </td>
   </tr>
