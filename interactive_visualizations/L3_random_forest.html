@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Forest - Interactive Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0d1117 0%, #1a2332 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #10b981, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+        
+        .visualizations {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .viz-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .panel h2 {
+            font-size: 1rem;
+            color: #10b981;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        canvas {
+            background: #0a0a1a;
+            border-radius: 12px;
+            cursor: crosshair;
+            display: block;
+            width: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .control-section h3 {
+            font-size: 0.85rem;
+            color: #6366f1;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .class-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .class-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .class-btn.class-0 {
+            background: rgba(16,185,129,0.2);
+            color: #10b981;
+        }
+        
+        .class-btn.class-1 {
+            background: rgba(99,102,241,0.2);
+            color: #6366f1;
+        }
+        
+        .class-btn.active {
+            border-color: currentColor;
+            transform: scale(1.02);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16,185,129,0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(99,102,241,0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #888;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        
+        .slider-group {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .slider-value {
+            color: #10b981;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #2a2a4a;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #6366f1);
+            cursor: pointer;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #10b981;
+            font-family: monospace;
+        }
+        
+        .forest-stats {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .forest-stat {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .forest-stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #10b981, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .forest-stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .info-box {
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .vote-display {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+        
+        .vote-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .vote-bar-container {
+            display: flex;
+            height: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .vote-bar {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: width 0.3s;
+        }
+        
+        .vote-bar.class-0 {
+            background: #10b981;
+        }
+        
+        .vote-bar.class-1 {
+            background: #6366f1;
+        }
+        
+        .tree-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            margin-top: 8px;
+        }
+        
+        .tree-indicator {
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .probe-info {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        
+        .probe-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        
+        .probe-row .val {
+            font-family: monospace;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .viz-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Random Forest Classifier</h1>
+        <p class="subtitle">Harvard EPS-210 | Interactive tutorial — Explore ensemble learning with bagging and random feature selection</p>
+        
+        <div class="main-layout">
+            <div class="visualizations">
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Ensemble Decision (Majority Vote)</h2>
+                        <canvas id="ensembleCanvas" width="400" height="350"></canvas>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #10b981;"></div>
+                                <span>Class 0</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #6366f1;"></div>
+                                <span>Class 1</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #fff; width: 8px; height: 8px;"></div>
+                                <span>Query</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>Individual Tree Boundaries</h2>
+                        <canvas id="treesCanvas" width="400" height="350"></canvas>
+                        <div class="legend">
+                            <span style="color: #888; font-size: 0.8rem;">Each color = one tree's boundary</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Bootstrap Samples (Bagging)</h2>
+                        <canvas id="bootstrapCanvas" width="400" height="280"></canvas>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>Feature Importance</h2>
+                        <canvas id="importanceCanvas" width="400" height="280"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-section">
+                    <h3>Add Data Points</h3>
+                    <div class="class-selector">
+                        <button class="class-btn class-0 active" id="class0Btn">Class 0 (●)</button>
+                        <button class="class-btn class-1" id="class1Btn">Class 1 (●)</button>
+                    </div>
+                    <button class="btn btn-primary" id="buildBtn">🌲 Build Forest</button>
+                    <button class="btn btn-outline" id="clearBtn">Clear All Data</button>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Forest Statistics</h3>
+                    <div class="forest-stats">
+                        <div class="forest-stat">
+                            <div class="forest-stat-value" id="nTreesValue">0</div>
+                            <div class="forest-stat-label">Trees</div>
+                        </div>
+                        <div class="forest-stat">
+                            <div class="forest-stat-value" id="oobValue">--</div>
+                            <div class="forest-stat-label">OOB Acc</div>
+                        </div>
+                        <div class="forest-stat">
+                            <div class="forest-stat-value" id="accuracyValue">--</div>
+                            <div class="forest-stat-label">Train Acc</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Forest Parameters</h3>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Number of Trees</span>
+                            <span class="slider-value" id="numTreesLabel">10</span>
+                        </div>
+                        <input type="range" id="numTreesSlider" min="1" max="25" step="1" value="10">
+                    </div>
+                    
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Max Depth</span>
+                            <span class="slider-value" id="maxDepthLabel">4</span>
+                        </div>
+                        <input type="range" id="maxDepthSlider" min="1" max="8" step="1" value="4">
+                    </div>
+                    
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Bootstrap Sample %</span>
+                            <span class="slider-value" id="bootstrapLabel">80%</span>
+                        </div>
+                        <input type="range" id="bootstrapSlider" min="50" max="100" step="5" value="80">
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Model Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Total Points</div>
+                            <div class="stat-value" id="totalPoints">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Avg Depth</div>
+                            <div class="stat-value" id="avgDepth">--</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Class 0</div>
+                            <div class="stat-value" id="count0" style="color: #10b981;">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Class 1</div>
+                            <div class="stat-value" id="count1">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="vote-display" id="voteDisplay">
+                        <div class="vote-label">Hover to see tree votes</div>
+                        <div class="vote-bar-container">
+                            <div class="vote-bar class-0" id="voteBar0" style="width: 50%;">--</div>
+                            <div class="vote-bar class-1" id="voteBar1" style="width: 50%;">--</div>
+                        </div>
+                        <div class="tree-grid" id="treeGrid">
+                            <!-- Tree vote indicators -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Quick Examples</h3>
+                    <button class="btn btn-outline" id="spiralBtn">Spiral</button>
+                    <button class="btn btn-outline" id="circleBtn">Concentric</button>
+                    <button class="btn btn-outline" id="checkersBtn">Checkerboard</button>
+                </div>
+                
+                <div class="info-box">
+                    <strong>How it works:</strong> Random Forest builds multiple decision trees on bootstrap samples (bagging) with random feature subsets. Final prediction is by majority vote, reducing overfitting and variance.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========== CANVAS SETUP ==========
+        const ensembleCanvas = document.getElementById('ensembleCanvas');
+        const treesCanvas = document.getElementById('treesCanvas');
+        const bootstrapCanvas = document.getElementById('bootstrapCanvas');
+        const importanceCanvas = document.getElementById('importanceCanvas');
+        
+        const ensembleCtx = ensembleCanvas.getContext('2d');
+        const treesCtx = treesCanvas.getContext('2d');
+        const bootstrapCtx = bootstrapCanvas.getContext('2d');
+        const importanceCtx = importanceCanvas.getContext('2d');
+        
+        // ========== STATE ==========
+        let data = [];
+        let selectedClass = 0;
+        let probePoint = null;
+        let forest = [];
+        let bootstrapIndices = [];
+        let featureImportance = [0, 0];
+        
+        let numTrees = 10;
+        let maxDepth = 4;
+        let bootstrapRatio = 0.8;
+        
+        // Coordinate ranges
+        const xMin = -5, xMax = 5;
+        const yMin = -5, yMax = 5;
+        
+        // Colors
+        const colors = {
+            class0: '#10b981',
+            class1: '#6366f1',
+            class0Light: 'rgba(16,185,129,0.3)',
+            class1Light: 'rgba(99,102,241,0.3)'
+        };
+        
+        const treeColors = [
+            '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
+            '#22c55e', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6',
+            '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899',
+            '#f43f5e', '#fb7185', '#fda4af', '#fecdd3', '#ffe4e6',
+            '#64748b', '#94a3b8', '#cbd5e1', '#e2e8f0', '#f1f5f9'
+        ];
+        
+        // ========== DECISION TREE ==========
+        class TreeNode {
+            constructor() {
+                this.isLeaf = false;
+                this.prediction = null;
+                this.feature = null;
+                this.threshold = null;
+                this.left = null;
+                this.right = null;
+                this.depth = 0;
+                this.impurityDecrease = 0;
+            }
+        }
+        
+        function giniImpurity(counts) {
+            const total = counts[0] + counts[1];
+            if (total === 0) return 0;
+            const p0 = counts[0] / total;
+            const p1 = counts[1] / total;
+            return 1 - p0 * p0 - p1 * p1;
+        }
+        
+        function countClasses(points) {
+            const counts = [0, 0];
+            if (!points || !Array.isArray(points)) return counts;
+            for (const p of points) {
+                if (p && typeof p.label !== 'undefined') {
+                    counts[p.label]++;
+                }
+            }
+            return counts;
+        }
+        
+        function findBestSplit(points, depth, maxD, randomFeature = true) {
+            if (!points || points.length < 2 || depth >= maxD) {
+                return null;
+            }
+            
+            // Filter out any invalid points
+            const validPoints = points.filter(p => p && typeof p.x === 'number' && typeof p.y === 'number');
+            if (validPoints.length < 2) return null;
+            
+            const counts = countClasses(validPoints);
+            if (counts[0] === 0 || counts[1] === 0) {
+                return null;
+            }
+            
+            const parentImpurity = giniImpurity(counts);
+            let bestGain = 0;
+            let bestSplit = null;
+            
+            // Random feature selection (key to Random Forest)
+            let features = [0, 1];
+            if (randomFeature && Math.random() < 0.5) {
+                features = [Math.random() < 0.5 ? 0 : 1];
+            }
+            
+            for (const feature of features) {
+                const values = [...new Set(validPoints.map(p => feature === 0 ? p.x : p.y))].sort((a, b) => a - b);
+                
+                for (let i = 0; i < values.length - 1; i++) {
+                    const threshold = (values[i] + values[i + 1]) / 2;
+                    
+                    const leftPoints = validPoints.filter(p => (feature === 0 ? p.x : p.y) <= threshold);
+                    const rightPoints = validPoints.filter(p => (feature === 0 ? p.x : p.y) > threshold);
+                    
+                    if (leftPoints.length === 0 || rightPoints.length === 0) continue;
+                    
+                    const leftCounts = countClasses(leftPoints);
+                    const rightCounts = countClasses(rightPoints);
+                    
+                    const leftImpurity = giniImpurity(leftCounts);
+                    const rightImpurity = giniImpurity(rightCounts);
+                    
+                    const weightedImpurity = (leftPoints.length * leftImpurity + rightPoints.length * rightImpurity) / validPoints.length;
+                    const gain = parentImpurity - weightedImpurity;
+                    
+                    if (gain > bestGain) {
+                        bestGain = gain;
+                        bestSplit = {
+                            feature,
+                            threshold,
+                            leftPoints,
+                            rightPoints,
+                            gain
+                        };
+                    }
+                }
+            }
+            
+            return bestSplit;
+        }
+        
+        function buildTree(points, depth = 0, maxD = 4) {
+            const node = new TreeNode();
+            node.depth = depth;
+            
+            if (points.length === 0) {
+                node.isLeaf = true;
+                node.prediction = 0;
+                return node;
+            }
+            
+            const counts = countClasses(points);
+            const split = findBestSplit(points, depth, maxD, true);
+            
+            if (!split) {
+                node.isLeaf = true;
+                node.prediction = counts[1] > counts[0] ? 1 : 0;
+                return node;
+            }
+            
+            node.feature = split.feature;
+            node.threshold = split.threshold;
+            node.impurityDecrease = split.gain * points.length;
+            node.left = buildTree(split.leftPoints, depth + 1, maxD);
+            node.right = buildTree(split.rightPoints, depth + 1, maxD);
+            
+            return node;
+        }
+        
+        function predictTree(node, x, y) {
+            if (!node) return 0;
+            if (typeof x === 'undefined' || typeof y === 'undefined') return 0;
+            
+            if (node.isLeaf) {
+                return node.prediction;
+            }
+            
+            const value = node.feature === 0 ? x : y;
+            if (value <= node.threshold) {
+                return predictTree(node.left, x, y);
+            } else {
+                return predictTree(node.right, x, y);
+            }
+        }
+        
+        function getTreeDepth(node) {
+            if (!node || node.isLeaf) return node ? node.depth : 0;
+            return Math.max(getTreeDepth(node.left), getTreeDepth(node.right));
+        }
+        
+        function getFeatureImportance(node, importance) {
+            if (!node || node.isLeaf) return;
+            
+            importance[node.feature] += node.impurityDecrease;
+            getFeatureImportance(node.left, importance);
+            getFeatureImportance(node.right, importance);
+        }
+        
+        // ========== RANDOM FOREST ==========
+        function bootstrapSample(dataArray, ratio) {
+            if (!dataArray || dataArray.length === 0) {
+                return { sample: [], indices: [] };
+            }
+            const n = Math.floor(dataArray.length * ratio);
+            const indices = [];
+            const sample = [];
+            
+            for (let i = 0; i < n; i++) {
+                const idx = Math.floor(Math.random() * dataArray.length);
+                indices.push(idx);
+                sample.push(dataArray[idx]);
+            }
+            
+            return { sample, indices };
+        }
+        
+        function buildForest() {
+            forest = [];
+            bootstrapIndices = [];
+            featureImportance = [0, 0];
+            
+            if (data.length < 2) return;
+            
+            for (let i = 0; i < numTrees; i++) {
+                const { sample, indices } = bootstrapSample(data, bootstrapRatio);
+                const tree = buildTree(sample, 0, maxDepth);
+                forest.push(tree);
+                bootstrapIndices.push(indices);
+                
+                // Accumulate feature importance
+                getFeatureImportance(tree, featureImportance);
+            }
+            
+            // Normalize feature importance
+            const total = featureImportance[0] + featureImportance[1];
+            if (total > 0) {
+                featureImportance[0] /= total;
+                featureImportance[1] /= total;
+            }
+        }
+        
+        function predictForest(x, y) {
+            if (forest.length === 0) return { prediction: 0, votes: [0, 0], treeVotes: [] };
+            
+            const treeVotes = forest.map(tree => predictTree(tree, x, y));
+            const votes = [0, 0];
+            for (const v of treeVotes) {
+                votes[v]++;
+            }
+            
+            const prediction = votes[1] > votes[0] ? 1 : 0;
+            return { prediction, votes, treeVotes };
+        }
+        
+        function computeAccuracy() {
+            if (forest.length === 0 || data.length === 0) return 0;
+            
+            let correct = 0;
+            for (const point of data) {
+                const { prediction } = predictForest(point.x, point.y);
+                if (prediction === point.label) correct++;
+            }
+            return correct / data.length;
+        }
+        
+        function computeOOBAccuracy() {
+            if (forest.length === 0 || data.length === 0) return 0;
+            
+            let correct = 0;
+            let total = 0;
+            
+            for (let i = 0; i < data.length; i++) {
+                const point = data[i];
+                const oobVotes = [0, 0];
+                
+                // Only use trees where this point was NOT in the bootstrap sample
+                for (let t = 0; t < forest.length; t++) {
+                    if (!bootstrapIndices[t].includes(i)) {
+                        const pred = predictTree(forest[t], point.x, point.y);
+                        oobVotes[pred]++;
+                    }
+                }
+                
+                if (oobVotes[0] + oobVotes[1] > 0) {
+                    const oobPred = oobVotes[1] > oobVotes[0] ? 1 : 0;
+                    if (oobPred === point.label) correct++;
+                    total++;
+                }
+            }
+            
+            return total > 0 ? correct / total : 0;
+        }
+        
+        // ========== COORDINATE TRANSFORMS ==========
+        function toCanvasX(canvas, x, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return margin + (x - xMin) / (xMax - xMin) * w;
+        }
+        
+        function toCanvasY(canvas, y, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return margin + (yMax - y) / (yMax - yMin) * h;
+        }
+        
+        function toDataX(canvas, cx, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return xMin + (cx - margin) / w * (xMax - xMin);
+        }
+        
+        function toDataY(canvas, cy, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return yMax - (cy - margin) / h * (yMax - yMin);
+        }
+        
+        // ========== DRAWING: ENSEMBLE ==========
+        function drawEnsemble() {
+            const W = ensembleCanvas.width;
+            const H = ensembleCanvas.height;
+            const margin = 40;
+            
+            ensembleCtx.fillStyle = '#0a0a1a';
+            ensembleCtx.fillRect(0, 0, W, H);
+            
+            // Draw decision regions
+            if (forest.length > 0) {
+                const resolution = 4;
+                for (let px = margin; px < W - margin; px += resolution) {
+                    for (let py = margin; py < H - margin; py += resolution) {
+                        const x = toDataX(ensembleCanvas, px);
+                        const y = toDataY(ensembleCanvas, py);
+                        const { prediction, votes } = predictForest(x, y);
+                        
+                        // Color intensity based on vote confidence
+                        const confidence = Math.max(votes[0], votes[1]) / forest.length;
+                        const alpha = 0.15 + confidence * 0.25;
+                        
+                        if (prediction === 0) {
+                            ensembleCtx.fillStyle = `rgba(16,185,129,${alpha})`;
+                        } else {
+                            ensembleCtx.fillStyle = `rgba(99,102,241,${alpha})`;
+                        }
+                        ensembleCtx.fillRect(px, py, resolution, resolution);
+                    }
+                }
+                
+                // Draw decision boundary
+                ensembleCtx.fillStyle = 'rgba(255,255,255,0.7)';
+                const step = 3;
+                for (let px = margin; px < W - margin - step; px += step) {
+                    for (let py = margin; py < H - margin - step; py += step) {
+                        const p1 = predictForest(toDataX(ensembleCanvas, px), toDataY(ensembleCanvas, py)).prediction;
+                        const p2 = predictForest(toDataX(ensembleCanvas, px + step), toDataY(ensembleCanvas, py)).prediction;
+                        const p3 = predictForest(toDataX(ensembleCanvas, px), toDataY(ensembleCanvas, py + step)).prediction;
+                        
+                        if (p1 !== p2 || p1 !== p3) {
+                            ensembleCtx.fillRect(px, py, 2, 2);
+                        }
+                    }
+                }
+            }
+            
+            // Draw axes
+            ensembleCtx.strokeStyle = '#333';
+            ensembleCtx.lineWidth = 1;
+            
+            const y0 = toCanvasY(ensembleCanvas, 0);
+            ensembleCtx.beginPath();
+            ensembleCtx.moveTo(margin, y0);
+            ensembleCtx.lineTo(W - margin, y0);
+            ensembleCtx.stroke();
+            
+            const x0 = toCanvasX(ensembleCanvas, 0);
+            ensembleCtx.beginPath();
+            ensembleCtx.moveTo(x0, margin);
+            ensembleCtx.lineTo(x0, H - margin);
+            ensembleCtx.stroke();
+            
+            // Axis labels
+            ensembleCtx.fillStyle = '#555';
+            ensembleCtx.font = '10px sans-serif';
+            ensembleCtx.textAlign = 'center';
+            for (let x = Math.ceil(xMin); x <= xMax; x += 2) {
+                ensembleCtx.fillText(x.toString(), toCanvasX(ensembleCanvas, x), H - margin + 15);
+            }
+            
+            // Draw data points
+            for (const point of data) {
+                const cx = toCanvasX(ensembleCanvas, point.x);
+                const cy = toCanvasY(ensembleCanvas, point.y);
+                
+                ensembleCtx.fillStyle = point.label === 0 ? colors.class0 : colors.class1;
+                ensembleCtx.strokeStyle = '#fff';
+                ensembleCtx.lineWidth = 1.5;
+                ensembleCtx.beginPath();
+                ensembleCtx.arc(cx, cy, 6, 0, Math.PI * 2);
+                ensembleCtx.fill();
+                ensembleCtx.stroke();
+            }
+            
+            // Draw probe point
+            if (probePoint) {
+                const px = toCanvasX(ensembleCanvas, probePoint.x);
+                const py = toCanvasY(ensembleCanvas, probePoint.y);
+                
+                ensembleCtx.fillStyle = '#fff';
+                ensembleCtx.strokeStyle = '#000';
+                ensembleCtx.lineWidth = 2;
+                ensembleCtx.beginPath();
+                ensembleCtx.arc(px, py, 7, 0, Math.PI * 2);
+                ensembleCtx.fill();
+                ensembleCtx.stroke();
+            }
+            
+            // Title
+            ensembleCtx.fillStyle = '#fff';
+            ensembleCtx.font = 'bold 12px sans-serif';
+            ensembleCtx.textAlign = 'left';
+            ensembleCtx.fillText(`Ensemble of ${forest.length} trees`, margin, 25);
+        }
+        
+        // ========== DRAWING: INDIVIDUAL TREES ==========
+        function drawTreeBoundary(tree, ctx, color, xMinR, xMaxR, yMinR, yMaxR) {
+            if (!tree || tree.isLeaf) return;
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5;
+            ctx.globalAlpha = 0.6;
+            
+            if (tree.feature === 0) {
+                const px = toCanvasX(treesCanvas, tree.threshold);
+                const py1 = toCanvasY(treesCanvas, yMaxR);
+                const py2 = toCanvasY(treesCanvas, yMinR);
+                
+                ctx.beginPath();
+                ctx.moveTo(px, py1);
+                ctx.lineTo(px, py2);
+                ctx.stroke();
+                
+                drawTreeBoundary(tree.left, ctx, color, xMinR, tree.threshold, yMinR, yMaxR);
+                drawTreeBoundary(tree.right, ctx, color, tree.threshold, xMaxR, yMinR, yMaxR);
+            } else {
+                const py = toCanvasY(treesCanvas, tree.threshold);
+                const px1 = toCanvasX(treesCanvas, xMinR);
+                const px2 = toCanvasX(treesCanvas, xMaxR);
+                
+                ctx.beginPath();
+                ctx.moveTo(px1, py);
+                ctx.lineTo(px2, py);
+                ctx.stroke();
+                
+                drawTreeBoundary(tree.left, ctx, color, xMinR, xMaxR, yMinR, tree.threshold);
+                drawTreeBoundary(tree.right, ctx, color, xMinR, xMaxR, tree.threshold, yMaxR);
+            }
+            
+            ctx.globalAlpha = 1;
+        }
+        
+        function drawIndividualTrees() {
+            const W = treesCanvas.width;
+            const H = treesCanvas.height;
+            const margin = 40;
+            
+            treesCtx.fillStyle = '#0a0a1a';
+            treesCtx.fillRect(0, 0, W, H);
+            
+            // Draw each tree's boundaries
+            for (let i = 0; i < forest.length; i++) {
+                drawTreeBoundary(forest[i], treesCtx, treeColors[i % treeColors.length], xMin, xMax, yMin, yMax);
+            }
+            
+            // Draw axes
+            treesCtx.strokeStyle = '#333';
+            treesCtx.lineWidth = 1;
+            
+            const y0 = toCanvasY(treesCanvas, 0);
+            treesCtx.beginPath();
+            treesCtx.moveTo(margin, y0);
+            treesCtx.lineTo(W - margin, y0);
+            treesCtx.stroke();
+            
+            const x0 = toCanvasX(treesCanvas, 0);
+            treesCtx.beginPath();
+            treesCtx.moveTo(x0, margin);
+            treesCtx.lineTo(x0, H - margin);
+            treesCtx.stroke();
+            
+            // Draw data points
+            for (const point of data) {
+                const cx = toCanvasX(treesCanvas, point.x);
+                const cy = toCanvasY(treesCanvas, point.y);
+                
+                treesCtx.fillStyle = point.label === 0 ? colors.class0 : colors.class1;
+                treesCtx.globalAlpha = 0.7;
+                treesCtx.beginPath();
+                treesCtx.arc(cx, cy, 4, 0, Math.PI * 2);
+                treesCtx.fill();
+                treesCtx.globalAlpha = 1;
+            }
+            
+            // Title
+            treesCtx.fillStyle = '#fff';
+            treesCtx.font = 'bold 12px sans-serif';
+            treesCtx.textAlign = 'left';
+            treesCtx.fillText(`All ${forest.length} tree boundaries`, margin, 25);
+        }
+        
+        // ========== DRAWING: BOOTSTRAP ==========
+        function drawBootstrap() {
+            const W = bootstrapCanvas.width;
+            const H = bootstrapCanvas.height;
+            const margin = 40;
+            
+            bootstrapCtx.fillStyle = '#0a0a1a';
+            bootstrapCtx.fillRect(0, 0, W, H);
+            
+            if (data.length === 0 || forest.length === 0) {
+                bootstrapCtx.fillStyle = '#555';
+                bootstrapCtx.font = '14px sans-serif';
+                bootstrapCtx.textAlign = 'center';
+                bootstrapCtx.fillText('Build forest to see bootstrap samples', W / 2, H / 2);
+                return;
+            }
+            
+            const plotW = W - 2 * margin;
+            const plotH = H - 2 * margin;
+            
+            // Show which samples are used in each tree
+            const cellW = plotW / data.length;
+            const cellH = plotH / Math.min(forest.length, 15);
+            
+            const treesToShow = Math.min(forest.length, 15);
+            
+            for (let t = 0; t < treesToShow; t++) {
+                const counts = new Array(data.length).fill(0);
+                for (const idx of bootstrapIndices[t]) {
+                    counts[idx]++;
+                }
+                
+                const rowY = margin + t * cellH;
+                
+                for (let i = 0; i < data.length; i++) {
+                    const x = margin + i * cellW;
+                    
+                    if (counts[i] > 0) {
+                        const intensity = Math.min(counts[i] / 3, 1);
+                        const color = data[i].label === 0 ? colors.class0 : colors.class1;
+                        bootstrapCtx.fillStyle = color;
+                        bootstrapCtx.globalAlpha = 0.3 + intensity * 0.7;
+                    } else {
+                        bootstrapCtx.fillStyle = '#1a1a2e';
+                        bootstrapCtx.globalAlpha = 1;
+                    }
+                    
+                    bootstrapCtx.fillRect(x + 1, rowY + 1, cellW - 2, cellH - 2);
+                    bootstrapCtx.globalAlpha = 1;
+                    
+                    // Show count if > 1
+                    if (counts[i] > 1) {
+                        bootstrapCtx.fillStyle = '#fff';
+                        bootstrapCtx.font = '8px sans-serif';
+                        bootstrapCtx.textAlign = 'center';
+                        bootstrapCtx.fillText(counts[i].toString(), x + cellW / 2, rowY + cellH / 2 + 3);
+                    }
+                }
+                
+                // Tree label
+                bootstrapCtx.fillStyle = '#666';
+                bootstrapCtx.font = '9px sans-serif';
+                bootstrapCtx.textAlign = 'right';
+                bootstrapCtx.fillText(`T${t + 1}`, margin - 5, rowY + cellH / 2 + 3);
+            }
+            
+            // Sample index labels
+            bootstrapCtx.fillStyle = '#666';
+            bootstrapCtx.font = '8px sans-serif';
+            bootstrapCtx.textAlign = 'center';
+            const step = Math.max(1, Math.floor(data.length / 10));
+            for (let i = 0; i < data.length; i += step) {
+                bootstrapCtx.fillText((i + 1).toString(), margin + i * cellW + cellW / 2, H - margin + 12);
+            }
+            
+            // Title
+            bootstrapCtx.fillStyle = '#fff';
+            bootstrapCtx.font = 'bold 11px sans-serif';
+            bootstrapCtx.textAlign = 'left';
+            bootstrapCtx.fillText(`Bootstrap samples (${Math.round(bootstrapRatio * 100)}% of data)`, margin, 20);
+            
+            // Legend
+            bootstrapCtx.fillStyle = '#888';
+            bootstrapCtx.font = '10px sans-serif';
+            bootstrapCtx.textAlign = 'right';
+            bootstrapCtx.fillText('Bright = in sample, Dark = OOB', W - margin, 20);
+        }
+        
+        // ========== DRAWING: FEATURE IMPORTANCE ==========
+        function drawFeatureImportance() {
+            const W = importanceCanvas.width;
+            const H = importanceCanvas.height;
+            const margin = 50;
+            
+            importanceCtx.fillStyle = '#0a0a1a';
+            importanceCtx.fillRect(0, 0, W, H);
+            
+            if (forest.length === 0) {
+                importanceCtx.fillStyle = '#555';
+                importanceCtx.font = '14px sans-serif';
+                importanceCtx.textAlign = 'center';
+                importanceCtx.fillText('Build forest to see feature importance', W / 2, H / 2);
+                return;
+            }
+            
+            const plotW = W - 2 * margin;
+            const plotH = H - 2 * margin;
+            const barWidth = plotW / 4;
+            
+            const features = ['x₁', 'x₂'];
+            const featureColors = [colors.class0, colors.class1];
+            
+            for (let i = 0; i < 2; i++) {
+                const x = margin + plotW / 4 + i * plotW / 2;
+                const barH = featureImportance[i] * plotH * 0.8;
+                const y = margin + plotH - barH;
+                
+                // Bar
+                const gradient = importanceCtx.createLinearGradient(x - barWidth / 2, y, x - barWidth / 2, margin + plotH);
+                gradient.addColorStop(0, featureColors[i]);
+                gradient.addColorStop(1, featureColors[i] + '44');
+                
+                importanceCtx.fillStyle = gradient;
+                importanceCtx.beginPath();
+                // Rounded rectangle with top corners rounded
+                const bx = x - barWidth / 2;
+                const by = y;
+                const bw = barWidth;
+                const bh = barH;
+                const radius = 8;
+                importanceCtx.moveTo(bx + radius, by);
+                importanceCtx.lineTo(bx + bw - radius, by);
+                importanceCtx.quadraticCurveTo(bx + bw, by, bx + bw, by + radius);
+                importanceCtx.lineTo(bx + bw, by + bh);
+                importanceCtx.lineTo(bx, by + bh);
+                importanceCtx.lineTo(bx, by + radius);
+                importanceCtx.quadraticCurveTo(bx, by, bx + radius, by);
+                importanceCtx.closePath();
+                importanceCtx.fill();
+                
+                // Value label
+                importanceCtx.fillStyle = '#fff';
+                importanceCtx.font = 'bold 14px sans-serif';
+                importanceCtx.textAlign = 'center';
+                importanceCtx.fillText((featureImportance[i] * 100).toFixed(1) + '%', x, y - 10);
+                
+                // Feature name
+                importanceCtx.fillStyle = '#aaa';
+                importanceCtx.font = '12px sans-serif';
+                importanceCtx.fillText(features[i], x, H - margin + 20);
+            }
+            
+            // Y-axis
+            importanceCtx.strokeStyle = '#444';
+            importanceCtx.lineWidth = 1;
+            importanceCtx.beginPath();
+            importanceCtx.moveTo(margin, margin);
+            importanceCtx.lineTo(margin, margin + plotH);
+            importanceCtx.stroke();
+            
+            // Y labels
+            importanceCtx.fillStyle = '#666';
+            importanceCtx.font = '10px sans-serif';
+            importanceCtx.textAlign = 'right';
+            for (let v = 0; v <= 100; v += 25) {
+                const y = margin + plotH - (v / 100) * plotH * 0.8;
+                importanceCtx.fillText(v + '%', margin - 8, y + 4);
+            }
+            
+            // Title
+            importanceCtx.fillStyle = '#fff';
+            importanceCtx.font = 'bold 11px sans-serif';
+            importanceCtx.textAlign = 'left';
+            importanceCtx.fillText('Mean Decrease in Impurity', margin, 20);
+        }
+        
+        // ========== UPDATE FUNCTIONS ==========
+        function updateStats() {
+            document.getElementById('count0').textContent = data.filter(d => d.label === 0).length;
+            document.getElementById('count1').textContent = data.filter(d => d.label === 1).length;
+            document.getElementById('totalPoints').textContent = data.length;
+            document.getElementById('nTreesValue').textContent = forest.length;
+            
+            if (forest.length > 0) {
+                document.getElementById('accuracyValue').textContent = (computeAccuracy() * 100).toFixed(0) + '%';
+                document.getElementById('oobValue').textContent = (computeOOBAccuracy() * 100).toFixed(0) + '%';
+                
+                const avgDepth = forest.reduce((sum, tree) => sum + getTreeDepth(tree), 0) / forest.length;
+                document.getElementById('avgDepth').textContent = avgDepth.toFixed(1);
+            } else {
+                document.getElementById('accuracyValue').textContent = '--';
+                document.getElementById('oobValue').textContent = '--';
+                document.getElementById('avgDepth').textContent = '--';
+            }
+        }
+        
+        function updateVoteDisplay() {
+            const treeGrid = document.getElementById('treeGrid');
+            
+            if (!probePoint || forest.length === 0) {
+                document.getElementById('voteBar0').style.width = '50%';
+                document.getElementById('voteBar1').style.width = '50%';
+                document.getElementById('voteBar0').textContent = '--';
+                document.getElementById('voteBar1').textContent = '--';
+                treeGrid.innerHTML = '';
+                return;
+            }
+            
+            const { votes, treeVotes } = predictForest(probePoint.x, probePoint.y);
+            const total = votes[0] + votes[1];
+            
+            const pct0 = (votes[0] / total * 100).toFixed(0);
+            const pct1 = (votes[1] / total * 100).toFixed(0);
+            
+            document.getElementById('voteBar0').style.width = pct0 + '%';
+            document.getElementById('voteBar1').style.width = pct1 + '%';
+            document.getElementById('voteBar0').textContent = votes[0];
+            document.getElementById('voteBar1').textContent = votes[1];
+            
+            // Tree vote indicators
+            let html = '';
+            for (let i = 0; i < treeVotes.length; i++) {
+                const color = treeVotes[i] === 0 ? colors.class0 : colors.class1;
+                html += `<div class="tree-indicator" style="background: ${color};">${i + 1}</div>`;
+            }
+            treeGrid.innerHTML = html;
+        }
+        
+        function drawAll() {
+            drawEnsemble();
+            drawIndividualTrees();
+            drawBootstrap();
+            drawFeatureImportance();
+        }
+        
+        // ========== EVENT HANDLERS ==========
+        ensembleCanvas.addEventListener('click', function(e) {
+            const rect = ensembleCanvas.getBoundingClientRect();
+            const scaleX = ensembleCanvas.width / rect.width;
+            const scaleY = ensembleCanvas.height / rect.height;
+            
+            const cx = (e.clientX - rect.left) * scaleX;
+            const cy = (e.clientY - rect.top) * scaleY;
+            
+            const margin = 40;
+            if (cx >= margin && cx <= ensembleCanvas.width - margin &&
+                cy >= margin && cy <= ensembleCanvas.height - margin) {
+                
+                const x = toDataX(ensembleCanvas, cx);
+                const y = toDataY(ensembleCanvas, cy);
+                
+                data.push({ x, y, label: selectedClass });
+                updateStats();
+                drawAll();
+            }
+        });
+        
+        ensembleCanvas.addEventListener('mousemove', function(e) {
+            const rect = ensembleCanvas.getBoundingClientRect();
+            const scaleX = ensembleCanvas.width / rect.width;
+            const scaleY = ensembleCanvas.height / rect.height;
+            
+            const cx = (e.clientX - rect.left) * scaleX;
+            const cy = (e.clientY - rect.top) * scaleY;
+            
+            const margin = 40;
+            if (cx >= margin && cx <= ensembleCanvas.width - margin &&
+                cy >= margin && cy <= ensembleCanvas.height - margin) {
+                
+                probePoint = {
+                    x: toDataX(ensembleCanvas, cx),
+                    y: toDataY(ensembleCanvas, cy)
+                };
+            } else {
+                probePoint = null;
+            }
+            
+            updateVoteDisplay();
+            drawAll();
+        });
+        
+        ensembleCanvas.addEventListener('mouseleave', function() {
+            probePoint = null;
+            updateVoteDisplay();
+            drawAll();
+        });
+        
+        document.getElementById('class0Btn').addEventListener('click', function() {
+            selectedClass = 0;
+            this.classList.add('active');
+            document.getElementById('class1Btn').classList.remove('active');
+        });
+        
+        document.getElementById('class1Btn').addEventListener('click', function() {
+            selectedClass = 1;
+            this.classList.add('active');
+            document.getElementById('class0Btn').classList.remove('active');
+        });
+        
+        document.getElementById('buildBtn').addEventListener('click', function() {
+            if (data.length < 2) return;
+            buildForest();
+            updateStats();
+            updateVoteDisplay();
+            drawAll();
+        });
+        
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            data = [];
+            forest = [];
+            bootstrapIndices = [];
+            featureImportance = [0, 0];
+            probePoint = null;
+            updateStats();
+            updateVoteDisplay();
+            drawAll();
+        });
+        
+        document.getElementById('numTreesSlider').addEventListener('input', function(e) {
+            numTrees = parseInt(e.target.value);
+            document.getElementById('numTreesLabel').textContent = numTrees;
+        });
+        
+        document.getElementById('maxDepthSlider').addEventListener('input', function(e) {
+            maxDepth = parseInt(e.target.value);
+            document.getElementById('maxDepthLabel').textContent = maxDepth;
+        });
+        
+        document.getElementById('bootstrapSlider').addEventListener('input', function(e) {
+            bootstrapRatio = parseInt(e.target.value) / 100;
+            document.getElementById('bootstrapLabel').textContent = e.target.value + '%';
+        });
+        
+        // Example datasets
+        document.getElementById('spiralBtn').addEventListener('click', function() {
+            data = [];
+            forest = [];
+            
+            for (let i = 0; i < 40; i++) {
+                const t0 = i * 0.25;
+                const r0 = 0.5 + t0 * 0.35;
+                data.push({
+                    x: r0 * Math.cos(t0) + (Math.random() - 0.5) * 0.5,
+                    y: r0 * Math.sin(t0) + (Math.random() - 0.5) * 0.5,
+                    label: 0
+                });
+                
+                const t1 = i * 0.25 + Math.PI;
+                const r1 = 0.5 + t1 * 0.35 - Math.PI * 0.35;
+                data.push({
+                    x: r1 * Math.cos(t1) + (Math.random() - 0.5) * 0.5,
+                    y: r1 * Math.sin(t1) + (Math.random() - 0.5) * 0.5,
+                    label: 1
+                });
+            }
+            
+            buildForest();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('circleBtn').addEventListener('click', function() {
+            data = [];
+            forest = [];
+            
+            // Inner circle
+            for (let i = 0; i < 30; i++) {
+                const r = Math.random() * 1.8;
+                const theta = Math.random() * 2 * Math.PI;
+                data.push({ x: r * Math.cos(theta), y: r * Math.sin(theta), label: 0 });
+            }
+            
+            // Outer ring
+            for (let i = 0; i < 40; i++) {
+                const r = 2.5 + Math.random() * 1.5;
+                const theta = Math.random() * 2 * Math.PI;
+                data.push({ x: r * Math.cos(theta), y: r * Math.sin(theta), label: 1 });
+            }
+            
+            buildForest();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('checkersBtn').addEventListener('click', function() {
+            data = [];
+            forest = [];
+            
+            for (let i = 0; i < 60; i++) {
+                const x = -4 + Math.random() * 8;
+                const y = -4 + Math.random() * 8;
+                const gridX = Math.floor((x + 4) / 2.67);
+                const gridY = Math.floor((y + 4) / 2.67);
+                const label = (gridX + gridY) % 2;
+                data.push({ x, y, label });
+            }
+            
+            buildForest();
+            updateStats();
+            drawAll();
+        });
+        
+        // Initialize
+        updateStats();
+        drawAll();
+    </script>
+</body>
+</html>
