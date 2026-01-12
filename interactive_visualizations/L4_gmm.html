@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaussian Mixture Models - Interactive Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0a18 0%, #1a1a30 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #f472b6, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+        
+        .visualizations {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .viz-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .panel h2 {
+            font-size: 1rem;
+            color: #60a5fa;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        canvas {
+            background: #0a0a1a;
+            border-radius: 12px;
+            cursor: crosshair;
+            display: block;
+            width: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .control-section h3 {
+            font-size: 0.85rem;
+            color: #f472b6;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(96,165,250,0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f472b6, #ec4899);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(244,114,182,0.4);
+        }
+        
+        .btn-accent {
+            background: linear-gradient(135deg, #34d399, #10b981);
+            color: white;
+        }
+        
+        .btn-accent:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(52,211,153,0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #888;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        
+        .slider-group {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .slider-value {
+            color: #60a5fa;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #2a2a4a;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f472b6, #60a5fa);
+            cursor: pointer;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #60a5fa;
+            font-family: monospace;
+        }
+        
+        .k-display {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .k-display .k-value {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f472b6, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .k-display .k-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .info-box {
+            background: rgba(96,165,250,0.1);
+            border: 1px solid rgba(96,165,250,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .equation-box {
+            background: rgba(0,0,0,0.4);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            margin: 10px 0;
+            border-left: 3px solid #60a5fa;
+        }
+        
+        .equation-box .main-eq {
+            font-size: 0.9rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .equation-box .sub-eq {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        .component-list {
+            margin-top: 10px;
+        }
+        
+        .component-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+        }
+        
+        .component-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .component-info {
+            flex: 1;
+        }
+        
+        .component-weight {
+            font-family: monospace;
+            font-weight: 600;
+            color: #60a5fa;
+        }
+        
+        .iteration-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .iteration-display .iter-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #34d399;
+            font-family: monospace;
+        }
+        
+        .iteration-display .iter-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.running {
+            background: rgba(251,191,36,0.2);
+            color: #fbbf24;
+        }
+        
+        .status-badge.converged {
+            background: rgba(52,211,153,0.2);
+            color: #34d399;
+        }
+        
+        .status-badge.ready {
+            background: rgba(96,165,250,0.2);
+            color: #60a5fa;
+        }
+        
+        .covariance-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            background: #2a2a4a;
+            color: #e0e0e0;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .viz-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gaussian Mixture Models</h1>
+        <p class="subtitle">Harvard EPS-210 | Interactive tutorial — Explore probabilistic clustering with the EM algorithm</p>
+        
+        <div class="main-layout">
+            <div class="visualizations">
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Mixture Model</h2>
+                        <canvas id="mixtureCanvas" width="400" height="350"></canvas>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="border: 2px solid #f472b6; background: transparent;"></div>
+                                <span>1σ ellipse</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="border: 2px dashed #f472b6; background: transparent;"></div>
+                                <span>2σ ellipse</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #fff;"></div>
+                                <span>Mean</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>Soft Assignments (Responsibilities)</h2>
+                        <canvas id="responsibilityCanvas" width="400" height="350"></canvas>
+                        <div class="equation-box">
+                            <div class="main-eq">γₖ(xᵢ) = πₖ N(xᵢ|μₖ,Σₖ) / Σⱼ πⱼ N(xᵢ|μⱼ,Σⱼ)</div>
+                            <div class="sub-eq">Posterior probability of component k</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Log-Likelihood</h2>
+                        <canvas id="likelihoodCanvas" width="400" height="280"></canvas>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>Probability Density</h2>
+                        <canvas id="densityCanvas" width="400" height="280"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-section">
+                    <h3>Data Points</h3>
+                    <p style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">
+                        Click on the mixture canvas to add points
+                    </p>
+                    <button class="btn btn-outline" id="clearDataBtn">Clear All Points</button>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Number of Components (K)</h3>
+                    <div class="k-display">
+                        <div class="k-value" id="kValue">3</div>
+                        <div class="k-label">Gaussians</div>
+                    </div>
+                    <input type="range" id="kSlider" min="2" max="6" step="1" value="3">
+                </div>
+                
+                <div class="control-section">
+                    <h3>EM Algorithm</h3>
+                    <div class="iteration-display">
+                        <div>
+                            <div class="iter-value" id="iterValue">0</div>
+                            <div class="iter-label">Iteration</div>
+                        </div>
+                        <span class="status-badge ready" id="statusBadge">Ready</span>
+                    </div>
+                    <button class="btn btn-primary" id="initBtn">🎲 Initialize</button>
+                    <button class="btn btn-secondary" id="stepBtn">➡️ EM Step</button>
+                    <button class="btn btn-accent" id="runBtn">▶️ Run to Convergence</button>
+                    <button class="btn btn-outline" id="resetBtn">Reset</button>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Covariance Type</h3>
+                    <select class="covariance-select" id="covTypeSelect">
+                        <option value="full">Full (arbitrary ellipse)</option>
+                        <option value="diagonal">Diagonal (axis-aligned)</option>
+                        <option value="spherical">Spherical (circular)</option>
+                    </select>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Model Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Points</div>
+                            <div class="stat-value" id="totalPoints">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Log-Lik</div>
+                            <div class="stat-value" id="logLikValue">--</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">BIC</div>
+                            <div class="stat-value" id="bicValue">--</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">AIC</div>
+                            <div class="stat-value" id="aicValue">--</div>
+                        </div>
+                    </div>
+                    
+                    <div class="component-list" id="componentList">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Quick Examples</h3>
+                    <button class="btn btn-outline" id="blobsBtn">Three Blobs</button>
+                    <button class="btn btn-outline" id="elongatedBtn">Elongated</button>
+                    <button class="btn btn-outline" id="overlapBtn">Overlapping</button>
+                </div>
+                
+                <div class="info-box">
+                    <strong>How it works:</strong> GMM models data as a mixture of K Gaussians. The EM algorithm alternates: <strong>E-step</strong> computes soft assignments (responsibilities), <strong>M-step</strong> updates means, covariances, and mixing weights. Unlike K-means, GMM provides probabilistic cluster memberships.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========== CANVAS SETUP ==========
+        const mixtureCanvas = document.getElementById('mixtureCanvas');
+        const responsibilityCanvas = document.getElementById('responsibilityCanvas');
+        const likelihoodCanvas = document.getElementById('likelihoodCanvas');
+        const densityCanvas = document.getElementById('densityCanvas');
+        
+        const mixtureCtx = mixtureCanvas.getContext('2d');
+        const respCtx = responsibilityCanvas.getContext('2d');
+        const likCtx = likelihoodCanvas.getContext('2d');
+        const densCtx = densityCanvas.getContext('2d');
+        
+        // ========== STATE ==========
+        let data = [];
+        let K = 3;
+        let means = [];
+        let covariances = [];
+        let weights = [];
+        let responsibilities = [];
+        let logLikHistory = [];
+        let iteration = 0;
+        let converged = false;
+        let isRunning = false;
+        let covType = 'full';
+        
+        // Coordinate ranges
+        const xMin = -5, xMax = 5;
+        const yMin = -5, yMax = 5;
+        
+        // Component colors
+        const componentColors = [
+            '#f472b6', '#60a5fa', '#34d399', '#fbbf24', '#a78bfa', '#f87171'
+        ];
+        
+        // ========== MATH UTILITIES ==========
+        function gaussianPDF(x, y, mean, cov) {
+            const dx = x - mean[0];
+            const dy = y - mean[1];
+            
+            // Inverse of 2x2 covariance matrix
+            const det = cov[0][0] * cov[1][1] - cov[0][1] * cov[1][0];
+            if (Math.abs(det) < 1e-10) return 0;
+            
+            const invCov = [
+                [cov[1][1] / det, -cov[0][1] / det],
+                [-cov[1][0] / det, cov[0][0] / det]
+            ];
+            
+            const mahal = dx * (invCov[0][0] * dx + invCov[0][1] * dy) + 
+                          dy * (invCov[1][0] * dx + invCov[1][1] * dy);
+            
+            const norm = 1 / (2 * Math.PI * Math.sqrt(det));
+            return norm * Math.exp(-0.5 * mahal);
+        }
+        
+        function mixturePDF(x, y) {
+            let sum = 0;
+            for (let k = 0; k < K; k++) {
+                sum += weights[k] * gaussianPDF(x, y, means[k], covariances[k]);
+            }
+            return sum;
+        }
+        
+        function computeLogLikelihood() {
+            let ll = 0;
+            for (const point of data) {
+                const pdf = mixturePDF(point.x, point.y);
+                if (pdf > 1e-300) {
+                    ll += Math.log(pdf);
+                } else {
+                    ll += -700;  // Very small probability
+                }
+            }
+            return ll;
+        }
+        
+        function computeBIC() {
+            if (data.length === 0) return 0;
+            const ll = computeLogLikelihood();
+            const numParams = getNumParams();
+            return numParams * Math.log(data.length) - 2 * ll;
+        }
+        
+        function computeAIC() {
+            if (data.length === 0) return 0;
+            const ll = computeLogLikelihood();
+            const numParams = getNumParams();
+            return 2 * numParams - 2 * ll;
+        }
+        
+        function getNumParams() {
+            // K means (2 params each) + K-1 weights + covariance params
+            let covParams;
+            if (covType === 'spherical') covParams = K;  // K variances
+            else if (covType === 'diagonal') covParams = 2 * K;  // K * 2 variances
+            else covParams = 3 * K;  // K * (2 variances + 1 covariance)
+            
+            return 2 * K + (K - 1) + covParams;
+        }
+        
+        // ========== GMM ALGORITHM ==========
+        function initializeGMM() {
+            if (data.length < K) return;
+            
+            // K-means++ style initialization for means
+            means = [];
+            const firstIdx = Math.floor(Math.random() * data.length);
+            means.push([data[firstIdx].x, data[firstIdx].y]);
+            
+            for (let k = 1; k < K; k++) {
+                const distances = data.map(p => {
+                    let minDist = Infinity;
+                    for (const m of means) {
+                        const d = (p.x - m[0]) ** 2 + (p.y - m[1]) ** 2;
+                        if (d < minDist) minDist = d;
+                    }
+                    return minDist;
+                });
+                
+                const totalDist = distances.reduce((a, b) => a + b, 0);
+                let r = Math.random() * totalDist;
+                let cumSum = 0;
+                
+                for (let i = 0; i < data.length; i++) {
+                    cumSum += distances[i];
+                    if (cumSum >= r) {
+                        means.push([data[i].x, data[i].y]);
+                        break;
+                    }
+                }
+            }
+            
+            // Initialize covariances
+            covariances = [];
+            const dataVar = computeDataVariance();
+            for (let k = 0; k < K; k++) {
+                if (covType === 'spherical') {
+                    const v = dataVar / K;
+                    covariances.push([[v, 0], [0, v]]);
+                } else if (covType === 'diagonal') {
+                    const v = dataVar / K;
+                    covariances.push([[v, 0], [0, v]]);
+                } else {
+                    const v = dataVar / K;
+                    covariances.push([[v, 0], [0, v]]);
+                }
+            }
+            
+            // Initialize weights uniformly
+            weights = new Array(K).fill(1 / K);
+            
+            // Initialize responsibilities
+            responsibilities = data.map(() => new Array(K).fill(1 / K));
+            
+            logLikHistory = [computeLogLikelihood()];
+            iteration = 0;
+            converged = false;
+            
+            updateStatus('ready');
+        }
+        
+        function computeDataVariance() {
+            if (data.length < 2) return 1;
+            
+            const meanX = data.reduce((s, p) => s + p.x, 0) / data.length;
+            const meanY = data.reduce((s, p) => s + p.y, 0) / data.length;
+            
+            let varSum = 0;
+            for (const p of data) {
+                varSum += (p.x - meanX) ** 2 + (p.y - meanY) ** 2;
+            }
+            
+            return varSum / data.length;
+        }
+        
+        function eStep() {
+            // Compute responsibilities (soft assignments)
+            for (let i = 0; i < data.length; i++) {
+                const x = data[i].x;
+                const y = data[i].y;
+                
+                let total = 0;
+                const probs = [];
+                
+                for (let k = 0; k < K; k++) {
+                    const prob = weights[k] * gaussianPDF(x, y, means[k], covariances[k]);
+                    probs.push(prob);
+                    total += prob;
+                }
+                
+                for (let k = 0; k < K; k++) {
+                    responsibilities[i][k] = total > 1e-300 ? probs[k] / total : 1 / K;
+                }
+            }
+        }
+        
+        function mStep() {
+            // Update parameters based on responsibilities
+            for (let k = 0; k < K; k++) {
+                // Effective number of points assigned to component k
+                let Nk = 0;
+                for (let i = 0; i < data.length; i++) {
+                    Nk += responsibilities[i][k];
+                }
+                
+                if (Nk < 1e-10) {
+                    // Reinitialize empty component
+                    const idx = Math.floor(Math.random() * data.length);
+                    means[k] = [data[idx].x, data[idx].y];
+                    const v = computeDataVariance() / K;
+                    covariances[k] = [[v, 0], [0, v]];
+                    weights[k] = 1 / K;
+                    continue;
+                }
+                
+                // Update mean
+                let newMeanX = 0, newMeanY = 0;
+                for (let i = 0; i < data.length; i++) {
+                    newMeanX += responsibilities[i][k] * data[i].x;
+                    newMeanY += responsibilities[i][k] * data[i].y;
+                }
+                means[k] = [newMeanX / Nk, newMeanY / Nk];
+                
+                // Update covariance
+                let cov00 = 0, cov01 = 0, cov11 = 0;
+                for (let i = 0; i < data.length; i++) {
+                    const dx = data[i].x - means[k][0];
+                    const dy = data[i].y - means[k][1];
+                    cov00 += responsibilities[i][k] * dx * dx;
+                    cov01 += responsibilities[i][k] * dx * dy;
+                    cov11 += responsibilities[i][k] * dy * dy;
+                }
+                
+                cov00 /= Nk;
+                cov01 /= Nk;
+                cov11 /= Nk;
+                
+                // Add regularization
+                const reg = 0.01;
+                cov00 += reg;
+                cov11 += reg;
+                
+                if (covType === 'spherical') {
+                    const v = (cov00 + cov11) / 2;
+                    covariances[k] = [[v, 0], [0, v]];
+                } else if (covType === 'diagonal') {
+                    covariances[k] = [[cov00, 0], [0, cov11]];
+                } else {
+                    covariances[k] = [[cov00, cov01], [cov01, cov11]];
+                }
+                
+                // Update weight
+                weights[k] = Nk / data.length;
+            }
+            
+            // Normalize weights
+            const weightSum = weights.reduce((a, b) => a + b, 0);
+            for (let k = 0; k < K; k++) {
+                weights[k] /= weightSum;
+            }
+        }
+        
+        function emStep() {
+            if (means.length === 0 || converged) return;
+            
+            const prevLL = logLikHistory[logLikHistory.length - 1];
+            
+            eStep();
+            mStep();
+            
+            iteration++;
+            const newLL = computeLogLikelihood();
+            logLikHistory.push(newLL);
+            
+            // Check convergence
+            if (Math.abs(newLL - prevLL) < 1e-6) {
+                converged = true;
+                updateStatus('converged');
+            } else {
+                updateStatus('running');
+            }
+        }
+        
+        function runToConvergence() {
+            if (means.length === 0) {
+                initializeGMM();
+            }
+            
+            isRunning = true;
+            
+            function animate() {
+                if (!isRunning || converged || iteration > 200) {
+                    isRunning = false;
+                    if (converged) updateStatus('converged');
+                    return;
+                }
+                
+                emStep();
+                updateStats();
+                drawAll();
+                
+                setTimeout(animate, 150);
+            }
+            
+            animate();
+        }
+        
+        // ========== COORDINATE TRANSFORMS ==========
+        function toCanvasX(canvas, x, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return margin + (x - xMin) / (xMax - xMin) * w;
+        }
+        
+        function toCanvasY(canvas, y, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return margin + (yMax - y) / (yMax - yMin) * h;
+        }
+        
+        function toDataX(canvas, cx, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return xMin + (cx - margin) / w * (xMax - xMin);
+        }
+        
+        function toDataY(canvas, cy, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return yMax - (cy - margin) / h * (yMax - yMin);
+        }
+        
+        // ========== DRAWING: MIXTURE MODEL ==========
+        function drawEllipse(ctx, canvas, mean, cov, nSigma, color, dashed = false) {
+            // Eigendecomposition for ellipse orientation
+            const a = cov[0][0];
+            const b = cov[0][1];
+            const c = cov[1][1];
+            
+            const trace = a + c;
+            const det = a * c - b * b;
+            
+            const lambda1 = trace / 2 + Math.sqrt(trace * trace / 4 - det);
+            const lambda2 = trace / 2 - Math.sqrt(trace * trace / 4 - det);
+            
+            let angle = 0;
+            if (Math.abs(b) > 1e-10) {
+                angle = Math.atan2(lambda1 - a, b);
+            } else if (a < c) {
+                angle = Math.PI / 2;
+            }
+            
+            const rx = Math.sqrt(Math.max(lambda1, 0.01)) * nSigma;
+            const ry = Math.sqrt(Math.max(lambda2, 0.01)) * nSigma;
+            
+            // Convert to canvas coordinates
+            const cx = toCanvasX(canvas, mean[0]);
+            const cy = toCanvasY(canvas, mean[1]);
+            const scaleX = (canvas.width - 80) / (xMax - xMin);
+            const scaleY = (canvas.height - 80) / (yMax - yMin);
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            if (dashed) ctx.setLineDash([5, 5]);
+            else ctx.setLineDash([]);
+            
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, rx * scaleX, ry * scaleY, -angle, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        function drawMixtureModel() {
+            const W = mixtureCanvas.width;
+            const H = mixtureCanvas.height;
+            const margin = 40;
+            
+            mixtureCtx.fillStyle = '#0a0a1a';
+            mixtureCtx.fillRect(0, 0, W, H);
+            
+            // Draw axes
+            mixtureCtx.strokeStyle = '#333';
+            mixtureCtx.lineWidth = 1;
+            
+            const y0 = toCanvasY(mixtureCanvas, 0);
+            mixtureCtx.beginPath();
+            mixtureCtx.moveTo(margin, y0);
+            mixtureCtx.lineTo(W - margin, y0);
+            mixtureCtx.stroke();
+            
+            const x0 = toCanvasX(mixtureCanvas, 0);
+            mixtureCtx.beginPath();
+            mixtureCtx.moveTo(x0, margin);
+            mixtureCtx.lineTo(x0, H - margin);
+            mixtureCtx.stroke();
+            
+            // Draw ellipses for each component
+            for (let k = 0; k < means.length; k++) {
+                const color = componentColors[k % componentColors.length];
+                
+                // 2-sigma (dashed)
+                drawEllipse(mixtureCtx, mixtureCanvas, means[k], covariances[k], 2, color + '80', true);
+                
+                // 1-sigma (solid)
+                drawEllipse(mixtureCtx, mixtureCanvas, means[k], covariances[k], 1, color, false);
+                
+                // Mean point
+                const cx = toCanvasX(mixtureCanvas, means[k][0]);
+                const cy = toCanvasY(mixtureCanvas, means[k][1]);
+                
+                mixtureCtx.fillStyle = '#fff';
+                mixtureCtx.strokeStyle = color;
+                mixtureCtx.lineWidth = 3;
+                mixtureCtx.beginPath();
+                mixtureCtx.arc(cx, cy, 6, 0, Math.PI * 2);
+                mixtureCtx.fill();
+                mixtureCtx.stroke();
+            }
+            
+            // Draw data points
+            for (let i = 0; i < data.length; i++) {
+                const point = data[i];
+                const cx = toCanvasX(mixtureCanvas, point.x);
+                const cy = toCanvasY(mixtureCanvas, point.y);
+                
+                // Color by most likely component
+                let maxResp = 0;
+                let maxK = 0;
+                if (responsibilities[i]) {
+                    for (let k = 0; k < K; k++) {
+                        if (responsibilities[i][k] > maxResp) {
+                            maxResp = responsibilities[i][k];
+                            maxK = k;
+                        }
+                    }
+                }
+                
+                const color = means.length > 0 ? componentColors[maxK % componentColors.length] : '#888';
+                
+                mixtureCtx.fillStyle = color;
+                mixtureCtx.strokeStyle = '#fff';
+                mixtureCtx.lineWidth = 1;
+                mixtureCtx.beginPath();
+                mixtureCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+                mixtureCtx.fill();
+                mixtureCtx.stroke();
+            }
+            
+            // Title
+            mixtureCtx.fillStyle = '#fff';
+            mixtureCtx.font = 'bold 12px sans-serif';
+            mixtureCtx.textAlign = 'left';
+            mixtureCtx.fillText('Click to add points', margin, 25);
+        }
+        
+        // ========== DRAWING: RESPONSIBILITIES ==========
+        function drawResponsibilities() {
+            const W = responsibilityCanvas.width;
+            const H = responsibilityCanvas.height;
+            const margin = 40;
+            
+            respCtx.fillStyle = '#0a0a1a';
+            respCtx.fillRect(0, 0, W, H);
+            
+            // Draw responsibility-weighted regions
+            if (means.length > 0) {
+                const resolution = 5;
+                for (let px = margin; px < W - margin; px += resolution) {
+                    for (let py = margin; py < H - margin; py += resolution) {
+                        const x = toDataX(responsibilityCanvas, px);
+                        const y = toDataY(responsibilityCanvas, py);
+                        
+                        // Compute responsibilities for this point
+                        let total = 0;
+                        const probs = [];
+                        
+                        for (let k = 0; k < K; k++) {
+                            const prob = weights[k] * gaussianPDF(x, y, means[k], covariances[k]);
+                            probs.push(prob);
+                            total += prob;
+                        }
+                        
+                        if (total > 1e-10) {
+                            // Blend colors based on responsibilities
+                            let r = 0, g = 0, b = 0;
+                            for (let k = 0; k < K; k++) {
+                                const resp = probs[k] / total;
+                                const color = componentColors[k % componentColors.length];
+                                const rgb = hexToRgb(color);
+                                r += resp * rgb.r;
+                                g += resp * rgb.g;
+                                b += resp * rgb.b;
+                            }
+                            
+                            respCtx.fillStyle = `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, 0.3)`;
+                            respCtx.fillRect(px, py, resolution, resolution);
+                        }
+                    }
+                }
+            }
+            
+            // Draw axes
+            respCtx.strokeStyle = '#333';
+            respCtx.lineWidth = 1;
+            
+            const y0 = toCanvasY(responsibilityCanvas, 0);
+            respCtx.beginPath();
+            respCtx.moveTo(margin, y0);
+            respCtx.lineTo(W - margin, y0);
+            respCtx.stroke();
+            
+            const x0 = toCanvasX(responsibilityCanvas, 0);
+            respCtx.beginPath();
+            respCtx.moveTo(x0, margin);
+            respCtx.lineTo(x0, H - margin);
+            respCtx.stroke();
+            
+            // Draw data points with pie chart showing responsibilities
+            for (let i = 0; i < data.length; i++) {
+                const point = data[i];
+                const cx = toCanvasX(responsibilityCanvas, point.x);
+                const cy = toCanvasY(responsibilityCanvas, point.y);
+                
+                if (responsibilities[i] && means.length > 0) {
+                    // Draw pie chart
+                    let startAngle = -Math.PI / 2;
+                    const radius = 8;
+                    
+                    for (let k = 0; k < K; k++) {
+                        const sweep = responsibilities[i][k] * 2 * Math.PI;
+                        
+                        respCtx.fillStyle = componentColors[k % componentColors.length];
+                        respCtx.beginPath();
+                        respCtx.moveTo(cx, cy);
+                        respCtx.arc(cx, cy, radius, startAngle, startAngle + sweep);
+                        respCtx.closePath();
+                        respCtx.fill();
+                        
+                        startAngle += sweep;
+                    }
+                    
+                    // Border
+                    respCtx.strokeStyle = '#fff';
+                    respCtx.lineWidth = 1;
+                    respCtx.beginPath();
+                    respCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    respCtx.stroke();
+                } else {
+                    respCtx.fillStyle = '#666';
+                    respCtx.beginPath();
+                    respCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+                    respCtx.fill();
+                }
+            }
+            
+            // Title
+            respCtx.fillStyle = '#fff';
+            respCtx.font = 'bold 11px sans-serif';
+            respCtx.textAlign = 'left';
+            respCtx.fillText('Pie charts show P(component|point)', margin, 25);
+        }
+        
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 128, g: 128, b: 128 };
+        }
+        
+        // ========== DRAWING: LOG-LIKELIHOOD ==========
+        function drawLogLikelihood() {
+            const W = likelihoodCanvas.width;
+            const H = likelihoodCanvas.height;
+            const margin = 50;
+            const plotW = W - 2 * margin;
+            const plotH = H - 2 * margin;
+            
+            likCtx.fillStyle = '#0a0a1a';
+            likCtx.fillRect(0, 0, W, H);
+            
+            if (logLikHistory.length < 2) {
+                likCtx.fillStyle = '#555';
+                likCtx.font = '14px sans-serif';
+                likCtx.textAlign = 'center';
+                likCtx.fillText('Run EM to see log-likelihood', W / 2, H / 2);
+                return;
+            }
+            
+            const minLL = Math.min(...logLikHistory);
+            const maxLL = Math.max(...logLikHistory);
+            const range = maxLL - minLL || 1;
+            
+            // Grid
+            likCtx.strokeStyle = '#222';
+            likCtx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = margin + i * plotH / 4;
+                likCtx.beginPath();
+                likCtx.moveTo(margin, y);
+                likCtx.lineTo(W - margin, y);
+                likCtx.stroke();
+            }
+            
+            // Axes
+            likCtx.strokeStyle = '#555';
+            likCtx.lineWidth = 2;
+            likCtx.beginPath();
+            likCtx.moveTo(margin, margin);
+            likCtx.lineTo(margin, H - margin);
+            likCtx.lineTo(W - margin, H - margin);
+            likCtx.stroke();
+            
+            // Log-likelihood curve
+            likCtx.strokeStyle = '#34d399';
+            likCtx.lineWidth = 3;
+            likCtx.beginPath();
+            
+            for (let i = 0; i < logLikHistory.length; i++) {
+                const px = margin + (i / Math.max(logLikHistory.length - 1, 1)) * plotW;
+                const py = margin + (1 - (logLikHistory[i] - minLL) / range) * plotH;
+                
+                if (i === 0) likCtx.moveTo(px, py);
+                else likCtx.lineTo(px, py);
+            }
+            likCtx.stroke();
+            
+            // Points
+            for (let i = 0; i < logLikHistory.length; i++) {
+                const px = margin + (i / Math.max(logLikHistory.length - 1, 1)) * plotW;
+                const py = margin + (1 - (logLikHistory[i] - minLL) / range) * plotH;
+                
+                likCtx.fillStyle = '#34d399';
+                likCtx.beginPath();
+                likCtx.arc(px, py, 4, 0, Math.PI * 2);
+                likCtx.fill();
+            }
+            
+            // Labels
+            likCtx.fillStyle = '#888';
+            likCtx.font = '10px sans-serif';
+            likCtx.textAlign = 'center';
+            likCtx.fillText('Iteration', W / 2, H - 10);
+            
+            likCtx.save();
+            likCtx.translate(12, H / 2);
+            likCtx.rotate(-Math.PI / 2);
+            likCtx.fillText('Log-Likelihood', 0, 0);
+            likCtx.restore();
+            
+            // Title
+            likCtx.fillStyle = '#fff';
+            likCtx.font = 'bold 11px sans-serif';
+            likCtx.textAlign = 'left';
+            likCtx.fillText('EM always increases log-likelihood', margin, 20);
+        }
+        
+        // ========== DRAWING: DENSITY ==========
+        function drawDensity() {
+            const W = densityCanvas.width;
+            const H = densityCanvas.height;
+            const margin = 40;
+            
+            densCtx.fillStyle = '#0a0a1a';
+            densCtx.fillRect(0, 0, W, H);
+            
+            if (means.length === 0) {
+                densCtx.fillStyle = '#555';
+                densCtx.font = '14px sans-serif';
+                densCtx.textAlign = 'center';
+                densCtx.fillText('Initialize to see density', W / 2, H / 2);
+                return;
+            }
+            
+            // Compute and draw density
+            const resolution = 4;
+            let maxDensity = 0;
+            const densityGrid = [];
+            
+            for (let py = margin; py < H - margin; py += resolution) {
+                for (let px = margin; px < W - margin; px += resolution) {
+                    const x = toDataX(densityCanvas, px, margin);
+                    const y = toDataY(densityCanvas, py, margin);
+                    
+                    const density = mixturePDF(x, y);
+                    densityGrid.push({ px, py, density });
+                    if (density > maxDensity) maxDensity = density;
+                }
+            }
+            
+            // Draw density heatmap
+            for (const cell of densityGrid) {
+                if (cell.density > 0) {
+                    const intensity = Math.pow(cell.density / maxDensity, 0.5);
+                    const hue = 260 - intensity * 80;  // Purple to pink
+                    densCtx.fillStyle = `hsla(${hue}, 80%, ${20 + intensity * 50}%, ${0.3 + intensity * 0.7})`;
+                    densCtx.fillRect(cell.px, cell.py, resolution, resolution);
+                }
+            }
+            
+            // Draw contours
+            densCtx.strokeStyle = 'rgba(255,255,255,0.3)';
+            densCtx.lineWidth = 1;
+            
+            const levels = [0.1, 0.3, 0.5, 0.7];
+            for (const level of levels) {
+                const threshold = level * maxDensity;
+                
+                for (const cell of densityGrid) {
+                    if (Math.abs(cell.density - threshold) < maxDensity * 0.05) {
+                        densCtx.fillStyle = 'rgba(255,255,255,0.5)';
+                        densCtx.fillRect(cell.px, cell.py, 1, 1);
+                    }
+                }
+            }
+            
+            // Draw data points
+            for (const point of data) {
+                const cx = toCanvasX(densityCanvas, point.x, margin);
+                const cy = toCanvasY(densityCanvas, point.y, margin);
+                
+                densCtx.fillStyle = '#fff';
+                densCtx.beginPath();
+                densCtx.arc(cx, cy, 2, 0, Math.PI * 2);
+                densCtx.fill();
+            }
+            
+            // Title
+            densCtx.fillStyle = '#fff';
+            densCtx.font = 'bold 11px sans-serif';
+            densCtx.textAlign = 'left';
+            densCtx.fillText('p(x) = Σ πₖ N(x|μₖ,Σₖ)', margin, 20);
+        }
+        
+        // ========== UPDATE FUNCTIONS ==========
+        function updateStatus(status) {
+            const badge = document.getElementById('statusBadge');
+            badge.className = 'status-badge ' + status;
+            badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        }
+        
+        function updateStats() {
+            document.getElementById('totalPoints').textContent = data.length;
+            document.getElementById('iterValue').textContent = iteration;
+            
+            if (means.length > 0 && data.length > 0) {
+                const ll = computeLogLikelihood();
+                document.getElementById('logLikValue').textContent = ll.toFixed(1);
+                document.getElementById('bicValue').textContent = computeBIC().toFixed(0);
+                document.getElementById('aicValue').textContent = computeAIC().toFixed(0);
+            } else {
+                document.getElementById('logLikValue').textContent = '--';
+                document.getElementById('bicValue').textContent = '--';
+                document.getElementById('aicValue').textContent = '--';
+            }
+            
+            // Update component list
+            const list = document.getElementById('componentList');
+            if (means.length > 0) {
+                let html = '';
+                for (let k = 0; k < K; k++) {
+                    const color = componentColors[k % componentColors.length];
+                    const weight = weights[k] ? (weights[k] * 100).toFixed(1) : '0.0';
+                    html += `
+                        <div class="component-item">
+                            <div class="component-dot" style="background: ${color};"></div>
+                            <div class="component-info">Component ${k + 1}</div>
+                            <div class="component-weight">π = ${weight}%</div>
+                        </div>
+                    `;
+                }
+                list.innerHTML = html;
+            } else {
+                list.innerHTML = '';
+            }
+        }
+        
+        function drawAll() {
+            drawMixtureModel();
+            drawResponsibilities();
+            drawLogLikelihood();
+            drawDensity();
+        }
+        
+        // ========== EVENT HANDLERS ==========
+        mixtureCanvas.addEventListener('click', function(e) {
+            const rect = mixtureCanvas.getBoundingClientRect();
+            const scaleX = mixtureCanvas.width / rect.width;
+            const scaleY = mixtureCanvas.height / rect.height;
+            
+            const cx = (e.clientX - rect.left) * scaleX;
+            const cy = (e.clientY - rect.top) * scaleY;
+            
+            const margin = 40;
+            if (cx >= margin && cx <= mixtureCanvas.width - margin &&
+                cy >= margin && cy <= mixtureCanvas.height - margin) {
+                
+                const x = toDataX(mixtureCanvas, cx);
+                const y = toDataY(mixtureCanvas, cy);
+                
+                data.push({ x, y });
+                responsibilities.push(new Array(K).fill(1 / K));
+                
+                // Re-run E-step if model exists
+                if (means.length > 0) {
+                    eStep();
+                }
+                
+                updateStats();
+                drawAll();
+            }
+        });
+        
+        document.getElementById('kSlider').addEventListener('input', function(e) {
+            K = parseInt(e.target.value);
+            document.getElementById('kValue').textContent = K;
+            
+            // Reset model
+            means = [];
+            covariances = [];
+            weights = [];
+            responsibilities = data.map(() => new Array(K).fill(1 / K));
+            logLikHistory = [];
+            iteration = 0;
+            converged = false;
+            
+            updateStatus('ready');
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('covTypeSelect').addEventListener('change', function(e) {
+            covType = e.target.value;
+            
+            // Reset and reinitialize if model exists
+            if (means.length > 0) {
+                initializeGMM();
+            }
+            
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('initBtn').addEventListener('click', function() {
+            if (data.length >= K) {
+                initializeGMM();
+                updateStats();
+                drawAll();
+            }
+        });
+        
+        document.getElementById('stepBtn').addEventListener('click', function() {
+            if (means.length === 0 && data.length >= K) {
+                initializeGMM();
+            }
+            if (!converged) {
+                emStep();
+                updateStats();
+                drawAll();
+            }
+        });
+        
+        document.getElementById('runBtn').addEventListener('click', function() {
+            if (data.length >= K) {
+                runToConvergence();
+            }
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            means = [];
+            covariances = [];
+            weights = [];
+            responsibilities = data.map(() => new Array(K).fill(1 / K));
+            logLikHistory = [];
+            iteration = 0;
+            converged = false;
+            isRunning = false;
+            
+            updateStatus('ready');
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('clearDataBtn').addEventListener('click', function() {
+            data = [];
+            means = [];
+            covariances = [];
+            weights = [];
+            responsibilities = [];
+            logLikHistory = [];
+            iteration = 0;
+            converged = false;
+            isRunning = false;
+            
+            updateStatus('ready');
+            updateStats();
+            drawAll();
+        });
+        
+        // Example datasets
+        document.getElementById('blobsBtn').addEventListener('click', function() {
+            data = [];
+            means = [];
+            covariances = [];
+            weights = [];
+            responsibilities = [];
+            logLikHistory = [];
+            iteration = 0;
+            converged = false;
+            
+            const centers = [
+                { x: -2.5, y: 2, sx: 0.5, sy: 0.5 },
+                { x: 2.5, y: 2, sx: 0.6, sy: 0.4 },
+                { x: 0, y: -2.5, sx: 0.4, sy: 0.6 }
+            ];
+            
+            for (const center of centers) {
+                for (let i = 0; i < 25; i++) {
+                    data.push({
+                        x: center.x + (Math.random() - 0.5) * 2 * center.sx + (Math.random() - 0.5) * 2 * center.sx,
+                        y: center.y + (Math.random() - 0.5) * 2 * center.sy + (Math.random() - 0.5) * 2 * center.sy
+                    });
+                }
+            }
+            
+            K = 3;
+            document.getElementById('kSlider').value = 3;
+            document.getElementById('kValue').textContent = '3';
+            responsibilities = data.map(() => new Array(K).fill(1 / K));
+            
+            initializeGMM();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('elongatedBtn').addEventListener('click', function() {
+            data = [];
+            means = [];
+            covariances = [];
+            weights = [];
+            responsibilities = [];
+            logLikHistory = [];
+            iteration = 0;
+            converged = false;
+            
+            // Elongated cluster 1 (diagonal)
+            for (let i = 0; i < 30; i++) {
+                const t = (Math.random() - 0.5) * 4;
+                data.push({
+                    x: -1.5 + t * 0.7 + (Math.random() - 0.5) * 0.4,
+                    y: 1 + t * 0.7 + (Math.random() - 0.5) * 0.4
+                });
+            }
+            
+            // Elongated cluster 2 (horizontal)
+            for (let i = 0; i < 30; i++) {
+                data.push({
+                    x: 1 + (Math.random() - 0.5) * 3,
+                    y: -2 + (Math.random() - 0.5) * 0.6
+                });
+            }
+            
+            K = 2;
+            document.getElementById('kSlider').value = 2;
+            document.getElementById('kValue').textContent = '2';
+            responsibilities = data.map(() => new Array(K).fill(1 / K));
+            
+            covType = 'full';
+            document.getElementById('covTypeSelect').value = 'full';
+            
+            initializeGMM();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('overlapBtn').addEventListener('click', function() {
+            data = [];
+            means = [];
+            covariances = [];
+            weights = [];
+            responsibilities = [];
+            logLikHistory = [];
+            iteration = 0;
+            converged = false;
+            
+            // Overlapping clusters
+            const centers = [
+                { x: -0.8, y: 0 },
+                { x: 0.8, y: 0 }
+            ];
+            
+            for (const center of centers) {
+                for (let i = 0; i < 40; i++) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const r = Math.sqrt(-2 * Math.log(Math.random())) * 1.2;
+                    data.push({
+                        x: center.x + r * Math.cos(angle),
+                        y: center.y + r * Math.sin(angle)
+                    });
+                }
+            }
+            
+            K = 2;
+            document.getElementById('kSlider').value = 2;
+            document.getElementById('kValue').textContent = '2';
+            responsibilities = data.map(() => new Array(K).fill(1 / K));
+            
+            initializeGMM();
+            updateStats();
+            drawAll();
+        });
+        
+        // Initialize
+        updateStats();
+        drawAll();
+    </script>
+</body>
+</html>
