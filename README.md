@@ -5,6 +5,23 @@
 ### Click on each image to see the live interactive version:
 
 ---------------------------------------------------------
+## Lecture 1:Intro to AI4EPS
+
+<table>
+  <tr align="center">
+    <th>Machine Learning & Earth and Planetary Sciences</th>
+  </tr>
+  
+  <tr align="center">
+    <td>
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L1_ml_and_eps.html">
+        <img src="interactive_visualizations/L1_ml_and_eps.png" alt="ml_and_eps" width="200">
+      </a>
+    </td>
+  </tr>
+</table>
+
+---------------------------------------------------------
 ## Lecture 3: Traditional Machine Learning (Statistical Learning) Methods
 
 <table>
