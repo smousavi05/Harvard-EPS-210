@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hierarchical Clustering - Interactive Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0f1a 0%, #1a1f2e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #f59e0b, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+        
+        .visualizations {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .viz-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .panel h2 {
+            font-size: 1rem;
+            color: #8b5cf6;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .panel.wide {
+            grid-column: span 2;
+        }
+        
+        canvas {
+            background: #0a0a1a;
+            border-radius: 12px;
+            cursor: crosshair;
+            display: block;
+            width: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .control-section h3 {
+            font-size: 0.85rem;
+            color: #f59e0b;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(139,92,246,0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(6,182,212,0.4);
+        }
+        
+        .btn-accent {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        
+        .btn-accent:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245,158,11,0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #888;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        
+        .slider-group {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .slider-value {
+            color: #8b5cf6;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #2a2a4a;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b, #8b5cf6);
+            cursor: pointer;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            font-family: monospace;
+        }
+        
+        .linkage-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            background: #2a2a4a;
+            color: #e0e0e0;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        .info-box {
+            background: rgba(139,92,246,0.1);
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .cluster-display {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .cluster-display .cluster-value {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f59e0b, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .cluster-display .cluster-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .equation-box {
+            background: rgba(0,0,0,0.4);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            margin: 10px 0;
+            border-left: 3px solid #8b5cf6;
+        }
+        
+        .equation-box .main-eq {
+            font-size: 0.9rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .equation-box .sub-eq {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        .cut-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(245,158,11,0.1);
+            border: 1px solid rgba(245,158,11,0.3);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .cut-indicator .cut-line {
+            width: 30px;
+            height: 3px;
+            background: #f59e0b;
+        }
+        
+        .cut-indicator .cut-text {
+            font-size: 0.8rem;
+            color: #f59e0b;
+        }
+        
+        .merge-log {
+            max-height: 150px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+        
+        .merge-log-item {
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .merge-log-item:last-child {
+            border-bottom: none;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .viz-row {
+                grid-template-columns: 1fr;
+            }
+            .panel.wide {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hierarchical Clustering</h1>
+        <p class="subtitle">Harvard EPS-210 | Interactive tutorial — Explore agglomerative clustering and dendrograms</p>
+        
+        <div class="main-layout">
+            <div class="visualizations">
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Clustering Space</h2>
+                        <canvas id="clusterCanvas" width="400" height="320"></canvas>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #888;"></div>
+                                <span>Unclustered</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="border: 2px dashed #f59e0b; background: transparent;"></div>
+                                <span>Merge Step</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>Distance Matrix</h2>
+                        <canvas id="matrixCanvas" width="400" height="320"></canvas>
+                    </div>
+                </div>
+                
+                <div class="viz-row">
+                    <div class="panel wide">
+                        <h2>Dendrogram</h2>
+                        <canvas id="dendrogramCanvas" width="820" height="280"></canvas>
+                        <div class="cut-indicator">
+                            <div class="cut-line"></div>
+                            <span class="cut-text">Drag the cut height slider to select number of clusters</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-section">
+                    <h3>Data Points</h3>
+                    <p style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">
+                        Click on the clustering canvas to add points
+                    </p>
+                    <button class="btn btn-outline" id="clearDataBtn">Clear All Points</button>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Cut Height</h3>
+                    <div class="cluster-display">
+                        <div class="cluster-value" id="numClusters">--</div>
+                        <div class="cluster-label">Clusters</div>
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Cut Height</span>
+                            <span class="slider-value" id="cutHeightValue">0.00</span>
+                        </div>
+                        <input type="range" id="cutHeightSlider" min="0" max="100" step="1" value="50">
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Linkage Method</h3>
+                    <select class="linkage-select" id="linkageSelect">
+                        <option value="single">Single (Minimum)</option>
+                        <option value="complete">Complete (Maximum)</option>
+                        <option value="average" selected>Average (UPGMA)</option>
+                        <option value="ward">Ward's Method</option>
+                    </select>
+                    <div class="equation-box" id="linkageEq">
+                        <div class="main-eq">d(A,B) = avg d(a,b)</div>
+                        <div class="sub-eq">Average of all pairwise distances</div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Algorithm Control</h3>
+                    <button class="btn btn-primary" id="buildBtn">🌳 Build Hierarchy</button>
+                    <button class="btn btn-secondary" id="stepBtn">➡️ Step (One Merge)</button>
+                    <button class="btn btn-outline" id="resetBtn">Reset</button>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Points</div>
+                            <div class="stat-value" id="totalPoints">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Merges</div>
+                            <div class="stat-value" id="numMerges">0</div>
+                        </div>
+                    </div>
+                    <div class="merge-log" id="mergeLog">
+                        <div style="color: #666;">Merge history will appear here</div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Quick Examples</h3>
+                    <button class="btn btn-outline" id="blobsBtn">Three Blobs</button>
+                    <button class="btn btn-outline" id="chainBtn">Chain</button>
+                    <button class="btn btn-outline" id="nestedBtn">Nested</button>
+                </div>
+                
+                <div class="info-box">
+                    <strong>How it works:</strong> Agglomerative clustering starts with each point as its own cluster, then repeatedly merges the two closest clusters until one remains. The dendrogram shows this hierarchy.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========== CANVAS SETUP ==========
+        const clusterCanvas = document.getElementById('clusterCanvas');
+        const matrixCanvas = document.getElementById('matrixCanvas');
+        const dendrogramCanvas = document.getElementById('dendrogramCanvas');
+        
+        const clusterCtx = clusterCanvas.getContext('2d');
+        const matrixCtx = matrixCanvas.getContext('2d');
+        const dendroCtx = dendrogramCanvas.getContext('2d');
+        
+        // ========== STATE ==========
+        let data = [];
+        let hierarchy = [];  // List of merges: { i, j, distance, size }
+        let linkage = 'average';
+        let cutHeight = 0;
+        let maxHeight = 1;
+        let currentStep = 0;
+        let isBuilt = false;
+        
+        // Coordinate ranges
+        const xMin = -5, xMax = 5;
+        const yMin = -5, yMax = 5;
+        
+        // Cluster colors
+        const clusterColors = [
+            '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#10b981',
+            '#f43f5e', '#3b82f6', '#84cc16', '#a855f7', '#14b8a6'
+        ];
+        
+        // ========== DISTANCE FUNCTIONS ==========
+        function distance(p1, p2) {
+            return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+        }
+        
+        function clusterDistance(c1, c2, method) {
+            if (method === 'single') {
+                // Minimum distance
+                let minDist = Infinity;
+                for (const p1 of c1) {
+                    for (const p2 of c2) {
+                        const d = distance(data[p1], data[p2]);
+                        if (d < minDist) minDist = d;
+                    }
+                }
+                return minDist;
+            } else if (method === 'complete') {
+                // Maximum distance
+                let maxDist = 0;
+                for (const p1 of c1) {
+                    for (const p2 of c2) {
+                        const d = distance(data[p1], data[p2]);
+                        if (d > maxDist) maxDist = d;
+                    }
+                }
+                return maxDist;
+            } else if (method === 'average') {
+                // Average distance
+                let sumDist = 0;
+                let count = 0;
+                for (const p1 of c1) {
+                    for (const p2 of c2) {
+                        sumDist += distance(data[p1], data[p2]);
+                        count++;
+                    }
+                }
+                return sumDist / count;
+            } else if (method === 'ward') {
+                // Ward's method: increase in total within-cluster variance
+                const c1Mean = getClusterMean(c1);
+                const c2Mean = getClusterMean(c2);
+                const mergedMean = {
+                    x: (c1Mean.x * c1.length + c2Mean.x * c2.length) / (c1.length + c2.length),
+                    y: (c1Mean.y * c1.length + c2Mean.y * c2.length) / (c1.length + c2.length)
+                };
+                
+                const n1 = c1.length;
+                const n2 = c2.length;
+                const dist = Math.sqrt(
+                    (n1 * n2 / (n1 + n2)) * 
+                    ((c1Mean.x - c2Mean.x) ** 2 + (c1Mean.y - c2Mean.y) ** 2)
+                );
+                return dist;
+            }
+            return 0;
+        }
+        
+        function getClusterMean(cluster) {
+            let sumX = 0, sumY = 0;
+            for (const idx of cluster) {
+                sumX += data[idx].x;
+                sumY += data[idx].y;
+            }
+            return { x: sumX / cluster.length, y: sumY / cluster.length };
+        }
+        
+        // ========== HIERARCHICAL CLUSTERING ==========
+        function buildHierarchy() {
+            if (data.length < 2) return;
+            
+            hierarchy = [];
+            currentStep = 0;
+            
+            // Initialize: each point is its own cluster
+            let clusters = data.map((_, i) => [i]);
+            let clusterIds = data.map((_, i) => i);
+            let nextId = data.length;
+            
+            while (clusters.length > 1) {
+                // Find closest pair
+                let minDist = Infinity;
+                let minI = 0, minJ = 1;
+                
+                for (let i = 0; i < clusters.length; i++) {
+                    for (let j = i + 1; j < clusters.length; j++) {
+                        const d = clusterDistance(clusters[i], clusters[j], linkage);
+                        if (d < minDist) {
+                            minDist = d;
+                            minI = i;
+                            minJ = j;
+                        }
+                    }
+                }
+                
+                // Record merge
+                hierarchy.push({
+                    i: clusterIds[minI],
+                    j: clusterIds[minJ],
+                    distance: minDist,
+                    size: clusters[minI].length + clusters[minJ].length,
+                    members: [...clusters[minI], ...clusters[minJ]]
+                });
+                
+                // Merge clusters
+                const newCluster = [...clusters[minI], ...clusters[minJ]];
+                clusters.splice(minJ, 1);
+                clusters.splice(minI, 1);
+                clusters.push(newCluster);
+                
+                clusterIds.splice(minJ, 1);
+                clusterIds.splice(minI, 1);
+                clusterIds.push(nextId++);
+            }
+            
+            // Update max height
+            maxHeight = Math.max(...hierarchy.map(h => h.distance)) * 1.2;
+            if (maxHeight === 0) maxHeight = 1;
+            
+            // Set cut height slider
+            const slider = document.getElementById('cutHeightSlider');
+            cutHeight = maxHeight * (slider.value / 100);
+            
+            isBuilt = true;
+            currentStep = hierarchy.length;
+            
+            updateMergeLog();
+        }
+        
+        function stepHierarchy() {
+            if (data.length < 2) return;
+            
+            if (!isBuilt || currentStep === 0) {
+                // Start fresh
+                hierarchy = [];
+                currentStep = 0;
+                isBuilt = false;
+            }
+            
+            if (currentStep >= data.length - 1) return;
+            
+            // Build one step
+            let clusters = data.map((_, i) => [i]);
+            let clusterIds = data.map((_, i) => i);
+            let nextId = data.length;
+            
+            // Apply existing merges
+            for (let s = 0; s < currentStep; s++) {
+                const merge = hierarchy[s];
+                const idx1 = clusterIds.indexOf(merge.i);
+                const idx2 = clusterIds.indexOf(merge.j);
+                
+                if (idx1 !== -1 && idx2 !== -1) {
+                    const newCluster = [...clusters[idx1], ...clusters[idx2]];
+                    const i1 = Math.min(idx1, idx2);
+                    const i2 = Math.max(idx1, idx2);
+                    clusters.splice(i2, 1);
+                    clusters.splice(i1, 1);
+                    clusters.push(newCluster);
+                    
+                    clusterIds.splice(i2, 1);
+                    clusterIds.splice(i1, 1);
+                    clusterIds.push(nextId++);
+                }
+            }
+            
+            // Find next closest pair
+            let minDist = Infinity;
+            let minI = 0, minJ = 1;
+            
+            for (let i = 0; i < clusters.length; i++) {
+                for (let j = i + 1; j < clusters.length; j++) {
+                    const d = clusterDistance(clusters[i], clusters[j], linkage);
+                    if (d < minDist) {
+                        minDist = d;
+                        minI = i;
+                        minJ = j;
+                    }
+                }
+            }
+            
+            // Record merge
+            hierarchy.push({
+                i: clusterIds[minI],
+                j: clusterIds[minJ],
+                distance: minDist,
+                size: clusters[minI].length + clusters[minJ].length,
+                members: [...clusters[minI], ...clusters[minJ]]
+            });
+            
+            currentStep++;
+            
+            // Update max height
+            maxHeight = Math.max(...hierarchy.map(h => h.distance)) * 1.2;
+            if (maxHeight === 0) maxHeight = 1;
+            
+            const slider = document.getElementById('cutHeightSlider');
+            cutHeight = maxHeight * (slider.value / 100);
+            
+            if (currentStep >= data.length - 1) {
+                isBuilt = true;
+            }
+            
+            updateMergeLog();
+        }
+        
+        function getClustersAtHeight(height) {
+            if (data.length === 0) return [];
+            if (hierarchy.length === 0) return data.map((_, i) => [i]);
+            
+            // Start with all points as separate
+            let clusters = data.map((_, i) => [i]);
+            let clusterIds = data.map((_, i) => i);
+            let nextId = data.length;
+            
+            // Apply merges below cut height
+            for (const merge of hierarchy) {
+                if (merge.distance > height) break;
+                
+                const idx1 = clusterIds.indexOf(merge.i);
+                const idx2 = clusterIds.indexOf(merge.j);
+                
+                if (idx1 !== -1 && idx2 !== -1) {
+                    const newCluster = [...clusters[idx1], ...clusters[idx2]];
+                    const i1 = Math.min(idx1, idx2);
+                    const i2 = Math.max(idx1, idx2);
+                    clusters.splice(i2, 1);
+                    clusters.splice(i1, 1);
+                    clusters.push(newCluster);
+                    
+                    clusterIds.splice(i2, 1);
+                    clusterIds.splice(i1, 1);
+                    clusterIds.push(nextId++);
+                }
+            }
+            
+            return clusters;
+        }
+        
+        // ========== COORDINATE TRANSFORMS ==========
+        function toCanvasX(canvas, x, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return margin + (x - xMin) / (xMax - xMin) * w;
+        }
+        
+        function toCanvasY(canvas, y, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return margin + (yMax - y) / (yMax - yMin) * h;
+        }
+        
+        function toDataX(canvas, cx, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return xMin + (cx - margin) / w * (xMax - xMin);
+        }
+        
+        function toDataY(canvas, cy, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return yMax - (cy - margin) / h * (yMax - yMin);
+        }
+        
+        // ========== DRAWING: CLUSTER SPACE ==========
+        function drawClusterSpace() {
+            const W = clusterCanvas.width;
+            const H = clusterCanvas.height;
+            const margin = 40;
+            
+            clusterCtx.fillStyle = '#0a0a1a';
+            clusterCtx.fillRect(0, 0, W, H);
+            
+            // Draw axes
+            clusterCtx.strokeStyle = '#333';
+            clusterCtx.lineWidth = 1;
+            
+            const y0 = toCanvasY(clusterCanvas, 0);
+            clusterCtx.beginPath();
+            clusterCtx.moveTo(margin, y0);
+            clusterCtx.lineTo(W - margin, y0);
+            clusterCtx.stroke();
+            
+            const x0 = toCanvasX(clusterCanvas, 0);
+            clusterCtx.beginPath();
+            clusterCtx.moveTo(x0, margin);
+            clusterCtx.lineTo(x0, H - margin);
+            clusterCtx.stroke();
+            
+            // Get current clusters
+            const clusters = getClustersAtHeight(cutHeight);
+            
+            // Create point-to-cluster mapping
+            const pointCluster = new Array(data.length).fill(-1);
+            clusters.forEach((cluster, clusterIdx) => {
+                for (const pointIdx of cluster) {
+                    pointCluster[pointIdx] = clusterIdx;
+                }
+            });
+            
+            // Draw cluster hulls
+            for (let c = 0; c < clusters.length; c++) {
+                if (clusters[c].length >= 3) {
+                    const points = clusters[c].map(i => ({
+                        x: toCanvasX(clusterCanvas, data[i].x),
+                        y: toCanvasY(clusterCanvas, data[i].y)
+                    }));
+                    
+                    // Simple convex hull visualization using bounding area
+                    clusterCtx.fillStyle = clusterColors[c % clusterColors.length] + '15';
+                    clusterCtx.strokeStyle = clusterColors[c % clusterColors.length] + '40';
+                    clusterCtx.lineWidth = 2;
+                    
+                    // Draw enclosing circle
+                    const cx = points.reduce((s, p) => s + p.x, 0) / points.length;
+                    const cy = points.reduce((s, p) => s + p.y, 0) / points.length;
+                    const maxR = Math.max(...points.map(p => Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2))) + 15;
+                    
+                    clusterCtx.beginPath();
+                    clusterCtx.arc(cx, cy, maxR, 0, Math.PI * 2);
+                    clusterCtx.fill();
+                    clusterCtx.stroke();
+                }
+            }
+            
+            // Draw points
+            for (let i = 0; i < data.length; i++) {
+                const point = data[i];
+                const cx = toCanvasX(clusterCanvas, point.x);
+                const cy = toCanvasY(clusterCanvas, point.y);
+                
+                const clusterIdx = pointCluster[i];
+                const color = clusterIdx >= 0 ? clusterColors[clusterIdx % clusterColors.length] : '#666';
+                
+                clusterCtx.fillStyle = color;
+                clusterCtx.strokeStyle = '#fff';
+                clusterCtx.lineWidth = 1.5;
+                clusterCtx.beginPath();
+                clusterCtx.arc(cx, cy, 6, 0, Math.PI * 2);
+                clusterCtx.fill();
+                clusterCtx.stroke();
+                
+                // Point label
+                clusterCtx.fillStyle = '#fff';
+                clusterCtx.font = '9px sans-serif';
+                clusterCtx.textAlign = 'center';
+                clusterCtx.fillText(i.toString(), cx, cy - 10);
+            }
+            
+            // Title
+            clusterCtx.fillStyle = '#fff';
+            clusterCtx.font = 'bold 12px sans-serif';
+            clusterCtx.textAlign = 'left';
+            clusterCtx.fillText('Click to add points', margin, 25);
+        }
+        
+        // ========== DRAWING: DISTANCE MATRIX ==========
+        function drawDistanceMatrix() {
+            const W = matrixCanvas.width;
+            const H = matrixCanvas.height;
+            const margin = 50;
+            
+            matrixCtx.fillStyle = '#0a0a1a';
+            matrixCtx.fillRect(0, 0, W, H);
+            
+            if (data.length < 2) {
+                matrixCtx.fillStyle = '#555';
+                matrixCtx.font = '14px sans-serif';
+                matrixCtx.textAlign = 'center';
+                matrixCtx.fillText('Add points to see distance matrix', W / 2, H / 2);
+                return;
+            }
+            
+            const n = data.length;
+            const cellSize = Math.min((W - 2 * margin) / n, (H - 2 * margin) / n);
+            const offsetX = margin + (W - 2 * margin - cellSize * n) / 2;
+            const offsetY = margin + (H - 2 * margin - cellSize * n) / 2;
+            
+            // Compute distance matrix and find max
+            let maxDist = 0;
+            const distances = [];
+            for (let i = 0; i < n; i++) {
+                distances[i] = [];
+                for (let j = 0; j < n; j++) {
+                    distances[i][j] = distance(data[i], data[j]);
+                    if (distances[i][j] > maxDist) maxDist = distances[i][j];
+                }
+            }
+            
+            // Get cluster assignments
+            const clusters = getClustersAtHeight(cutHeight);
+            const pointCluster = new Array(n).fill(-1);
+            clusters.forEach((cluster, clusterIdx) => {
+                for (const pointIdx of cluster) {
+                    pointCluster[pointIdx] = clusterIdx;
+                }
+            });
+            
+            // Draw cells
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    const x = offsetX + j * cellSize;
+                    const y = offsetY + i * cellSize;
+                    
+                    if (i === j) {
+                        matrixCtx.fillStyle = '#1a1a2e';
+                    } else {
+                        const intensity = distances[i][j] / maxDist;
+                        const hue = (1 - intensity) * 240; // Blue to red
+                        matrixCtx.fillStyle = `hsl(${hue}, 70%, ${30 + intensity * 30}%)`;
+                    }
+                    
+                    matrixCtx.fillRect(x, y, cellSize - 1, cellSize - 1);
+                    
+                    // Highlight same-cluster pairs
+                    if (pointCluster[i] === pointCluster[j] && pointCluster[i] >= 0 && i !== j) {
+                        matrixCtx.strokeStyle = clusterColors[pointCluster[i] % clusterColors.length];
+                        matrixCtx.lineWidth = 2;
+                        matrixCtx.strokeRect(x, y, cellSize - 1, cellSize - 1);
+                    }
+                }
+            }
+            
+            // Row/column labels
+            matrixCtx.fillStyle = '#888';
+            matrixCtx.font = '9px sans-serif';
+            matrixCtx.textAlign = 'center';
+            
+            for (let i = 0; i < n; i++) {
+                const color = pointCluster[i] >= 0 ? clusterColors[pointCluster[i] % clusterColors.length] : '#888';
+                matrixCtx.fillStyle = color;
+                matrixCtx.fillText(i.toString(), offsetX + i * cellSize + cellSize / 2, offsetY - 5);
+                matrixCtx.fillText(i.toString(), offsetX - 10, offsetY + i * cellSize + cellSize / 2 + 3);
+            }
+            
+            // Title
+            matrixCtx.fillStyle = '#fff';
+            matrixCtx.font = 'bold 11px sans-serif';
+            matrixCtx.textAlign = 'left';
+            matrixCtx.fillText('Pairwise distances', margin, 20);
+        }
+        
+        // ========== DRAWING: DENDROGRAM ==========
+        function drawDendrogram() {
+            const W = dendrogramCanvas.width;
+            const H = dendrogramCanvas.height;
+            const margin = { top: 30, right: 50, bottom: 40, left: 50 };
+            const plotW = W - margin.left - margin.right;
+            const plotH = H - margin.top - margin.bottom;
+            
+            dendroCtx.fillStyle = '#0a0a1a';
+            dendroCtx.fillRect(0, 0, W, H);
+            
+            if (data.length < 2 || hierarchy.length === 0) {
+                dendroCtx.fillStyle = '#555';
+                dendroCtx.font = '14px sans-serif';
+                dendroCtx.textAlign = 'center';
+                dendroCtx.fillText('Build hierarchy to see dendrogram', W / 2, H / 2);
+                return;
+            }
+            
+            const n = data.length;
+            
+            // Compute leaf positions (order points by cluster membership for nicer layout)
+            const leafOrder = computeLeafOrder();
+            const leafX = {};
+            leafOrder.forEach((idx, pos) => {
+                leafX[idx] = margin.left + (pos + 0.5) * (plotW / n);
+            });
+            
+            // Node positions
+            const nodeX = { ...leafX };
+            const nodeY = {};
+            
+            // Leaves at bottom
+            for (let i = 0; i < n; i++) {
+                nodeY[i] = H - margin.bottom;
+            }
+            
+            // Process merges
+            let nextId = n;
+            const displayedHierarchy = hierarchy.slice(0, currentStep);
+            
+            for (const merge of displayedHierarchy) {
+                const x1 = nodeX[merge.i];
+                const x2 = nodeX[merge.j];
+                const y1 = nodeY[merge.i];
+                const y2 = nodeY[merge.j];
+                
+                const newX = (x1 + x2) / 2;
+                const newY = margin.top + plotH * (1 - merge.distance / maxHeight);
+                
+                nodeX[nextId] = newX;
+                nodeY[nextId] = newY;
+                
+                // Determine color
+                let color = '#666';
+                if (merge.distance <= cutHeight) {
+                    // Find which cluster this merge belongs to
+                    const clusters = getClustersAtHeight(cutHeight);
+                    for (let c = 0; c < clusters.length; c++) {
+                        if (merge.members.every(m => clusters[c].includes(m))) {
+                            color = clusterColors[c % clusterColors.length];
+                            break;
+                        }
+                    }
+                }
+                
+                // Draw lines
+                dendroCtx.strokeStyle = color;
+                dendroCtx.lineWidth = 2;
+                
+                // Vertical line from left child
+                dendroCtx.beginPath();
+                dendroCtx.moveTo(x1, y1);
+                dendroCtx.lineTo(x1, newY);
+                dendroCtx.stroke();
+                
+                // Vertical line from right child
+                dendroCtx.beginPath();
+                dendroCtx.moveTo(x2, y2);
+                dendroCtx.lineTo(x2, newY);
+                dendroCtx.stroke();
+                
+                // Horizontal line connecting them
+                dendroCtx.beginPath();
+                dendroCtx.moveTo(x1, newY);
+                dendroCtx.lineTo(x2, newY);
+                dendroCtx.stroke();
+                
+                nextId++;
+            }
+            
+            // Draw cut line
+            const cutY = margin.top + plotH * (1 - cutHeight / maxHeight);
+            dendroCtx.strokeStyle = '#f59e0b';
+            dendroCtx.lineWidth = 2;
+            dendroCtx.setLineDash([8, 4]);
+            dendroCtx.beginPath();
+            dendroCtx.moveTo(margin.left, cutY);
+            dendroCtx.lineTo(W - margin.right, cutY);
+            dendroCtx.stroke();
+            dendroCtx.setLineDash([]);
+            
+            // Cut label
+            dendroCtx.fillStyle = '#f59e0b';
+            dendroCtx.font = 'bold 10px sans-serif';
+            dendroCtx.textAlign = 'left';
+            dendroCtx.fillText(`cut = ${cutHeight.toFixed(2)}`, W - margin.right + 5, cutY + 4);
+            
+            // Draw leaf labels
+            const clusters = getClustersAtHeight(cutHeight);
+            const pointCluster = new Array(n).fill(-1);
+            clusters.forEach((cluster, clusterIdx) => {
+                for (const pointIdx of cluster) {
+                    pointCluster[pointIdx] = clusterIdx;
+                }
+            });
+            
+            dendroCtx.font = '10px sans-serif';
+            dendroCtx.textAlign = 'center';
+            
+            for (let i = 0; i < n; i++) {
+                const x = leafX[i];
+                const color = pointCluster[i] >= 0 ? clusterColors[pointCluster[i] % clusterColors.length] : '#888';
+                
+                dendroCtx.fillStyle = color;
+                dendroCtx.beginPath();
+                dendroCtx.arc(x, H - margin.bottom + 5, 4, 0, Math.PI * 2);
+                dendroCtx.fill();
+                
+                dendroCtx.fillText(i.toString(), x, H - margin.bottom + 20);
+            }
+            
+            // Y-axis (height)
+            dendroCtx.strokeStyle = '#444';
+            dendroCtx.lineWidth = 1;
+            dendroCtx.beginPath();
+            dendroCtx.moveTo(margin.left - 10, margin.top);
+            dendroCtx.lineTo(margin.left - 10, H - margin.bottom);
+            dendroCtx.stroke();
+            
+            // Y-axis labels
+            dendroCtx.fillStyle = '#888';
+            dendroCtx.font = '9px sans-serif';
+            dendroCtx.textAlign = 'right';
+            
+            for (let h = 0; h <= maxHeight; h += maxHeight / 4) {
+                const y = margin.top + plotH * (1 - h / maxHeight);
+                dendroCtx.fillText(h.toFixed(1), margin.left - 15, y + 3);
+                
+                dendroCtx.strokeStyle = '#222';
+                dendroCtx.beginPath();
+                dendroCtx.moveTo(margin.left, y);
+                dendroCtx.lineTo(W - margin.right, y);
+                dendroCtx.stroke();
+            }
+            
+            // Title
+            dendroCtx.fillStyle = '#fff';
+            dendroCtx.font = 'bold 11px sans-serif';
+            dendroCtx.textAlign = 'left';
+            dendroCtx.fillText('Dendrogram (height = merge distance)', margin.left, 18);
+        }
+        
+        function computeLeafOrder() {
+            if (hierarchy.length === 0) {
+                return data.map((_, i) => i);
+            }
+            
+            // Build tree structure
+            const n = data.length;
+            const children = {};
+            
+            for (let i = 0; i < n; i++) {
+                children[i] = null;  // Leaves
+            }
+            
+            let nextId = n;
+            for (const merge of hierarchy) {
+                children[nextId] = [merge.i, merge.j];
+                nextId++;
+            }
+            
+            // DFS to get leaf order
+            const order = [];
+            const stack = [nextId - 1];  // Start from root
+            
+            while (stack.length > 0) {
+                const node = stack.pop();
+                
+                if (children[node] === null) {
+                    order.push(node);
+                } else {
+                    stack.push(children[node][1]);
+                    stack.push(children[node][0]);
+                }
+            }
+            
+            return order;
+        }
+        
+        // ========== UPDATE FUNCTIONS ==========
+        function updateStats() {
+            document.getElementById('totalPoints').textContent = data.length;
+            document.getElementById('numMerges').textContent = currentStep;
+            
+            const clusters = getClustersAtHeight(cutHeight);
+            document.getElementById('numClusters').textContent = clusters.length;
+            
+            document.getElementById('cutHeightValue').textContent = cutHeight.toFixed(2);
+        }
+        
+        function updateMergeLog() {
+            const log = document.getElementById('mergeLog');
+            
+            if (hierarchy.length === 0) {
+                log.innerHTML = '<div style="color: #666;">Merge history will appear here</div>';
+                return;
+            }
+            
+            let html = '';
+            const displayedHierarchy = hierarchy.slice(0, currentStep);
+            
+            for (let i = 0; i < displayedHierarchy.length; i++) {
+                const merge = displayedHierarchy[i];
+                const aboveCut = merge.distance > cutHeight;
+                const color = aboveCut ? '#666' : '#8b5cf6';
+                
+                html += `<div class="merge-log-item" style="color: ${color};">
+                    ${i + 1}. Merge ${merge.i < data.length ? merge.i : 'C' + (merge.i - data.length)} + ${merge.j < data.length ? merge.j : 'C' + (merge.j - data.length)} @ d=${merge.distance.toFixed(3)}
+                </div>`;
+            }
+            
+            log.innerHTML = html;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function updateLinkageEquation() {
+            const eq = document.getElementById('linkageEq');
+            
+            switch (linkage) {
+                case 'single':
+                    eq.innerHTML = `
+                        <div class="main-eq">d(A,B) = min d(a,b)</div>
+                        <div class="sub-eq">Minimum pairwise distance</div>
+                    `;
+                    break;
+                case 'complete':
+                    eq.innerHTML = `
+                        <div class="main-eq">d(A,B) = max d(a,b)</div>
+                        <div class="sub-eq">Maximum pairwise distance</div>
+                    `;
+                    break;
+                case 'average':
+                    eq.innerHTML = `
+                        <div class="main-eq">d(A,B) = avg d(a,b)</div>
+                        <div class="sub-eq">Average of all pairwise distances</div>
+                    `;
+                    break;
+                case 'ward':
+                    eq.innerHTML = `
+                        <div class="main-eq">d(A,B) = ΔESS</div>
+                        <div class="sub-eq">Increase in error sum of squares</div>
+                    `;
+                    break;
+            }
+        }
+        
+        function drawAll() {
+            drawClusterSpace();
+            drawDistanceMatrix();
+            drawDendrogram();
+        }
+        
+        // ========== EVENT HANDLERS ==========
+        clusterCanvas.addEventListener('click', function(e) {
+            const rect = clusterCanvas.getBoundingClientRect();
+            const scaleX = clusterCanvas.width / rect.width;
+            const scaleY = clusterCanvas.height / rect.height;
+            
+            const cx = (e.clientX - rect.left) * scaleX;
+            const cy = (e.clientY - rect.top) * scaleY;
+            
+            const margin = 40;
+            if (cx >= margin && cx <= clusterCanvas.width - margin &&
+                cy >= margin && cy <= clusterCanvas.height - margin) {
+                
+                const x = toDataX(clusterCanvas, cx);
+                const y = toDataY(clusterCanvas, cy);
+                
+                data.push({ x, y });
+                
+                // Reset hierarchy when data changes
+                hierarchy = [];
+                currentStep = 0;
+                isBuilt = false;
+                
+                updateStats();
+                drawAll();
+            }
+        });
+        
+        document.getElementById('cutHeightSlider').addEventListener('input', function(e) {
+            cutHeight = maxHeight * (e.target.value / 100);
+            updateStats();
+            updateMergeLog();
+            drawAll();
+        });
+        
+        document.getElementById('linkageSelect').addEventListener('change', function(e) {
+            linkage = e.target.value;
+            
+            // Rebuild hierarchy with new linkage
+            if (data.length >= 2) {
+                buildHierarchy();
+            }
+            
+            updateLinkageEquation();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('buildBtn').addEventListener('click', function() {
+            if (data.length >= 2) {
+                buildHierarchy();
+                updateStats();
+                drawAll();
+            }
+        });
+        
+        document.getElementById('stepBtn').addEventListener('click', function() {
+            if (data.length >= 2) {
+                stepHierarchy();
+                updateStats();
+                drawAll();
+            }
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            hierarchy = [];
+            currentStep = 0;
+            isBuilt = false;
+            maxHeight = 1;
+            cutHeight = 0.5;
+            document.getElementById('cutHeightSlider').value = 50;
+            updateStats();
+            updateMergeLog();
+            drawAll();
+        });
+        
+        document.getElementById('clearDataBtn').addEventListener('click', function() {
+            data = [];
+            hierarchy = [];
+            currentStep = 0;
+            isBuilt = false;
+            maxHeight = 1;
+            cutHeight = 0.5;
+            document.getElementById('cutHeightSlider').value = 50;
+            updateStats();
+            updateMergeLog();
+            drawAll();
+        });
+        
+        // Example datasets
+        document.getElementById('blobsBtn').addEventListener('click', function() {
+            data = [];
+            hierarchy = [];
+            currentStep = 0;
+            isBuilt = false;
+            
+            const centers = [
+                { x: -2.5, y: 2 },
+                { x: 2.5, y: 2 },
+                { x: 0, y: -2.5 }
+            ];
+            
+            for (const center of centers) {
+                for (let i = 0; i < 6; i++) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const r = Math.random() * 0.8;
+                    data.push({
+                        x: center.x + r * Math.cos(angle),
+                        y: center.y + r * Math.sin(angle)
+                    });
+                }
+            }
+            
+            buildHierarchy();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('chainBtn').addEventListener('click', function() {
+            data = [];
+            hierarchy = [];
+            currentStep = 0;
+            isBuilt = false;
+            
+            // Chain pattern - good for single linkage
+            for (let i = 0; i < 12; i++) {
+                data.push({
+                    x: -4 + i * 0.7 + (Math.random() - 0.5) * 0.3,
+                    y: Math.sin(i * 0.5) * 2 + (Math.random() - 0.5) * 0.3
+                });
+            }
+            
+            buildHierarchy();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('nestedBtn').addEventListener('click', function() {
+            data = [];
+            hierarchy = [];
+            currentStep = 0;
+            isBuilt = false;
+            
+            // Nested clusters
+            // Inner cluster
+            for (let i = 0; i < 5; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const r = Math.random() * 0.5;
+                data.push({
+                    x: r * Math.cos(angle),
+                    y: r * Math.sin(angle)
+                });
+            }
+            
+            // Middle ring
+            for (let i = 0; i < 8; i++) {
+                const angle = i * Math.PI / 4 + (Math.random() - 0.5) * 0.3;
+                const r = 1.5 + (Math.random() - 0.5) * 0.3;
+                data.push({
+                    x: r * Math.cos(angle),
+                    y: r * Math.sin(angle)
+                });
+            }
+            
+            // Outer cluster
+            for (let i = 0; i < 5; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const r = Math.random() * 0.5;
+                data.push({
+                    x: 3.5 + r * Math.cos(angle),
+                    y: r * Math.sin(angle)
+                });
+            }
+            
+            buildHierarchy();
+            updateStats();
+            drawAll();
+        });
+        
+        // Initialize
+        updateLinkageEquation();
+        updateStats();
+        drawAll();
+    </script>
+</body>
+</html>
