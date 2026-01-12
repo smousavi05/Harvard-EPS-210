@@ -96,6 +96,7 @@
   <tr align="center">
     <th>K-Means Clustering</th>
     <th>Hierarchical Clustering</th>
+    <th>DBSCAN Clustering</th>
 
   </tr>
   
@@ -110,8 +111,8 @@
         <img src="interactive_visualizations/L4_hierarchical_clustering.png" alt="hierarchical_clustering" width="200">
       </a>
     <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_logistic_regression.html">
-        <img src="interactive_visualizations/L3_logistic_regression.png" alt="logistic_regression" width="200">
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L4_dbscan.html">
+        <img src="interactive_visualizations/L4_dbscan.png" alt="L4_dbscan" width="200">
       </a>
     </td>
     <td>
