@@ -97,6 +97,7 @@
     <th>K-Means Clustering</th>
     <th>Hierarchical Clustering</th>
     <th>DBSCAN Clustering</th>
+    <th>Gaussian Mixture Models</th>
 
   </tr>
   
@@ -116,8 +117,8 @@
       </a>
     </td>
     <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_naive_bayes.html">
-        <img src="interactive_visualizations/L3_naive_bayes.png" alt="L3_naive_bayes" width="200">
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L4_gmm.html">
+        <img src="interactive_visualizations/L4_gmm.png" alt="L4_gmm" width="200">
       </a>
     </td>
   </tr>
