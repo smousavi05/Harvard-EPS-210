@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Learning & Earth and Planetary Sciences</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #0a0a0f;
+            --bg-card: #12121a;
+            --border: #1e1e2e;
+            --text-primary: #e8e6e3;
+            --text-secondary: #8b8b9e;
+            --text-muted: #4a4a5a;
+            
+            /* Category colors */
+            --supervised: #4ecdc4;
+            --unsupervised: #ff6b9d;
+            --reinforcement: #ffd93d;
+            --deep: #a78bfa;
+            --generative: #f472b6;
+            --scientific: #22d3ee;
+            --foundation: #fb923c;
+            
+            /* EPS highlight */
+            --eps-highlight: #10b981;
+            --eps-glow: rgba(16, 185, 129, 0.4);
+            
+            --glow-supervised: rgba(78, 205, 196, 0.3);
+            --glow-unsupervised: rgba(255, 107, 157, 0.3);
+            --glow-reinforcement: rgba(255, 217, 61, 0.3);
+            --glow-deep: rgba(167, 139, 250, 0.3);
+            --glow-generative: rgba(244, 114, 182, 0.3);
+            --glow-scientific: rgba(34, 211, 238, 0.3);
+            --glow-foundation: rgba(251, 146, 60, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Animated background grid */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .course-label {
+            position: fixed;
+            top: 20px;
+            left: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+            z-index: 100;
+            padding: 8px 14px;
+            background: rgba(18, 18, 26, 0.9);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            backdrop-filter: blur(8px);
+        }
+        
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+        
+        h1 {
+            font-family: 'Instrument Serif', serif;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #4ecdc4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        /* EPS Legend */
+        .eps-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 50px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(34, 211, 238, 0.1) 100%);
+            border: 1px solid var(--eps-highlight);
+            border-radius: 12px;
+        }
+        
+        .eps-legend-title {
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--eps-highlight);
+            margin-bottom: 8px;
+            letter-spacing: 0.1em;
+        }
+        
+        .eps-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        
+        .eps-icon {
+            font-size: 1rem;
+        }
+        
+        /* Tree structure */
+        .tree {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .tree-root {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, var(--bg-card) 0%, #1a1a2e 100%);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            position: relative;
+            max-width: 400px;
+            margin: 0 auto 20px;
+        }
+        
+        .tree-root::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            width: 2px;
+            height: 30px;
+            background: linear-gradient(to bottom, var(--border), transparent);
+        }
+        
+        .root-title {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+        
+        .root-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Branch levels */
+        .branch-level {
+            display: grid;
+            gap: 20px;
+            position: relative;
+        }
+        
+        .level-1 {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+        
+        /* Category cards */
+        .category {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .category::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .category:hover {
+            transform: translateY(-4px);
+            border-color: var(--text-muted);
+        }
+        
+        .category.supervised::before { background: var(--supervised); }
+        .category.supervised:hover { box-shadow: 0 8px 30px var(--glow-supervised); }
+        
+        .category.unsupervised::before { background: var(--unsupervised); }
+        .category.unsupervised:hover { box-shadow: 0 8px 30px var(--glow-unsupervised); }
+        
+        .category.reinforcement::before { background: var(--reinforcement); }
+        .category.reinforcement:hover { box-shadow: 0 8px 30px var(--glow-reinforcement); }
+        
+        .category.deep::before { background: var(--deep); }
+        .category.deep:hover { box-shadow: 0 8px 30px var(--glow-deep); }
+        
+        .category.generative::before { background: var(--generative); }
+        .category.generative:hover { box-shadow: 0 8px 30px var(--glow-generative); }
+        
+        .category.scientific::before { background: var(--scientific); }
+        .category.scientific:hover { box-shadow: 0 8px 30px var(--glow-scientific); }
+        
+        .category.foundation::before { background: var(--foundation); }
+        .category.foundation:hover { box-shadow: 0 8px 30px var(--glow-foundation); }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .supervised .category-icon { background: rgba(78, 205, 196, 0.15); }
+        .unsupervised .category-icon { background: rgba(255, 107, 157, 0.15); }
+        .reinforcement .category-icon { background: rgba(255, 217, 61, 0.15); }
+        .deep .category-icon { background: rgba(167, 139, 250, 0.15); }
+        .generative .category-icon { background: rgba(244, 114, 182, 0.15); }
+        .scientific .category-icon { background: rgba(34, 211, 238, 0.15); }
+        .foundation .category-icon { background: rgba(251, 146, 60, 0.15); }
+        
+        .category-title {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .supervised .category-title { color: var(--supervised); }
+        .unsupervised .category-title { color: var(--unsupervised); }
+        .reinforcement .category-title { color: var(--reinforcement); }
+        .deep .category-title { color: var(--deep); }
+        .generative .category-title { color: var(--generative); }
+        .scientific .category-title { color: var(--scientific); }
+        .foundation .category-title { color: var(--foundation); }
+        
+        .category-desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        
+        /* Subcategories */
+        .subcategories {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .subcategory {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+        }
+        
+        .subcategory-title {
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        
+        .methods {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .method {
+            font-size: 0.65rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            cursor: default;
+            position: relative;
+        }
+        
+        .method:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+        }
+        
+        .method.classic {
+            border-style: dashed;
+        }
+        
+        .method.modern {
+            border-color: var(--text-muted);
+        }
+        
+        .method.cutting-edge {
+            background: rgba(167, 139, 250, 0.1);
+            border-color: var(--deep);
+        }
+        
+        /* EPS highlighted methods */
+        .method.eps {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--eps-highlight);
+            color: var(--eps-highlight);
+            position: relative;
+        }
+        
+        .method.eps::before {
+            content: '🌍';
+            font-size: 0.5rem;
+            margin-right: 3px;
+        }
+        
+        .method.eps:hover {
+            background: rgba(16, 185, 129, 0.25);
+            box-shadow: 0 0 10px var(--eps-glow);
+        }
+        
+        /* Tooltip for EPS applications */
+        .method.eps[data-app]::after {
+            content: attr(data-app);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-deep);
+            border: 1px solid var(--eps-highlight);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.6rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            max-width: 250px;
+            white-space: normal;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 100;
+            margin-bottom: 8px;
+        }
+        
+        .method.eps[data-app]:hover::after {
+            opacity: 1;
+        }
+        
+        /* Complexity indicator */
+        .complexity {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .complexity-label {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .complexity-bar {
+            flex: 1;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .complexity-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+        
+        .supervised .complexity-fill { background: var(--supervised); }
+        .unsupervised .complexity-fill { background: var(--unsupervised); }
+        .reinforcement .complexity-fill { background: var(--reinforcement); }
+        .deep .complexity-fill { background: var(--deep); }
+        .generative .complexity-fill { background: var(--generative); }
+        .scientific .complexity-fill { background: var(--scientific); }
+        .foundation .complexity-fill { background: var(--foundation); }
+        
+        /* Section dividers */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin: 50px 0 35px;
+        }
+        
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--border), var(--text-muted), var(--border), transparent);
+        }
+        
+        .section-label {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.4rem;
+            color: var(--text-primary);
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, rgba(78, 205, 196, 0.1) 100%);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        
+        /* Footer */
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            padding: 30px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .footer-text {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        
+        /* Timeline indicator */
+        .timeline {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            padding: 16px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        
+        .timeline-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .timeline-dot.classic { background: var(--text-muted); border: 1px dashed var(--text-secondary); }
+        .timeline-dot.modern { background: var(--text-secondary); }
+        .timeline-dot.cutting { background: var(--deep); }
+        
+        @media (max-width: 768px) {
+            .level-1 {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .legend {
+                gap: 12px;
+            }
+            
+            .eps-legend {
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    
+    <div class="course-label">Harvard EPS-210</div>
+    
+    <div class="container">
+        <header>
+            <h1>Machine Learning & Earth and Planetary Sciences</h1>
+            <p class="subtitle">From Perceptrons to Foundation Models</p>
+        </header>
+        
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-dot classic"></div>
+                <span>Classic (1950s–2000s)</span>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-dot modern"></div>
+                <span>Modern (2000s–2017)</span>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-dot cutting"></div>
+                <span>Cutting-Edge (2017–Present)</span>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--supervised)"></div>
+                <span>Supervised Learning</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--unsupervised)"></div>
+                <span>Unsupervised Learning</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--reinforcement)"></div>
+                <span>Reinforcement Learning</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--deep)"></div>
+                <span>Deep Learning</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--generative)"></div>
+                <span>Generative Models</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--scientific)"></div>
+                <span>Scientific ML</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--foundation)"></div>
+                <span>Foundation Models</span>
+            </div>
+        </div>
+        
+        <div class="eps-legend">
+            <div class="eps-legend-title">🌍 Earth & Planetary Science Applications</div>
+            <div class="eps-legend-item">
+                <span class="eps-icon">🌋</span>
+                <span>Seismology & Geophysics</span>
+            </div>
+            <div class="eps-legend-item">
+                <span class="eps-icon">🛰️</span>
+                <span>Remote Sensing</span>
+            </div>
+            <div class="eps-legend-item">
+                <span class="eps-icon">🌡️</span>
+                <span>Climate Science</span>
+            </div>
+            <div class="eps-legend-item">
+                <span class="eps-icon">🪐</span>
+                <span>Planetary Science</span>
+            </div>
+            <div class="eps-legend-item">
+                <span class="eps-icon">⛰️</span>
+                <span>Geology & Geomorphology</span>
+            </div>
+            <div class="eps-legend-item">
+                <span style="font-size: 0.65rem; color: var(--eps-highlight);">Hover over 🌍 methods for applications</span>
+            </div>
+        </div>
+        
+        <div class="tree">
+            
+            <!-- Traditional ML Section -->
+            <div class="section-divider">
+                <span class="section-label">Traditional Machine Learning</span>
+            </div>
+            
+            <div class="branch-level level-1">
+                <!-- Supervised Learning -->
+                <div class="category supervised">
+                    <div class="category-header">
+                        <div class="category-icon">📊</div>
+                        <div class="category-title">Supervised Learning</div>
+                    </div>
+                    <div class="category-desc">Learning from labeled examples with known outputs</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Classification</div>
+                            <div class="methods">
+                                <span class="method classic">Logistic Regression</span>
+                                <span class="method classic eps" data-app="Earthquake source type classification, lithology mapping">Naive Bayes</span>
+                                <span class="method classic eps" data-app="Mineral prospectivity mapping, climate zone classification">k-NN</span>
+                                <span class="method classic eps" data-app="Seismic event classification, land cover mapping, tsunamigenic earthquake detection">SVM</span>
+                                <span class="method classic eps" data-app="Geological facies classification, landslide susceptibility">Decision Trees</span>
+                                <span class="method modern eps" data-app="Lithology mapping, landslide detection (F1: 96%), mineral exploration, climate prediction">Random Forest</span>
+                                <span class="method modern">AdaBoost</span>
+                                <span class="method modern eps" data-app="Ground motion prediction, seismic hazard assessment">XGBoost</span>
+                                <span class="method modern">LightGBM</span>
+                                <span class="method modern">CatBoost</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Regression</div>
+                            <div class="methods">
+                                <span class="method classic eps" data-app="Ground motion prediction equations (GMPEs)">Linear Regression</span>
+                                <span class="method classic">Polynomial Regression</span>
+                                <span class="method classic eps" data-app="Seismic attenuation modeling">Ridge / Lasso</span>
+                                <span class="method classic">Elastic Net</span>
+                                <span class="method modern eps" data-app="Earthquake magnitude estimation, site response prediction">SVR</span>
+                                <span class="method modern eps" data-app="Peak ground acceleration prediction">Gradient Boosting</span>
+                                <span class="method modern eps" data-app="Seismic velocity inversion, uncertainty quantification">Gaussian Process</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 35%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Unsupervised Learning -->
+                <div class="category unsupervised">
+                    <div class="category-header">
+                        <div class="category-icon">🔮</div>
+                        <div class="category-title">Unsupervised Learning</div>
+                    </div>
+                    <div class="category-desc">Discovering hidden patterns without labeled data</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Clustering</div>
+                            <div class="methods">
+                                <span class="method classic eps" data-app="Seismic waveform clustering, earthquake family detection, climate regime classification">K-Means</span>
+                                <span class="method classic eps" data-app="Repeating earthquake identification, fault zone structure">Hierarchical</span>
+                                <span class="method classic eps" data-app="Seismic swarm detection, volcanic tremor classification">DBSCAN</span>
+                                <span class="method modern">Mean Shift</span>
+                                <span class="method modern eps" data-app="Community detection in fault networks">Spectral Clustering</span>
+                                <span class="method modern">OPTICS</span>
+                                <span class="method modern eps" data-app="Microseismic event clustering, noise source identification">HDBSCAN</span>
+                                <span class="method modern eps" data-app="Probabilistic seismic hazard, atmospheric state classification">GMM</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Dimensionality Reduction</div>
+                            <div class="methods">
+                                <span class="method classic eps" data-app="Seismic noise analysis, climate mode decomposition (EOF), hyperspectral dimensionality reduction">PCA</span>
+                                <span class="method classic">LDA</span>
+                                <span class="method classic eps" data-app="Seismic data compression, satellite image analysis">SVD</span>
+                                <span class="method modern eps" data-app="Waveform visualization, seismicity pattern analysis">t-SNE</span>
+                                <span class="method modern eps" data-app="Earthquake catalog exploration, mineral spectral analysis">UMAP</span>
+                                <span class="method modern eps" data-app="Seismic source separation, blind source separation">ICA</span>
+                                <span class="method modern eps" data-app="Seismic denoising, feature extraction">Autoencoders</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Anomaly Detection</div>
+                            <div class="methods">
+                                <span class="method classic eps" data-app="Unusual seismic event detection">One-Class SVM</span>
+                                <span class="method modern eps" data-app="Seismic anomaly detection, outlier event identification">Isolation Forest</span>
+                                <span class="method modern eps" data-app="Local seismicity anomalies">LOF</span>
+                                <span class="method modern">COPOD</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 40%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reinforcement Learning -->
+                <div class="category reinforcement">
+                    <div class="category-header">
+                        <div class="category-icon">🎮</div>
+                        <div class="category-title">Reinforcement Learning</div>
+                    </div>
+                    <div class="category-desc">Learning through trial-and-error interactions with environment</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Value-Based</div>
+                            <div class="methods">
+                                <span class="method classic">Q-Learning</span>
+                                <span class="method classic">SARSA</span>
+                                <span class="method modern eps" data-app="Microseismic source location optimization">DQN</span>
+                                <span class="method modern">Double DQN</span>
+                                <span class="method modern">Dueling DQN</span>
+                                <span class="method cutting-edge">Rainbow</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Policy-Based</div>
+                            <div class="methods">
+                                <span class="method classic">REINFORCE</span>
+                                <span class="method modern">A2C / A3C</span>
+                                <span class="method cutting-edge eps" data-app="Autonomous seismic network optimization">PPO</span>
+                                <span class="method cutting-edge">TRPO</span>
+                                <span class="method cutting-edge">SAC</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Model-Based</div>
+                            <div class="methods">
+                                <span class="method modern">Dyna-Q</span>
+                                <span class="method cutting-edge">World Models</span>
+                                <span class="method cutting-edge">MuZero</span>
+                                <span class="method cutting-edge">Dreamer</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 70%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Deep Learning Section -->
+            <div class="section-divider">
+                <span class="section-label">Deep Learning Architectures</span>
+            </div>
+            
+            <div class="branch-level level-1">
+                <!-- Neural Network Foundations -->
+                <div class="category deep">
+                    <div class="category-header">
+                        <div class="category-icon">🧠</div>
+                        <div class="category-title">Neural Network Foundations</div>
+                    </div>
+                    <div class="category-desc">Core building blocks of deep learning</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Basic Architectures</div>
+                            <div class="methods">
+                                <span class="method classic">Perceptron</span>
+                                <span class="method classic eps" data-app="Early earthquake prediction attempts, ground motion estimation">MLP</span>
+                                <span class="method classic">Hopfield Network</span>
+                                <span class="method classic">Boltzmann Machine</span>
+                                <span class="method modern">Deep Belief Nets</span>
+                                <span class="method modern eps" data-app="Seismic phase classification with skip connections">ResNet</span>
+                                <span class="method modern">DenseNet</span>
+                                <span class="method cutting-edge eps" data-app="Seismic event classification preserving spatial hierarchies, rotation-invariant geological feature detection">Capsule Networks</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Activation Functions</div>
+                            <div class="methods">
+                                <span class="method classic">Sigmoid</span>
+                                <span class="method classic">Tanh</span>
+                                <span class="method modern">ReLU</span>
+                                <span class="method modern">Leaky ReLU</span>
+                                <span class="method modern">ELU</span>
+                                <span class="method cutting-edge">GELU</span>
+                                <span class="method cutting-edge">SiLU/Swish</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Regularization</div>
+                            <div class="methods">
+                                <span class="method modern">Dropout</span>
+                                <span class="method modern">Batch Norm</span>
+                                <span class="method cutting-edge">Layer Norm</span>
+                                <span class="method cutting-edge">RMSNorm</span>
+                                <span class="method cutting-edge">Group Norm</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 50%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Convolutional Networks -->
+                <div class="category deep">
+                    <div class="category-header">
+                        <div class="category-icon">👁️</div>
+                        <div class="category-title">Convolutional Networks</div>
+                    </div>
+                    <div class="category-desc">Spatial pattern recognition for images and signals</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Image Classification</div>
+                            <div class="methods">
+                                <span class="method classic">LeNet</span>
+                                <span class="method modern">AlexNet</span>
+                                <span class="method modern eps" data-app="Seismic waveform classification">VGGNet</span>
+                                <span class="method modern">GoogLeNet</span>
+                                <span class="method modern eps" data-app="Land cover classification, earthquake detection">ResNet</span>
+                                <span class="method cutting-edge eps" data-app="Remote sensing classification, cloud detection">EfficientNet</span>
+                                <span class="method cutting-edge">ConvNeXt</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Object Detection</div>
+                            <div class="methods">
+                                <span class="method modern">R-CNN</span>
+                                <span class="method modern">Fast R-CNN</span>
+                                <span class="method modern eps" data-app="Crater detection, landslide mapping">Faster R-CNN</span>
+                                <span class="method modern eps" data-app="Real-time landslide detection, crater counting">YOLO</span>
+                                <span class="method modern">SSD</span>
+                                <span class="method cutting-edge eps" data-app="Automated geological feature detection">YOLOv8</span>
+                                <span class="method cutting-edge eps" data-app="Planetary surface feature detection">DETR</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Segmentation</div>
+                            <div class="methods">
+                                <span class="method modern eps" data-app="Land cover segmentation">FCN</span>
+                                <span class="method modern eps" data-app="Landslide segmentation (mIoU: 76%+), crater detection, flood mapping, geological boundary delineation">U-Net</span>
+                                <span class="method modern eps" data-app="High-resolution land cover mapping">DeepLab</span>
+                                <span class="method cutting-edge eps" data-app="Instance-level geological feature segmentation">Mask R-CNN</span>
+                                <span class="method cutting-edge eps" data-app="Zero-shot geological segmentation">SAM</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sequence Models -->
+                <div class="category deep">
+                    <div class="category-header">
+                        <div class="category-icon">📜</div>
+                        <div class="category-title">Sequence Models</div>
+                    </div>
+                    <div class="category-desc">Processing sequential and temporal data</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Recurrent Networks</div>
+                            <div class="methods">
+                                <span class="method classic eps" data-app="Time series seismic analysis">RNN</span>
+                                <span class="method modern eps" data-app="Earthquake prediction, ground motion simulation, early warning systems">LSTM</span>
+                                <span class="method modern eps" data-app="Seismic event classification, climate time series">GRU</span>
+                                <span class="method modern eps" data-app="P/S wave arrival picking">Bidirectional RNN</span>
+                                <span class="method modern eps" data-app="Waveform-to-waveform translation">Seq2Seq</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Temporal Convolutions</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Seismic waveform generation, audio-like seismic synthesis, denoising">WaveNet</span>
+                                <span class="method cutting-edge eps" data-app="Landslide susceptibility (AUC: 90.9%), seismic event detection, long-range temporal patterns">TCN</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Attention Mechanisms</div>
+                            <div class="methods">
+                                <span class="method modern">Bahdanau Attention</span>
+                                <span class="method modern">Luong Attention</span>
+                                <span class="method cutting-edge eps" data-app="Seismic phase identification">Self-Attention</span>
+                                <span class="method cutting-edge eps" data-app="EQTransformer for phase picking">Multi-Head Attention</span>
+                                <span class="method cutting-edge">Flash Attention</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">State Space Models</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Long-sequence seismic modeling">S4</span>
+                                <span class="method cutting-edge eps" data-app="Efficient continuous seismic monitoring">Mamba</span>
+                                <span class="method cutting-edge">RWKV</span>
+                                <span class="method cutting-edge">Hyena</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Transformer & Attention Section -->
+            <div class="section-divider">
+                <span class="section-label">Transformer Architectures</span>
+            </div>
+            
+            <div class="branch-level level-1">
+                <!-- Transformers -->
+                <div class="category foundation">
+                    <div class="category-header">
+                        <div class="category-icon">⚡</div>
+                        <div class="category-title">Transformer Variants</div>
+                    </div>
+                    <div class="category-desc">Attention-based architectures revolutionizing AI</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Encoder-Only (Understanding)</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Seismic text mining, geological report analysis">BERT</span>
+                                <span class="method cutting-edge">RoBERTa</span>
+                                <span class="method cutting-edge">ALBERT</span>
+                                <span class="method cutting-edge">DeBERTa</span>
+                                <span class="method cutting-edge">ELECTRA</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Decoder-Only (Generation)</div>
+                            <div class="methods">
+                                <span class="method cutting-edge">GPT</span>
+                                <span class="method cutting-edge eps" data-app="Scientific literature synthesis, hypothesis generation">GPT-2/3/4</span>
+                                <span class="method cutting-edge">LLaMA</span>
+                                <span class="method cutting-edge">Claude</span>
+                                <span class="method cutting-edge">Mistral</span>
+                                <span class="method cutting-edge">Gemini</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Encoder-Decoder</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="EQTransformer: state-of-the-art phase picking">Original Transformer</span>
+                                <span class="method cutting-edge">T5</span>
+                                <span class="method cutting-edge">BART</span>
+                                <span class="method cutting-edge">mT5</span>
+                                <span class="method cutting-edge">UL2</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Efficient Transformers</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Long continuous seismic record processing">Longformer</span>
+                                <span class="method cutting-edge">BigBird</span>
+                                <span class="method cutting-edge">Performer</span>
+                                <span class="method cutting-edge">Linformer</span>
+                                <span class="method cutting-edge">FNet</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 90%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vision Transformers -->
+                <div class="category foundation">
+                    <div class="category-header">
+                        <div class="category-icon">🖼️</div>
+                        <div class="category-title">Vision Transformers</div>
+                    </div>
+                    <div class="category-desc">Attention mechanisms for visual understanding</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Image Models</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Satellite image classification, geological mapping">ViT</span>
+                                <span class="method cutting-edge">DeiT</span>
+                                <span class="method cutting-edge eps" data-app="Multi-scale remote sensing, hierarchical geological features">Swin Transformer</span>
+                                <span class="method cutting-edge">BEiT</span>
+                                <span class="method cutting-edge eps" data-app="Self-supervised pretraining on satellite imagery">MAE</span>
+                                <span class="method cutting-edge eps" data-app="Foundation models for Earth observation">DINO</span>
+                                <span class="method cutting-edge eps" data-app="Self-supervised remote sensing features">DINOv2</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Video Models</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Time-lapse satellite analysis, glacier flow">ViViT</span>
+                                <span class="method cutting-edge eps" data-app="Temporal remote sensing analysis">TimeSformer</span>
+                                <span class="method cutting-edge">Video Swin</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Multimodal -->
+                <div class="category foundation">
+                    <div class="category-header">
+                        <div class="category-icon">🌐</div>
+                        <div class="category-title">Multimodal Models</div>
+                    </div>
+                    <div class="category-desc">Bridging vision, language, and more</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Vision-Language</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Zero-shot satellite scene classification, geologic image-text matching">CLIP</span>
+                                <span class="method cutting-edge">ALIGN</span>
+                                <span class="method cutting-edge">BLIP</span>
+                                <span class="method cutting-edge">BLIP-2</span>
+                                <span class="method cutting-edge">Flamingo</span>
+                                <span class="method cutting-edge eps" data-app="Geological image captioning and QA">LLaVA</span>
+                                <span class="method cutting-edge eps" data-app="Multimodal Earth science analysis">GPT-4V</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Audio-Visual</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Seismic waveform-to-text, field notes transcription">Whisper</span>
+                                <span class="method cutting-edge">AudioLM</span>
+                                <span class="method cutting-edge">SpeechT5</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 95%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Generative Models Section -->
+            <div class="section-divider">
+                <span class="section-label">Generative Models</span>
+            </div>
+            
+            <div class="branch-level level-1">
+                <!-- GANs -->
+                <div class="category generative">
+                    <div class="category-header">
+                        <div class="category-icon">🎨</div>
+                        <div class="category-title">Adversarial Networks</div>
+                    </div>
+                    <div class="category-desc">Generator-discriminator competition</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">GAN Variants</div>
+                            <div class="methods">
+                                <span class="method modern eps" data-app="Seismic data augmentation">GAN</span>
+                                <span class="method modern eps" data-app="Synthetic seismogram generation">DCGAN</span>
+                                <span class="method modern">WGAN</span>
+                                <span class="method modern eps" data-app="Domain adaptation for satellite imagery, seismic-to-seismic translation">CycleGAN</span>
+                                <span class="method modern eps" data-app="Seismic data super-resolution">Pix2Pix</span>
+                                <span class="method cutting-edge">StyleGAN</span>
+                                <span class="method cutting-edge">StyleGAN2/3</span>
+                                <span class="method cutting-edge">BigGAN</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 70%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- VAEs -->
+                <div class="category generative">
+                    <div class="category-header">
+                        <div class="category-icon">🔄</div>
+                        <div class="category-title">Variational Models</div>
+                    </div>
+                    <div class="category-desc">Probabilistic latent representations</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">VAE Family</div>
+                            <div class="methods">
+                                <span class="method modern eps" data-app="Seismic anomaly detection, latent space exploration">VAE</span>
+                                <span class="method modern eps" data-app="Disentangled seismic feature learning">β-VAE</span>
+                                <span class="method modern eps" data-app="Conditional earthquake scenario generation">CVAE</span>
+                                <span class="method cutting-edge eps" data-app="Discrete seismic codebook learning">VQ-VAE</span>
+                                <span class="method cutting-edge">VQ-VAE-2</span>
+                                <span class="method cutting-edge">NVAE</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Diffusion -->
+                <div class="category generative">
+                    <div class="category-header">
+                        <div class="category-icon">✨</div>
+                        <div class="category-title">Diffusion Models</div>
+                    </div>
+                    <div class="category-desc">Iterative denoising for generation</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Core Diffusion</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Seismic denoising, ground motion synthesis">DDPM</span>
+                                <span class="method cutting-edge">DDIM</span>
+                                <span class="method cutting-edge eps" data-app="Stochastic ground motion simulation">Score-Based</span>
+                                <span class="method cutting-edge">Stable Diffusion</span>
+                                <span class="method cutting-edge">DALL-E 2/3</span>
+                                <span class="method cutting-edge">Imagen</span>
+                                <span class="method cutting-edge">Midjourney</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Video Diffusion</div>
+                            <div class="methods">
+                                <span class="method cutting-edge">Make-A-Video</span>
+                                <span class="method cutting-edge">Imagen Video</span>
+                                <span class="method cutting-edge">Sora</span>
+                                <span class="method cutting-edge">Gen-2</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Advanced Variants</div>
+                            <div class="methods">
+                                <span class="method cutting-edge">Latent Diffusion</span>
+                                <span class="method cutting-edge">ControlNet</span>
+                                <span class="method cutting-edge">DiT</span>
+                                <span class="method cutting-edge">Consistency Models</span>
+                                <span class="method cutting-edge eps" data-app="Continuous normalizing flows for geophysics">Flow Matching</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Flow Models -->
+                <div class="category generative">
+                    <div class="category-header">
+                        <div class="category-icon">🌊</div>
+                        <div class="category-title">Flow-Based Models</div>
+                    </div>
+                    <div class="category-desc">Invertible transformations for exact likelihood</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Normalizing Flows</div>
+                            <div class="methods">
+                                <span class="method modern">NICE</span>
+                                <span class="method modern eps" data-app="Seismic inversion uncertainty">RealNVP</span>
+                                <span class="method cutting-edge eps" data-app="Probabilistic seismic hazard">Glow</span>
+                                <span class="method cutting-edge eps" data-app="Continuous-time dynamics in geophysics">Neural ODE</span>
+                                <span class="method cutting-edge eps" data-app="Free-form continuous normalizing flows for geophysics">FFJORD</span>
+                                <span class="method cutting-edge">Continuous NF</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scientific ML Section -->
+            <div class="section-divider">
+                <span class="section-label">Scientific Machine Learning</span>
+            </div>
+            
+            <div class="branch-level level-1">
+                <!-- Physics-Informed -->
+                <div class="category scientific">
+                    <div class="category-header">
+                        <div class="category-icon">🔬</div>
+                        <div class="category-title">Physics-Informed ML</div>
+                    </div>
+                    <div class="category-desc">Embedding physical laws into neural networks</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">PDE Solvers</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Wave equation solving, seismic inversion, Eikonal equation (PINNeik), full waveform inversion">PINNs</span>
+                                <span class="method cutting-edge eps" data-app="Learning solution operators for seismic forward modeling">DeepONet</span>
+                                <span class="method cutting-edge eps" data-app="Physics-constrained seismic simulation">Physics-Informed DeepONet</span>
+                                <span class="method cutting-edge eps" data-app="Weak-form wave equation solutions">Variational PINNs</span>
+                                <span class="method cutting-edge">hp-VPINNs</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Conservation Laws</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Energy-conserving geodynamics simulations">Hamiltonian NN</span>
+                                <span class="method cutting-edge eps" data-app="Lagrangian mechanics for Earth systems">Lagrangian NN</span>
+                                <span class="method cutting-edge eps" data-app="Symplectic integration for orbital mechanics">Neural Symplectic</span>
+                                <span class="method cutting-edge">Dissipative SymODEN</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Neural Operators -->
+                <div class="category scientific">
+                    <div class="category-header">
+                        <div class="category-icon">∂</div>
+                        <div class="category-title">Neural Operators</div>
+                    </div>
+                    <div class="category-desc">Learning mappings between function spaces</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Operator Networks</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="3D seismic wave propagation (100× speedup), ground motion simulation, Helmholtz equation solving, velocity model inversion">FNO</span>
+                                <span class="method cutting-edge eps" data-app="Seismic forward modeling surrogate">DeepONet</span>
+                                <span class="method cutting-edge eps" data-app="Multi-scale seismic simulation">U-FNO</span>
+                                <span class="method cutting-edge eps" data-app="Irregular geometry seismic domains">Geo-FNO</span>
+                                <span class="method cutting-edge eps" data-app="General neural operator for PDEs">GNOT</span>
+                                <span class="method cutting-edge eps" data-app="Transformer-based PDE solver">Transolver</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Spectral Methods</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Spectral seismic analysis">Spectral Neural Operator</span>
+                                <span class="method cutting-edge eps" data-app="Multi-resolution seismic features">Wavelet Neural Operator</span>
+                                <span class="method cutting-edge eps" data-app="Large-scale seismic simulation">Multipole Graph NO</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 95%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Graph Neural Networks -->
+                <div class="category scientific">
+                    <div class="category-header">
+                        <div class="category-icon">🕸️</div>
+                        <div class="category-title">Graph Neural Networks</div>
+                    </div>
+                    <div class="category-desc">Learning on non-Euclidean structures</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Message Passing</div>
+                            <div class="methods">
+                                <span class="method modern eps" data-app="Seismic network analysis, fault connectivity">GCN</span>
+                                <span class="method modern eps" data-app="Scalable seismic network processing">GraphSAGE</span>
+                                <span class="method modern eps" data-app="Attention-based earthquake detection (BNGCNN)">GAT</span>
+                                <span class="method cutting-edge eps" data-app="Seismic graph classification">GIN</span>
+                                <span class="method cutting-edge">PNA</span>
+                                <span class="method cutting-edge eps" data-app="Equivariant molecular/crystal dynamics">EGNN</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Geometric Deep Learning</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Molecular property prediction for minerals">SchNet</span>
+                                <span class="method cutting-edge eps" data-app="Angular features for crystal structures">DimeNet</span>
+                                <span class="method cutting-edge eps" data-app="Polarizable interactions in minerals">PaiNN</span>
+                                <span class="method cutting-edge eps" data-app="High-accuracy interatomic potentials">GemNet</span>
+                                <span class="method cutting-edge eps" data-app="SE(3)-equivariant materials modeling">Equiformer</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Graph Transformers</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Large-scale materials discovery (GNoME)">Graphormer</span>
+                                <span class="method cutting-edge">Graph-BERT</span>
+                                <span class="method cutting-edge eps" data-app="Multi-station seismic phase picking (PhaseNO)">GPS</span>
+                                <span class="method cutting-edge">TokenGT</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 80%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Scientific Foundation Models -->
+                <div class="category scientific">
+                    <div class="category-header">
+                        <div class="category-icon">🧬</div>
+                        <div class="category-title">Scientific Foundation Models</div>
+                    </div>
+                    <div class="category-desc">Domain-specific large-scale models</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Biology & Chemistry</div>
+                            <div class="methods">
+                                <span class="method cutting-edge">AlphaFold 2/3</span>
+                                <span class="method cutting-edge">ESMFold</span>
+                                <span class="method cutting-edge">RFDiffusion</span>
+                                <span class="method cutting-edge">AlphaMissense</span>
+                                <span class="method cutting-edge eps" data-app="Materials discovery: 2.2M new crystal structures, geomaterials prediction">GNoME</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Earth & Climate</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Global weather forecasting, FNO-based (0.25° resolution)">FourCastNet</span>
+                                <span class="method cutting-edge eps" data-app="Medium-range weather prediction (1-7 days)">Pangu-Weather</span>
+                                <span class="method cutting-edge eps" data-app="GNN-based weather: 10-day forecasts in 1 minute, outperforms ECMWF HRES">GraphCast</span>
+                                <span class="method cutting-edge eps" data-app="Probabilistic weather ensemble generation">GenCast</span>
+                                <span class="method cutting-edge eps" data-app="Foundation model for weather and climate downscaling">ClimaX</span>
+                                <span class="method cutting-edge eps" data-app="Microsoft's foundation model for Earth system prediction">Aurora</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Advanced Paradigms Section -->
+            <div class="section-divider">
+                <span class="section-label">Advanced Learning Paradigms</span>
+            </div>
+            
+            <div class="branch-level level-1">
+                <!-- Self-Supervised -->
+                <div class="category deep">
+                    <div class="category-header">
+                        <div class="category-icon">🔁</div>
+                        <div class="category-title">Self-Supervised Learning</div>
+                    </div>
+                    <div class="category-desc">Learning representations without labels</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Contrastive</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Seismic waveform representation learning">SimCLR</span>
+                                <span class="method cutting-edge eps" data-app="Momentum contrast for satellite imagery">MoCo</span>
+                                <span class="method cutting-edge eps" data-app="Self-supervised seismic feature learning">BYOL</span>
+                                <span class="method cutting-edge">SwAV</span>
+                                <span class="method cutting-edge eps" data-app="Decorrelated seismic features">Barlow Twins</span>
+                                <span class="method cutting-edge">VICReg</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Masked Prediction</div>
+                            <div class="methods">
+                                <span class="method cutting-edge">BERT MLM</span>
+                                <span class="method cutting-edge eps" data-app="Masked autoencoding for satellite imagery pretraining">MAE</span>
+                                <span class="method cutting-edge">BEiT</span>
+                                <span class="method cutting-edge eps" data-app="Multi-modal Earth observation pretraining">Data2Vec</span>
+                                <span class="method cutting-edge eps" data-app="Joint embedding predictive for Earth observation">I-JEPA</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Meta-Learning -->
+                <div class="category deep">
+                    <div class="category-header">
+                        <div class="category-icon">🎯</div>
+                        <div class="category-title">Meta-Learning</div>
+                    </div>
+                    <div class="category-desc">Learning to learn from few examples</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Few-Shot Learning</div>
+                            <div class="methods">
+                                <span class="method modern eps" data-app="Similar earthquake template matching">Siamese Networks</span>
+                                <span class="method modern">Matching Networks</span>
+                                <span class="method cutting-edge eps" data-app="Few-shot landslide detection (CF-ASNet)">Prototypical Networks</span>
+                                <span class="method cutting-edge eps" data-app="Rapid adaptation to new seismic regions">MAML</span>
+                                <span class="method cutting-edge">Reptile</span>
+                                <span class="method cutting-edge">Meta-SGD</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 70%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Neural Architecture Search -->
+                <div class="category deep">
+                    <div class="category-header">
+                        <div class="category-icon">🏗️</div>
+                        <div class="category-title">AutoML & NAS</div>
+                    </div>
+                    <div class="category-desc">Automated model design and optimization</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Architecture Search</div>
+                            <div class="methods">
+                                <span class="method modern eps" data-app="Hyperparameter optimization for geophysical models">Random Search</span>
+                                <span class="method modern eps" data-app="Optimal seismic network design, hyperparameter tuning">Bayesian Optimization</span>
+                                <span class="method cutting-edge">NASNet</span>
+                                <span class="method cutting-edge">DARTS</span>
+                                <span class="method cutting-edge">EfficientNAS</span>
+                                <span class="method cutting-edge">Once-for-All</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 80%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- RLHF & Alignment -->
+                <div class="category foundation">
+                    <div class="category-header">
+                        <div class="category-icon">🎛️</div>
+                        <div class="category-title">Alignment & Fine-tuning</div>
+                    </div>
+                    <div class="category-desc">Aligning models with human preferences</div>
+                    
+                    <div class="subcategories">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Preference Learning</div>
+                            <div class="methods">
+                                <span class="method cutting-edge">RLHF</span>
+                                <span class="method cutting-edge">DPO</span>
+                                <span class="method cutting-edge">PPO Fine-tuning</span>
+                                <span class="method cutting-edge">Constitutional AI</span>
+                                <span class="method cutting-edge">RLAIF</span>
+                            </div>
+                        </div>
+                        <div class="subcategory">
+                            <div class="subcategory-title">Parameter-Efficient</div>
+                            <div class="methods">
+                                <span class="method cutting-edge eps" data-app="Efficient fine-tuning for domain-specific Earth science models">LoRA</span>
+                                <span class="method cutting-edge eps" data-app="Memory-efficient adaptation for geoscience LLMs">QLoRA</span>
+                                <span class="method cutting-edge">Prefix Tuning</span>
+                                <span class="method cutting-edge eps" data-app="Domain adaptation for seismic models">Adapter Layers</span>
+                                <span class="method cutting-edge">Prompt Tuning</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="complexity">
+                        <span class="complexity-label">Complexity</span>
+                        <div class="complexity-bar">
+                            <div class="complexity-fill" style="width: 90%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p class="footer-text">Machine Learning Taxonomy • From Perceptrons (1958) to Foundation Models (2024+) • 🌍 = Earth & Planetary Science Applications</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Add subtle animations on scroll
+        const categories = document.querySelectorAll('.category');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        categories.forEach(cat => {
+            cat.style.opacity = '0';
+            cat.style.transform = 'translateY(20px)';
+            cat.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            observer.observe(cat);
+        });
+        
+        // Add hover glow effect to methods
+        const methods = document.querySelectorAll('.method');
+        methods.forEach(method => {
+            method.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.05)';
+            });
+            method.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
