@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBSCAN - Interactive Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0a15 0%, #151525 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #22d3ee, #a855f7, #f43f5e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+        
+        .visualizations {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .viz-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .panel h2 {
+            font-size: 1rem;
+            color: #22d3ee;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        canvas {
+            background: #0a0a1a;
+            border-radius: 12px;
+            cursor: crosshair;
+            display: block;
+            width: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .control-section h3 {
+            font-size: 0.85rem;
+            color: #a855f7;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #22d3ee, #0891b2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(34,211,238,0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(168,85,247,0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #888;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        
+        .slider-group {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .slider-value {
+            color: #22d3ee;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #2a2a4a;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #22d3ee, #a855f7);
+            cursor: pointer;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #22d3ee;
+            font-family: monospace;
+        }
+        
+        .param-display {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .param-item {
+            text-align: center;
+        }
+        
+        .param-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #22d3ee, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .param-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .info-box {
+            background: rgba(34,211,238,0.1);
+            border: 1px solid rgba(34,211,238,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .point-type-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .point-type-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+        }
+        
+        .point-type-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            font-weight: bold;
+        }
+        
+        .point-type-dot.core {
+            background: #22d3ee;
+            color: #000;
+        }
+        
+        .point-type-dot.border {
+            background: transparent;
+            border: 2px solid #22d3ee;
+        }
+        
+        .point-type-dot.noise {
+            background: #666;
+        }
+        
+        .equation-box {
+            background: rgba(0,0,0,0.4);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            margin: 10px 0;
+            border-left: 3px solid #22d3ee;
+        }
+        
+        .equation-box .main-eq {
+            font-size: 0.9rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .equation-box .sub-eq {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        .probe-info {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        
+        .probe-info .label {
+            color: #888;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .probe-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        
+        .probe-row .val {
+            font-family: monospace;
+            font-weight: 600;
+        }
+        
+        .cluster-colors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .cluster-chip {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+        
+        .cluster-chip-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .viz-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DBSCAN Clustering</h1>
+        <p class="subtitle">Harvard EPS-210 | Interactive tutorial — Explore density-based clustering with automatic noise detection</p>
+        
+        <div class="main-layout">
+            <div class="visualizations">
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Clustering Result</h2>
+                        <canvas id="clusterCanvas" width="400" height="350"></canvas>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #22d3ee;"></div>
+                                <span>Core</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: transparent; border: 2px solid #22d3ee;"></div>
+                                <span>Border</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #666;"></div>
+                                <span>Noise</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>ε-Neighborhoods</h2>
+                        <canvas id="neighborCanvas" width="400" height="350"></canvas>
+                        <div class="equation-box">
+                            <div class="main-eq">Nε(p) = {q ∈ D | dist(p,q) ≤ ε}</div>
+                            <div class="sub-eq">Points within ε-radius of p</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>k-Distance Graph</h2>
+                        <canvas id="kdistCanvas" width="400" height="280"></canvas>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>Density Map</h2>
+                        <canvas id="densityCanvas" width="400" height="280"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-section">
+                    <h3>Data Points</h3>
+                    <p style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">
+                        Click on the clustering canvas to add points
+                    </p>
+                    <button class="btn btn-outline" id="clearDataBtn">Clear All Points</button>
+                </div>
+                
+                <div class="control-section">
+                    <h3>DBSCAN Parameters</h3>
+                    <div class="param-display">
+                        <div class="param-item">
+                            <div class="param-value" id="epsValue">0.80</div>
+                            <div class="param-label">ε (epsilon)</div>
+                        </div>
+                        <div class="param-item">
+                            <div class="param-value" id="minPtsValue">4</div>
+                            <div class="param-label">minPts</div>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Epsilon (ε)</span>
+                            <span class="slider-value" id="epsSliderValue">0.80</span>
+                        </div>
+                        <input type="range" id="epsSlider" min="10" max="200" step="5" value="80">
+                    </div>
+                    
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>MinPts</span>
+                            <span class="slider-value" id="minPtsSliderValue">4</span>
+                        </div>
+                        <input type="range" id="minPtsSlider" min="2" max="10" step="1" value="4">
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Algorithm</h3>
+                    <button class="btn btn-primary" id="runBtn">🔍 Run DBSCAN</button>
+                    <button class="btn btn-outline" id="resetBtn">Reset Clustering</button>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Points</div>
+                            <div class="stat-value" id="totalPoints">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Clusters</div>
+                            <div class="stat-value" id="numClusters">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Core</div>
+                            <div class="stat-value" id="numCore" style="color: #22d3ee;">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Noise</div>
+                            <div class="stat-value" id="numNoise" style="color: #f43f5e;">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="cluster-colors" id="clusterColors">
+                        <!-- Filled dynamically -->
+                    </div>
+                    
+                    <div class="probe-info" id="probeInfo">
+                        <div class="label">Hover over a point to inspect</div>
+                        <div class="probe-row">
+                            <span>Point Type:</span>
+                            <span class="val" id="probeType">--</span>
+                        </div>
+                        <div class="probe-row">
+                            <span>Neighbors:</span>
+                            <span class="val" id="probeNeighbors">--</span>
+                        </div>
+                        <div class="probe-row">
+                            <span>Cluster:</span>
+                            <span class="val" id="probeCluster">--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Quick Examples</h3>
+                    <button class="btn btn-outline" id="blobsBtn">Dense Blobs</button>
+                    <button class="btn btn-outline" id="moonsBtn">Half Moons</button>
+                    <button class="btn btn-outline" id="noisyBtn">Blobs + Noise</button>
+                </div>
+                
+                <div class="info-box">
+                    <strong>How it works:</strong> DBSCAN finds clusters based on density. Core points have ≥ minPts neighbors within ε. Border points are within ε of a core point. Points that are neither are noise. Unlike K-means, it can find arbitrarily shaped clusters and automatically detects outliers.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========== CANVAS SETUP ==========
+        const clusterCanvas = document.getElementById('clusterCanvas');
+        const neighborCanvas = document.getElementById('neighborCanvas');
+        const kdistCanvas = document.getElementById('kdistCanvas');
+        const densityCanvas = document.getElementById('densityCanvas');
+        
+        const clusterCtx = clusterCanvas.getContext('2d');
+        const neighborCtx = neighborCanvas.getContext('2d');
+        const kdistCtx = kdistCanvas.getContext('2d');
+        const densityCtx = densityCanvas.getContext('2d');
+        
+        // ========== STATE ==========
+        let data = [];
+        let epsilon = 0.8;
+        let minPts = 4;
+        let labels = [];  // Cluster labels (-1 = noise)
+        let pointTypes = [];  // 'core', 'border', 'noise'
+        let neighborCounts = [];
+        let hoveredPoint = null;
+        
+        // Coordinate ranges
+        const xMin = -5, xMax = 5;
+        const yMin = -5, yMax = 5;
+        
+        // Cluster colors
+        const clusterColors = [
+            '#22d3ee', '#a855f7', '#f43f5e', '#22c55e', '#f59e0b',
+            '#3b82f6', '#ec4899', '#14b8a6', '#eab308', '#8b5cf6'
+        ];
+        
+        // ========== DBSCAN ALGORITHM ==========
+        function distance(p1, p2) {
+            return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+        }
+        
+        function getNeighbors(pointIdx) {
+            const neighbors = [];
+            for (let i = 0; i < data.length; i++) {
+                if (i !== pointIdx && distance(data[pointIdx], data[i]) <= epsilon) {
+                    neighbors.push(i);
+                }
+            }
+            return neighbors;
+        }
+        
+        function runDBSCAN() {
+            if (data.length === 0) return;
+            
+            labels = new Array(data.length).fill(-1);  // -1 = undefined/noise
+            pointTypes = new Array(data.length).fill('noise');
+            neighborCounts = new Array(data.length).fill(0);
+            
+            // Compute neighbor counts
+            const neighbors = [];
+            for (let i = 0; i < data.length; i++) {
+                neighbors[i] = getNeighbors(i);
+                neighborCounts[i] = neighbors[i].length;
+            }
+            
+            // Identify core points
+            const corePoints = new Set();
+            for (let i = 0; i < data.length; i++) {
+                if (neighborCounts[i] >= minPts - 1) {  // -1 because we don't count the point itself
+                    corePoints.add(i);
+                    pointTypes[i] = 'core';
+                }
+            }
+            
+            // Cluster expansion
+            let clusterId = 0;
+            
+            for (let i = 0; i < data.length; i++) {
+                if (labels[i] !== -1) continue;  // Already assigned
+                if (!corePoints.has(i)) continue;  // Not a core point
+                
+                // Start new cluster
+                const queue = [i];
+                labels[i] = clusterId;
+                
+                while (queue.length > 0) {
+                    const current = queue.shift();
+                    
+                    for (const neighbor of neighbors[current]) {
+                        if (labels[neighbor] === -1) {
+                            labels[neighbor] = clusterId;
+                            
+                            if (corePoints.has(neighbor)) {
+                                queue.push(neighbor);
+                            } else {
+                                pointTypes[neighbor] = 'border';
+                            }
+                        }
+                    }
+                }
+                
+                clusterId++;
+            }
+            
+            // Points still with label -1 are noise
+            for (let i = 0; i < data.length; i++) {
+                if (labels[i] === -1) {
+                    pointTypes[i] = 'noise';
+                }
+            }
+            
+            updateStats();
+        }
+        
+        // ========== COORDINATE TRANSFORMS ==========
+        function toCanvasX(canvas, x, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return margin + (x - xMin) / (xMax - xMin) * w;
+        }
+        
+        function toCanvasY(canvas, y, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return margin + (yMax - y) / (yMax - yMin) * h;
+        }
+        
+        function toDataX(canvas, cx, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            return xMin + (cx - margin) / w * (xMax - xMin);
+        }
+        
+        function toDataY(canvas, cy, margin = 40) {
+            const h = canvas.height - 2 * margin;
+            return yMax - (cy - margin) / h * (yMax - yMin);
+        }
+        
+        function dataDistToCanvas(d) {
+            // Convert data distance to canvas pixels
+            const w = clusterCanvas.width - 80;
+            return d / (xMax - xMin) * w;
+        }
+        
+        // ========== DRAWING: CLUSTER RESULT ==========
+        function drawClusterResult() {
+            const W = clusterCanvas.width;
+            const H = clusterCanvas.height;
+            const margin = 40;
+            
+            clusterCtx.fillStyle = '#0a0a1a';
+            clusterCtx.fillRect(0, 0, W, H);
+            
+            // Draw axes
+            clusterCtx.strokeStyle = '#333';
+            clusterCtx.lineWidth = 1;
+            
+            const y0 = toCanvasY(clusterCanvas, 0);
+            clusterCtx.beginPath();
+            clusterCtx.moveTo(margin, y0);
+            clusterCtx.lineTo(W - margin, y0);
+            clusterCtx.stroke();
+            
+            const x0 = toCanvasX(clusterCanvas, 0);
+            clusterCtx.beginPath();
+            clusterCtx.moveTo(x0, margin);
+            clusterCtx.lineTo(x0, H - margin);
+            clusterCtx.stroke();
+            
+            // Axis labels
+            clusterCtx.fillStyle = '#555';
+            clusterCtx.font = '10px sans-serif';
+            clusterCtx.textAlign = 'center';
+            for (let x = Math.ceil(xMin); x <= xMax; x += 2) {
+                clusterCtx.fillText(x.toString(), toCanvasX(clusterCanvas, x), H - margin + 15);
+            }
+            
+            // Draw epsilon radius for hovered point
+            if (hoveredPoint !== null) {
+                const cx = toCanvasX(clusterCanvas, data[hoveredPoint].x);
+                const cy = toCanvasY(clusterCanvas, data[hoveredPoint].y);
+                const r = dataDistToCanvas(epsilon);
+                
+                clusterCtx.strokeStyle = '#f59e0b';
+                clusterCtx.lineWidth = 2;
+                clusterCtx.setLineDash([5, 5]);
+                clusterCtx.beginPath();
+                clusterCtx.arc(cx, cy, r, 0, Math.PI * 2);
+                clusterCtx.stroke();
+                clusterCtx.setLineDash([]);
+                
+                // Draw lines to neighbors
+                const neighbors = getNeighbors(hoveredPoint);
+                clusterCtx.strokeStyle = '#f59e0b88';
+                clusterCtx.lineWidth = 1;
+                for (const n of neighbors) {
+                    const nx = toCanvasX(clusterCanvas, data[n].x);
+                    const ny = toCanvasY(clusterCanvas, data[n].y);
+                    clusterCtx.beginPath();
+                    clusterCtx.moveTo(cx, cy);
+                    clusterCtx.lineTo(nx, ny);
+                    clusterCtx.stroke();
+                }
+            }
+            
+            // Draw points
+            for (let i = 0; i < data.length; i++) {
+                const point = data[i];
+                const cx = toCanvasX(clusterCanvas, point.x);
+                const cy = toCanvasY(clusterCanvas, point.y);
+                
+                const clusterId = labels[i];
+                const type = pointTypes[i];
+                
+                let color = '#666';
+                if (clusterId >= 0) {
+                    color = clusterColors[clusterId % clusterColors.length];
+                }
+                
+                if (type === 'core') {
+                    // Filled circle for core
+                    clusterCtx.fillStyle = color;
+                    clusterCtx.beginPath();
+                    clusterCtx.arc(cx, cy, 7, 0, Math.PI * 2);
+                    clusterCtx.fill();
+                    
+                    clusterCtx.strokeStyle = '#fff';
+                    clusterCtx.lineWidth = 1.5;
+                    clusterCtx.stroke();
+                } else if (type === 'border') {
+                    // Ring for border
+                    clusterCtx.fillStyle = color + '40';
+                    clusterCtx.beginPath();
+                    clusterCtx.arc(cx, cy, 6, 0, Math.PI * 2);
+                    clusterCtx.fill();
+                    
+                    clusterCtx.strokeStyle = color;
+                    clusterCtx.lineWidth = 2;
+                    clusterCtx.stroke();
+                } else {
+                    // X for noise
+                    clusterCtx.strokeStyle = '#666';
+                    clusterCtx.lineWidth = 2;
+                    clusterCtx.beginPath();
+                    clusterCtx.moveTo(cx - 4, cy - 4);
+                    clusterCtx.lineTo(cx + 4, cy + 4);
+                    clusterCtx.moveTo(cx + 4, cy - 4);
+                    clusterCtx.lineTo(cx - 4, cy + 4);
+                    clusterCtx.stroke();
+                }
+                
+                // Highlight hovered point
+                if (i === hoveredPoint) {
+                    clusterCtx.strokeStyle = '#fff';
+                    clusterCtx.lineWidth = 3;
+                    clusterCtx.beginPath();
+                    clusterCtx.arc(cx, cy, 12, 0, Math.PI * 2);
+                    clusterCtx.stroke();
+                }
+            }
+            
+            // Title
+            clusterCtx.fillStyle = '#fff';
+            clusterCtx.font = 'bold 12px sans-serif';
+            clusterCtx.textAlign = 'left';
+            clusterCtx.fillText('Click to add points', margin, 25);
+        }
+        
+        // ========== DRAWING: NEIGHBORHOODS ==========
+        function drawNeighborhoods() {
+            const W = neighborCanvas.width;
+            const H = neighborCanvas.height;
+            const margin = 40;
+            
+            neighborCtx.fillStyle = '#0a0a1a';
+            neighborCtx.fillRect(0, 0, W, H);
+            
+            // Draw axes
+            neighborCtx.strokeStyle = '#333';
+            neighborCtx.lineWidth = 1;
+            
+            const y0 = toCanvasY(neighborCanvas, 0);
+            neighborCtx.beginPath();
+            neighborCtx.moveTo(margin, y0);
+            neighborCtx.lineTo(W - margin, y0);
+            neighborCtx.stroke();
+            
+            const x0 = toCanvasX(neighborCanvas, 0);
+            neighborCtx.beginPath();
+            neighborCtx.moveTo(x0, margin);
+            neighborCtx.lineTo(x0, H - margin);
+            neighborCtx.stroke();
+            
+            // Draw epsilon circles for core points
+            const r = dataDistToCanvas(epsilon);
+            
+            for (let i = 0; i < data.length; i++) {
+                if (pointTypes[i] === 'core') {
+                    const cx = toCanvasX(neighborCanvas, data[i].x);
+                    const cy = toCanvasY(neighborCanvas, data[i].y);
+                    
+                    const clusterId = labels[i];
+                    const color = clusterId >= 0 ? clusterColors[clusterId % clusterColors.length] : '#666';
+                    
+                    neighborCtx.fillStyle = color + '15';
+                    neighborCtx.strokeStyle = color + '40';
+                    neighborCtx.lineWidth = 1;
+                    neighborCtx.beginPath();
+                    neighborCtx.arc(cx, cy, r, 0, Math.PI * 2);
+                    neighborCtx.fill();
+                    neighborCtx.stroke();
+                }
+            }
+            
+            // Draw points
+            for (let i = 0; i < data.length; i++) {
+                const point = data[i];
+                const cx = toCanvasX(neighborCanvas, point.x);
+                const cy = toCanvasY(neighborCanvas, point.y);
+                
+                const clusterId = labels[i];
+                const type = pointTypes[i];
+                
+                let color = '#666';
+                if (clusterId >= 0) {
+                    color = clusterColors[clusterId % clusterColors.length];
+                }
+                
+                if (type === 'core') {
+                    neighborCtx.fillStyle = color;
+                    neighborCtx.beginPath();
+                    neighborCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+                    neighborCtx.fill();
+                } else if (type === 'border') {
+                    neighborCtx.strokeStyle = color;
+                    neighborCtx.lineWidth = 2;
+                    neighborCtx.beginPath();
+                    neighborCtx.arc(cx, cy, 4, 0, Math.PI * 2);
+                    neighborCtx.stroke();
+                } else {
+                    neighborCtx.fillStyle = '#666';
+                    neighborCtx.beginPath();
+                    neighborCtx.arc(cx, cy, 3, 0, Math.PI * 2);
+                    neighborCtx.fill();
+                }
+            }
+            
+            // Title
+            neighborCtx.fillStyle = '#fff';
+            neighborCtx.font = 'bold 11px sans-serif';
+            neighborCtx.textAlign = 'left';
+            neighborCtx.fillText(`Core point neighborhoods (ε = ${epsilon.toFixed(2)})`, margin, 25);
+        }
+        
+        // ========== DRAWING: K-DISTANCE GRAPH ==========
+        function drawKDistanceGraph() {
+            const W = kdistCanvas.width;
+            const H = kdistCanvas.height;
+            const margin = 50;
+            const plotW = W - 2 * margin;
+            const plotH = H - 2 * margin;
+            
+            kdistCtx.fillStyle = '#0a0a1a';
+            kdistCtx.fillRect(0, 0, W, H);
+            
+            if (data.length < minPts) {
+                kdistCtx.fillStyle = '#555';
+                kdistCtx.font = '14px sans-serif';
+                kdistCtx.textAlign = 'center';
+                kdistCtx.fillText(`Need at least ${minPts} points`, W / 2, H / 2);
+                return;
+            }
+            
+            // Compute k-distance for each point (distance to k-th nearest neighbor)
+            const k = minPts - 1;
+            const kDistances = [];
+            
+            for (let i = 0; i < data.length; i++) {
+                const distances = [];
+                for (let j = 0; j < data.length; j++) {
+                    if (i !== j) {
+                        distances.push(distance(data[i], data[j]));
+                    }
+                }
+                distances.sort((a, b) => a - b);
+                kDistances.push(distances[k - 1] || 0);
+            }
+            
+            // Sort k-distances in descending order
+            const sortedKDist = [...kDistances].sort((a, b) => b - a);
+            const maxKDist = Math.max(...sortedKDist) * 1.1;
+            
+            // Grid
+            kdistCtx.strokeStyle = '#222';
+            kdistCtx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = margin + i * plotH / 4;
+                kdistCtx.beginPath();
+                kdistCtx.moveTo(margin, y);
+                kdistCtx.lineTo(W - margin, y);
+                kdistCtx.stroke();
+            }
+            
+            // Axes
+            kdistCtx.strokeStyle = '#555';
+            kdistCtx.lineWidth = 2;
+            kdistCtx.beginPath();
+            kdistCtx.moveTo(margin, margin);
+            kdistCtx.lineTo(margin, H - margin);
+            kdistCtx.lineTo(W - margin, H - margin);
+            kdistCtx.stroke();
+            
+            // K-distance curve
+            kdistCtx.strokeStyle = '#a855f7';
+            kdistCtx.lineWidth = 3;
+            kdistCtx.beginPath();
+            
+            for (let i = 0; i < sortedKDist.length; i++) {
+                const px = margin + (i / (sortedKDist.length - 1)) * plotW;
+                const py = margin + (1 - sortedKDist[i] / maxKDist) * plotH;
+                
+                if (i === 0) kdistCtx.moveTo(px, py);
+                else kdistCtx.lineTo(px, py);
+            }
+            kdistCtx.stroke();
+            
+            // Draw epsilon line
+            const epsY = margin + (1 - epsilon / maxKDist) * plotH;
+            kdistCtx.strokeStyle = '#f59e0b';
+            kdistCtx.lineWidth = 2;
+            kdistCtx.setLineDash([8, 4]);
+            kdistCtx.beginPath();
+            kdistCtx.moveTo(margin, epsY);
+            kdistCtx.lineTo(W - margin, epsY);
+            kdistCtx.stroke();
+            kdistCtx.setLineDash([]);
+            
+            // Epsilon label
+            kdistCtx.fillStyle = '#f59e0b';
+            kdistCtx.font = 'bold 10px sans-serif';
+            kdistCtx.textAlign = 'left';
+            kdistCtx.fillText(`ε = ${epsilon.toFixed(2)}`, W - margin + 5, epsY + 4);
+            
+            // Labels
+            kdistCtx.fillStyle = '#888';
+            kdistCtx.font = '10px sans-serif';
+            kdistCtx.textAlign = 'center';
+            kdistCtx.fillText('Points (sorted)', W / 2, H - 10);
+            
+            kdistCtx.save();
+            kdistCtx.translate(12, H / 2);
+            kdistCtx.rotate(-Math.PI / 2);
+            kdistCtx.fillText(`${k}-distance`, 0, 0);
+            kdistCtx.restore();
+            
+            // Title
+            kdistCtx.fillStyle = '#fff';
+            kdistCtx.font = 'bold 11px sans-serif';
+            kdistCtx.textAlign = 'left';
+            kdistCtx.fillText(`k-Distance graph (k = ${k})`, margin, 20);
+            
+            kdistCtx.fillStyle = '#888';
+            kdistCtx.font = '10px sans-serif';
+            kdistCtx.fillText('Look for "elbow" to choose ε', margin, 35);
+        }
+        
+        // ========== DRAWING: DENSITY MAP ==========
+        function drawDensityMap() {
+            const W = densityCanvas.width;
+            const H = densityCanvas.height;
+            const margin = 40;
+            const plotW = W - 2 * margin;
+            const plotH = H - 2 * margin;
+            
+            densityCtx.fillStyle = '#0a0a1a';
+            densityCtx.fillRect(0, 0, W, H);
+            
+            if (data.length === 0) {
+                densityCtx.fillStyle = '#555';
+                densityCtx.font = '14px sans-serif';
+                densityCtx.textAlign = 'center';
+                densityCtx.fillText('Add points to see density', W / 2, H / 2);
+                return;
+            }
+            
+            // Compute density map
+            const resolution = 4;
+            let maxDensity = 0;
+            const densityGrid = [];
+            
+            for (let py = margin; py < H - margin; py += resolution) {
+                for (let px = margin; px < W - margin; px += resolution) {
+                    const x = toDataX(densityCanvas, px, margin);
+                    const y = toDataY(densityCanvas, py, margin);
+                    
+                    // Count points within epsilon
+                    let count = 0;
+                    for (const point of data) {
+                        const d = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
+                        if (d <= epsilon) count++;
+                    }
+                    
+                    densityGrid.push({ px, py, count });
+                    if (count > maxDensity) maxDensity = count;
+                }
+            }
+            
+            // Draw density
+            for (const cell of densityGrid) {
+                if (cell.count > 0) {
+                    const intensity = cell.count / maxDensity;
+                    const hue = 180 + intensity * 60;  // Cyan to purple
+                    densityCtx.fillStyle = `hsla(${hue}, 80%, ${30 + intensity * 40}%, ${0.3 + intensity * 0.5})`;
+                    densityCtx.fillRect(cell.px, cell.py, resolution, resolution);
+                }
+            }
+            
+            // Draw minPts threshold contour
+            densityCtx.strokeStyle = '#f59e0b';
+            densityCtx.lineWidth = 2;
+            
+            for (const cell of densityGrid) {
+                if (cell.count >= minPts) {
+                    // Check if this is a boundary cell
+                    const neighbors = densityGrid.filter(c => 
+                        Math.abs(c.px - cell.px) <= resolution &&
+                        Math.abs(c.py - cell.py) <= resolution &&
+                        c !== cell
+                    );
+                    
+                    const hasBelowThreshold = neighbors.some(n => n.count < minPts);
+                    if (hasBelowThreshold) {
+                        densityCtx.fillStyle = '#f59e0b44';
+                        densityCtx.fillRect(cell.px, cell.py, resolution, resolution);
+                    }
+                }
+            }
+            
+            // Draw points
+            for (let i = 0; i < data.length; i++) {
+                const point = data[i];
+                const cx = toCanvasX(densityCanvas, point.x, margin);
+                const cy = toCanvasY(densityCanvas, point.y, margin);
+                
+                densityCtx.fillStyle = '#fff';
+                densityCtx.beginPath();
+                densityCtx.arc(cx, cy, 3, 0, Math.PI * 2);
+                densityCtx.fill();
+            }
+            
+            // Title
+            densityCtx.fillStyle = '#fff';
+            densityCtx.font = 'bold 11px sans-serif';
+            densityCtx.textAlign = 'left';
+            densityCtx.fillText(`Local density (ε-neighborhood count)`, margin, 20);
+            
+            densityCtx.fillStyle = '#888';
+            densityCtx.font = '10px sans-serif';
+            densityCtx.fillText(`Orange = density ≥ ${minPts}`, margin, 35);
+        }
+        
+        // ========== UPDATE FUNCTIONS ==========
+        function updateStats() {
+            document.getElementById('totalPoints').textContent = data.length;
+            
+            const numClusters = new Set(labels.filter(l => l >= 0)).size;
+            document.getElementById('numClusters').textContent = numClusters;
+            
+            const numCore = pointTypes.filter(t => t === 'core').length;
+            document.getElementById('numCore').textContent = numCore;
+            
+            const numNoise = pointTypes.filter(t => t === 'noise').length;
+            document.getElementById('numNoise').textContent = numNoise;
+            
+            // Update cluster colors
+            const colorsDiv = document.getElementById('clusterColors');
+            if (numClusters > 0) {
+                let html = '';
+                for (let c = 0; c < numClusters; c++) {
+                    const count = labels.filter(l => l === c).length;
+                    html += `
+                        <div class="cluster-chip">
+                            <div class="cluster-chip-dot" style="background: ${clusterColors[c % clusterColors.length]};"></div>
+                            <span>C${c + 1}: ${count}</span>
+                        </div>
+                    `;
+                }
+                colorsDiv.innerHTML = html;
+            } else {
+                colorsDiv.innerHTML = '';
+            }
+        }
+        
+        function updateProbeInfo() {
+            if (hoveredPoint === null) {
+                document.getElementById('probeType').textContent = '--';
+                document.getElementById('probeNeighbors').textContent = '--';
+                document.getElementById('probeCluster').textContent = '--';
+                return;
+            }
+            
+            const type = pointTypes[hoveredPoint] || 'unknown';
+            document.getElementById('probeType').textContent = type.charAt(0).toUpperCase() + type.slice(1);
+            document.getElementById('probeType').style.color = 
+                type === 'core' ? '#22d3ee' : 
+                type === 'border' ? '#a855f7' : '#f43f5e';
+            
+            document.getElementById('probeNeighbors').textContent = neighborCounts[hoveredPoint] || 0;
+            
+            const clusterId = labels[hoveredPoint];
+            document.getElementById('probeCluster').textContent = 
+                clusterId >= 0 ? `Cluster ${clusterId + 1}` : 'Noise';
+            document.getElementById('probeCluster').style.color = 
+                clusterId >= 0 ? clusterColors[clusterId % clusterColors.length] : '#666';
+        }
+        
+        function drawAll() {
+            drawClusterResult();
+            drawNeighborhoods();
+            drawKDistanceGraph();
+            drawDensityMap();
+        }
+        
+        // ========== EVENT HANDLERS ==========
+        clusterCanvas.addEventListener('click', function(e) {
+            const rect = clusterCanvas.getBoundingClientRect();
+            const scaleX = clusterCanvas.width / rect.width;
+            const scaleY = clusterCanvas.height / rect.height;
+            
+            const cx = (e.clientX - rect.left) * scaleX;
+            const cy = (e.clientY - rect.top) * scaleY;
+            
+            const margin = 40;
+            if (cx >= margin && cx <= clusterCanvas.width - margin &&
+                cy >= margin && cy <= clusterCanvas.height - margin) {
+                
+                const x = toDataX(clusterCanvas, cx);
+                const y = toDataY(clusterCanvas, cy);
+                
+                data.push({ x, y });
+                labels.push(-1);
+                pointTypes.push('noise');
+                neighborCounts.push(0);
+                
+                runDBSCAN();
+                drawAll();
+            }
+        });
+        
+        clusterCanvas.addEventListener('mousemove', function(e) {
+            const rect = clusterCanvas.getBoundingClientRect();
+            const scaleX = clusterCanvas.width / rect.width;
+            const scaleY = clusterCanvas.height / rect.height;
+            
+            const cx = (e.clientX - rect.left) * scaleX;
+            const cy = (e.clientY - rect.top) * scaleY;
+            
+            // Find nearest point
+            let nearestDist = Infinity;
+            let nearestIdx = null;
+            
+            for (let i = 0; i < data.length; i++) {
+                const px = toCanvasX(clusterCanvas, data[i].x);
+                const py = toCanvasY(clusterCanvas, data[i].y);
+                const d = Math.sqrt((cx - px) ** 2 + (cy - py) ** 2);
+                
+                if (d < 20 && d < nearestDist) {
+                    nearestDist = d;
+                    nearestIdx = i;
+                }
+            }
+            
+            if (nearestIdx !== hoveredPoint) {
+                hoveredPoint = nearestIdx;
+                updateProbeInfo();
+                drawClusterResult();
+            }
+        });
+        
+        clusterCanvas.addEventListener('mouseleave', function() {
+            hoveredPoint = null;
+            updateProbeInfo();
+            drawClusterResult();
+        });
+        
+        document.getElementById('epsSlider').addEventListener('input', function(e) {
+            epsilon = parseInt(e.target.value) / 100;
+            document.getElementById('epsValue').textContent = epsilon.toFixed(2);
+            document.getElementById('epsSliderValue').textContent = epsilon.toFixed(2);
+            
+            runDBSCAN();
+            drawAll();
+        });
+        
+        document.getElementById('minPtsSlider').addEventListener('input', function(e) {
+            minPts = parseInt(e.target.value);
+            document.getElementById('minPtsValue').textContent = minPts;
+            document.getElementById('minPtsSliderValue').textContent = minPts;
+            
+            runDBSCAN();
+            drawAll();
+        });
+        
+        document.getElementById('runBtn').addEventListener('click', function() {
+            runDBSCAN();
+            drawAll();
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            labels = new Array(data.length).fill(-1);
+            pointTypes = new Array(data.length).fill('noise');
+            neighborCounts = new Array(data.length).fill(0);
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('clearDataBtn').addEventListener('click', function() {
+            data = [];
+            labels = [];
+            pointTypes = [];
+            neighborCounts = [];
+            hoveredPoint = null;
+            updateStats();
+            updateProbeInfo();
+            drawAll();
+        });
+        
+        // Example datasets
+        document.getElementById('blobsBtn').addEventListener('click', function() {
+            data = [];
+            labels = [];
+            pointTypes = [];
+            neighborCounts = [];
+            
+            const centers = [
+                { x: -2.5, y: 2 },
+                { x: 2.5, y: 2 },
+                { x: 0, y: -2.5 }
+            ];
+            
+            for (const center of centers) {
+                for (let i = 0; i < 20; i++) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const r = Math.random() * 1;
+                    data.push({
+                        x: center.x + r * Math.cos(angle),
+                        y: center.y + r * Math.sin(angle)
+                    });
+                }
+            }
+            
+            epsilon = 0.8;
+            minPts = 4;
+            document.getElementById('epsSlider').value = 80;
+            document.getElementById('epsValue').textContent = '0.80';
+            document.getElementById('epsSliderValue').textContent = '0.80';
+            document.getElementById('minPtsSlider').value = 4;
+            document.getElementById('minPtsValue').textContent = '4';
+            document.getElementById('minPtsSliderValue').textContent = '4';
+            
+            runDBSCAN();
+            drawAll();
+        });
+        
+        document.getElementById('moonsBtn').addEventListener('click', function() {
+            data = [];
+            labels = [];
+            pointTypes = [];
+            neighborCounts = [];
+            
+            // Upper moon
+            for (let i = 0; i < 30; i++) {
+                const angle = Math.PI * (i / 29);
+                const r = 2 + (Math.random() - 0.5) * 0.4;
+                data.push({
+                    x: r * Math.cos(angle),
+                    y: r * Math.sin(angle)
+                });
+            }
+            
+            // Lower moon
+            for (let i = 0; i < 30; i++) {
+                const angle = Math.PI + Math.PI * (i / 29);
+                const r = 2 + (Math.random() - 0.5) * 0.4;
+                data.push({
+                    x: 1 + r * Math.cos(angle),
+                    y: 0.5 + r * Math.sin(angle)
+                });
+            }
+            
+            epsilon = 0.6;
+            minPts = 4;
+            document.getElementById('epsSlider').value = 60;
+            document.getElementById('epsValue').textContent = '0.60';
+            document.getElementById('epsSliderValue').textContent = '0.60';
+            document.getElementById('minPtsSlider').value = 4;
+            document.getElementById('minPtsValue').textContent = '4';
+            document.getElementById('minPtsSliderValue').textContent = '4';
+            
+            runDBSCAN();
+            drawAll();
+        });
+        
+        document.getElementById('noisyBtn').addEventListener('click', function() {
+            data = [];
+            labels = [];
+            pointTypes = [];
+            neighborCounts = [];
+            
+            // Two blobs
+            const centers = [
+                { x: -2, y: 0 },
+                { x: 2, y: 0 }
+            ];
+            
+            for (const center of centers) {
+                for (let i = 0; i < 20; i++) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const r = Math.random() * 1;
+                    data.push({
+                        x: center.x + r * Math.cos(angle),
+                        y: center.y + r * Math.sin(angle)
+                    });
+                }
+            }
+            
+            // Add noise
+            for (let i = 0; i < 15; i++) {
+                data.push({
+                    x: -4 + Math.random() * 8,
+                    y: -4 + Math.random() * 8
+                });
+            }
+            
+            epsilon = 0.7;
+            minPts = 4;
+            document.getElementById('epsSlider').value = 70;
+            document.getElementById('epsValue').textContent = '0.70';
+            document.getElementById('epsSliderValue').textContent = '0.70';
+            document.getElementById('minPtsSlider').value = 4;
+            document.getElementById('minPtsValue').textContent = '4';
+            document.getElementById('minPtsSliderValue').textContent = '4';
+            
+            runDBSCAN();
+            drawAll();
+        });
+        
+        // Initialize
+        updateStats();
+        drawAll();
+    </script>
+</body>
+</html>
