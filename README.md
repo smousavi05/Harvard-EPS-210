@@ -127,15 +127,15 @@
 
 <table>
   <tr align="center">
-    <th>Support Vector Machines</th>
+    <th>Principal Component Analysis</th>
     <th>Decision Trees</th>
     <th>Random Forest</th>
   </tr>
   
   <tr align="center">
     <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_svm.html">
-        <img src="interactive_visualizations/L3_svm.png" alt="L3_svm" width="200">
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L4_pca.html">
+        <img src="interactive_visualizations/L4_pca.png" alt="L4_pca" width="200">
       </a>
     </td>
     <td>
