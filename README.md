@@ -87,7 +87,9 @@
     </td>
   </tr>
 </table>
+
 ---------------------------------------------------------
+
 ## Lecture 4: Traditional Machine Learning (Statistical Learning) Methods II
 
 <table>
