@@ -128,7 +128,7 @@
 <table>
   <tr align="center">
     <th>Principal Component Analysis</th>
-    <th>Decision Trees</th>
+    <th>t-SNE</th>
     <th>Random Forest</th>
   </tr>
   
@@ -139,8 +139,8 @@
       </a>
     </td>
     <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_decision_tree.html">
-        <img src="interactive_visualizations/L3_decision_tree.png" alt="L3_decision_tree" width="200">
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L4_tsne.html">
+        <img src="interactive_visualizations/L4_tsne.png" alt="L4_tsne" width="200">
       </a>
     </td>
     <td>
