@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>t-SNE - Interactive Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0a18 0%, #1a1a30 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #ec4899, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+        
+        .visualizations {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .viz-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .panel h2 {
+            font-size: 1rem;
+            color: #8b5cf6;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        canvas {
+            background: #0a0a1a;
+            border-radius: 12px;
+            cursor: crosshair;
+            display: block;
+            width: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .control-section h3 {
+            font-size: 0.85rem;
+            color: #ec4899;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(139,92,246,0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(236,72,153,0.4);
+        }
+        
+        .btn-accent {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+        }
+        
+        .btn-accent:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(6,182,212,0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #888;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        
+        .slider-group {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .slider-value {
+            color: #8b5cf6;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #2a2a4a;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            cursor: pointer;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            font-family: monospace;
+        }
+        
+        .info-box {
+            background: rgba(139,92,246,0.1);
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .equation-box {
+            background: rgba(0,0,0,0.4);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            margin: 10px 0;
+            border-left: 3px solid #8b5cf6;
+        }
+        
+        .equation-box .main-eq {
+            font-size: 0.85rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .equation-box .sub-eq {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+        
+        .iteration-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .iteration-display .iter-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #06b6d4;
+            font-family: monospace;
+        }
+        
+        .iteration-display .iter-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.running {
+            background: rgba(251,191,36,0.2);
+            color: #fbbf24;
+        }
+        
+        .status-badge.converged {
+            background: rgba(52,211,153,0.2);
+            color: #34d399;
+        }
+        
+        .status-badge.ready {
+            background: rgba(139,92,246,0.2);
+            color: #8b5cf6;
+        }
+        
+        .perplexity-display {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .perplexity-display .perp-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .perplexity-display .perp-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .cluster-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        
+        .cluster-chip {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+        
+        .cluster-chip-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .viz-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>t-SNE Visualization</h1>
+        <p class="subtitle">Harvard EPS-210 | Interactive tutorial — Explore t-distributed Stochastic Neighbor Embedding</p>
+        
+        <div class="main-layout">
+            <div class="visualizations">
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Original Data (High-D Space)</h2>
+                        <canvas id="originalCanvas" width="400" height="350"></canvas>
+                        <div class="legend" id="clusterLegend">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>t-SNE Embedding (2D)</h2>
+                        <canvas id="embeddingCanvas" width="400" height="350"></canvas>
+                        <div class="equation-box">
+                            <div class="main-eq">qᵢⱼ = (1 + ||yᵢ - yⱼ||²)⁻¹ / Σₖ≠ₗ (1 + ||yₖ - yₗ||²)⁻¹</div>
+                            <div class="sub-eq">Student-t distribution in low-D space</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>KL Divergence (Cost Function)</h2>
+                        <canvas id="costCanvas" width="400" height="280"></canvas>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>Pairwise Similarities (P matrix)</h2>
+                        <canvas id="similarityCanvas" width="400" height="280"></canvas>
+                        <div class="equation-box">
+                            <div class="main-eq">pⱼ|ᵢ = exp(-||xᵢ-xⱼ||²/2σᵢ²) / Σₖ≠ᵢ exp(-||xᵢ-xₖ||²/2σᵢ²)</div>
+                            <div class="sub-eq">Gaussian similarity in high-D space</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-section">
+                    <h3>Perplexity</h3>
+                    <div class="perplexity-display">
+                        <div class="perp-value" id="perpValue">30</div>
+                        <div class="perp-label">Effective neighbors</div>
+                    </div>
+                    <input type="range" id="perpSlider" min="5" max="50" step="5" value="30">
+                    <p style="font-size: 0.75rem; color: #888; margin-top: 8px;">
+                        Low perplexity → local structure<br>
+                        High perplexity → global structure
+                    </p>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Algorithm</h3>
+                    <div class="iteration-display">
+                        <div>
+                            <div class="iter-value" id="iterValue">0</div>
+                            <div class="iter-label">Iteration</div>
+                        </div>
+                        <span class="status-badge ready" id="statusBadge">Ready</span>
+                    </div>
+                    <button class="btn btn-primary" id="initBtn">🎲 Initialize</button>
+                    <button class="btn btn-secondary" id="stepBtn">➡️ Step (10 iters)</button>
+                    <button class="btn btn-accent" id="runBtn">▶️ Run (500 iters)</button>
+                    <button class="btn btn-outline" id="stopBtn">⏹️ Stop</button>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Learning Rate</h3>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>η (eta)</span>
+                            <span class="slider-value" id="lrValue">200</span>
+                        </div>
+                        <input type="range" id="lrSlider" min="50" max="500" step="50" value="200">
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Points</div>
+                            <div class="stat-value" id="totalPoints">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">KL Div</div>
+                            <div class="stat-value" id="klValue">--</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Clusters</div>
+                            <div class="stat-value" id="numClusters">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">σ range</div>
+                            <div class="stat-value" id="sigmaRange">--</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Quick Examples</h3>
+                    <button class="btn btn-outline" id="clustersBtn">3 Clusters</button>
+                    <button class="btn btn-outline" id="manyBtn">6 Clusters</button>
+                    <button class="btn btn-outline" id="nestedBtn">Nested Rings</button>
+                </div>
+                
+                <div class="info-box">
+                    <strong>How it works:</strong> t-SNE preserves local neighborhood structure by matching pairwise similarities. It uses Gaussian kernels in high-D and heavy-tailed Student-t in low-D to avoid crowding. The KL divergence cost is minimized via gradient descent.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========== CANVAS SETUP ==========
+        const originalCanvas = document.getElementById('originalCanvas');
+        const embeddingCanvas = document.getElementById('embeddingCanvas');
+        const costCanvas = document.getElementById('costCanvas');
+        const similarityCanvas = document.getElementById('similarityCanvas');
+        
+        const origCtx = originalCanvas.getContext('2d');
+        const embedCtx = embeddingCanvas.getContext('2d');
+        const costCtx = costCanvas.getContext('2d');
+        const simCtx = similarityCanvas.getContext('2d');
+        
+        // ========== STATE ==========
+        let data = [];  // Original high-D data (we'll use 2D for visualization)
+        let labels = [];  // Cluster labels for coloring
+        let Y = [];  // t-SNE embedding
+        let P = [];  // Pairwise similarities (high-D)
+        let sigmas = [];  // Per-point sigmas
+        let costHistory = [];
+        let iteration = 0;
+        let isRunning = false;
+        let perplexity = 30;
+        let learningRate = 200;
+        let momentum = 0.8;
+        let velocities = [];
+        
+        // Cluster colors
+        const clusterColors = [
+            '#ec4899', '#8b5cf6', '#06b6d4', '#f59e0b', '#10b981',
+            '#f43f5e', '#3b82f6', '#84cc16', '#a855f7', '#14b8a6'
+        ];
+        
+        // ========== t-SNE ALGORITHM ==========
+        function computePairwiseSimilarities() {
+            const n = data.length;
+            if (n === 0) {
+                P = [];
+                sigmas = [];
+                return;
+            }
+            
+            P = Array(n).fill(null).map(() => Array(n).fill(0));
+            sigmas = [];
+            
+            for (let i = 0; i < n; i++) {
+                if (!data[i]) continue;
+                
+                // Binary search for sigma that gives desired perplexity
+                const sigma = findSigma(i);
+                sigmas.push(sigma);
+                
+                // Compute conditional probabilities p(j|i)
+                let sum = 0;
+                for (let j = 0; j < n; j++) {
+                    if (i !== j && data[j]) {
+                        const dist = distance(data[i], data[j]);
+                        P[i][j] = Math.exp(-dist * dist / (2 * sigma * sigma));
+                        sum += P[i][j];
+                    }
+                }
+                
+                // Normalize
+                if (sum > 0) {
+                    for (let j = 0; j < n; j++) {
+                        P[i][j] = P[i][j] / sum;
+                    }
+                }
+            }
+            
+            // Symmetrize: p_ij = (p_j|i + p_i|j) / (2n)
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    if (P[i] && P[j]) {
+                        const pij = (P[i][j] + P[j][i]) / (2 * n);
+                        P[i][j] = pij;
+                        P[j][i] = pij;
+                    }
+                }
+            }
+        }
+        
+        function findSigma(i) {
+            if (!data[i]) return 1;
+            
+            const targetPerp = perplexity;
+            let sigmaMin = 0.01;
+            let sigmaMax = 100;
+            let sigma = 1;
+            
+            for (let iter = 0; iter < 50; iter++) {
+                const perp = computePerplexity(i, sigma);
+                
+                if (Math.abs(perp - targetPerp) < 0.1) break;
+                
+                if (perp > targetPerp) {
+                    sigmaMax = sigma;
+                    sigma = (sigma + sigmaMin) / 2;
+                } else {
+                    sigmaMin = sigma;
+                    sigma = (sigma + sigmaMax) / 2;
+                }
+            }
+            
+            return sigma;
+        }
+        
+        function computePerplexity(i, sigma) {
+            const n = data.length;
+            if (!data[i]) return 0;
+            
+            let sum = 0;
+            const probs = [];
+            
+            for (let j = 0; j < n; j++) {
+                if (i !== j && data[j]) {
+                    const dist = distance(data[i], data[j]);
+                    const p = Math.exp(-dist * dist / (2 * sigma * sigma));
+                    probs.push(p);
+                    sum += p;
+                }
+            }
+            
+            if (sum === 0) return 0;
+            
+            // Compute entropy
+            let entropy = 0;
+            for (const p of probs) {
+                const pNorm = p / sum;
+                if (pNorm > 1e-10) {
+                    entropy -= pNorm * Math.log2(pNorm);
+                }
+            }
+            
+            return Math.pow(2, entropy);
+        }
+        
+        function distance(p1, p2) {
+            if (!p1 || !p2) return 0;
+            return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+        }
+        
+        function initializeEmbedding() {
+            const n = data.length;
+            Y = [];
+            velocities = [];
+            
+            // Initialize with small random values
+            for (let i = 0; i < n; i++) {
+                Y.push({
+                    x: (Math.random() - 0.5) * 0.01,
+                    y: (Math.random() - 0.5) * 0.01
+                });
+                velocities.push({ x: 0, y: 0 });
+            }
+            
+            costHistory = [];
+            iteration = 0;
+        }
+        
+        function computeQ() {
+            const n = Y.length;
+            if (n === 0) return [];
+            
+            const Q = Array(n).fill(null).map(() => Array(n).fill(0));
+            let sum = 0;
+            
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    if (!Y[i] || !Y[j]) continue;
+                    const dist = distance(Y[i], Y[j]);
+                    const q = 1 / (1 + dist * dist);  // Student-t with df=1
+                    Q[i][j] = q;
+                    Q[j][i] = q;
+                    sum += 2 * q;
+                }
+            }
+            
+            // Normalize
+            if (sum > 0) {
+                for (let i = 0; i < n; i++) {
+                    for (let j = 0; j < n; j++) {
+                        if (i !== j) {
+                            Q[i][j] = Math.max(Q[i][j] / sum, 1e-12);
+                        }
+                    }
+                }
+            }
+            
+            return Q;
+        }
+        
+        function computeKL(Q) {
+            const n = data.length;
+            if (n === 0 || !P || P.length === 0 || !Q || Q.length === 0) return 0;
+            
+            let kl = 0;
+            
+            for (let i = 0; i < n; i++) {
+                if (!P[i] || !Q[i]) continue;
+                for (let j = 0; j < n; j++) {
+                    if (i !== j && P[i][j] > 1e-12) {
+                        const qij = Q[i] && Q[i][j] ? Q[i][j] : 1e-12;
+                        kl += P[i][j] * Math.log(P[i][j] / Math.max(qij, 1e-12));
+                    }
+                }
+            }
+            
+            return kl;
+        }
+        
+        function tsneStep() {
+            const n = Y.length;
+            if (n === 0 || !P || P.length === 0) return;
+            
+            const Q = computeQ();
+            if (Q.length === 0) return;
+            
+            // Compute gradients
+            const gradients = Array(n).fill(null).map(() => ({ x: 0, y: 0 }));
+            
+            for (let i = 0; i < n; i++) {
+                if (!Y[i] || !P[i] || !Q[i]) continue;
+                
+                for (let j = 0; j < n; j++) {
+                    if (i !== j && Y[j] && P[i][j] !== undefined && Q[i][j] !== undefined) {
+                        const dist = distance(Y[i], Y[j]);
+                        const qij = 1 / (1 + dist * dist);
+                        const mult = 4 * (P[i][j] - Q[i][j]) * qij;
+                        
+                        gradients[i].x += mult * (Y[i].x - Y[j].x);
+                        gradients[i].y += mult * (Y[i].y - Y[j].y);
+                    }
+                }
+            }
+            
+            // Update with momentum
+            for (let i = 0; i < n; i++) {
+                if (!Y[i] || !velocities[i] || !gradients[i]) continue;
+                
+                velocities[i].x = momentum * velocities[i].x - learningRate * gradients[i].x;
+                velocities[i].y = momentum * velocities[i].y - learningRate * gradients[i].y;
+                
+                Y[i].x += velocities[i].x;
+                Y[i].y += velocities[i].y;
+            }
+            
+            // Center the embedding
+            let meanX = 0, meanY = 0;
+            let validCount = 0;
+            for (const p of Y) {
+                if (p) {
+                    meanX += p.x;
+                    meanY += p.y;
+                    validCount++;
+                }
+            }
+            
+            if (validCount > 0) {
+                meanX /= validCount;
+                meanY /= validCount;
+                
+                for (const p of Y) {
+                    if (p) {
+                        p.x -= meanX;
+                        p.y -= meanY;
+                    }
+                }
+            }
+            
+            iteration++;
+            costHistory.push(computeKL(Q));
+        }
+        
+        function runTSNE(numIters) {
+            if (data.length < 2) return;
+            
+            isRunning = true;
+            updateStatus('running');
+            
+            let itersRun = 0;
+            
+            function animate() {
+                if (!isRunning || itersRun >= numIters) {
+                    isRunning = false;
+                    updateStatus('ready');
+                    return;
+                }
+                
+                // Run a few iterations per frame for speed
+                for (let i = 0; i < 5 && itersRun < numIters; i++) {
+                    tsneStep();
+                    itersRun++;
+                }
+                
+                updateStats();
+                drawAll();
+                
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+        
+        // ========== COORDINATE TRANSFORMS ==========
+        function getDataBounds(points) {
+            if (!points || points.length === 0) return { xMin: -5, xMax: 5, yMin: -5, yMax: 5 };
+            
+            let xMin = Infinity, xMax = -Infinity;
+            let yMin = Infinity, yMax = -Infinity;
+            let validCount = 0;
+            
+            for (const p of points) {
+                if (p && typeof p.x === 'number' && typeof p.y === 'number') {
+                    if (p.x < xMin) xMin = p.x;
+                    if (p.x > xMax) xMax = p.x;
+                    if (p.y < yMin) yMin = p.y;
+                    if (p.y > yMax) yMax = p.y;
+                    validCount++;
+                }
+            }
+            
+            if (validCount === 0) return { xMin: -5, xMax: 5, yMin: -5, yMax: 5 };
+            
+            const padding = Math.max((xMax - xMin), (yMax - yMin)) * 0.1 + 0.5;
+            return {
+                xMin: xMin - padding,
+                xMax: xMax + padding,
+                yMin: yMin - padding,
+                yMax: yMax + padding
+            };
+        }
+        
+        function toCanvasCoords(canvas, point, bounds, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            const h = canvas.height - 2 * margin;
+            
+            return {
+                x: margin + (point.x - bounds.xMin) / (bounds.xMax - bounds.xMin) * w,
+                y: margin + (bounds.yMax - point.y) / (bounds.yMax - bounds.yMin) * h
+            };
+        }
+        
+        // ========== DRAWING: ORIGINAL DATA ==========
+        function drawOriginalData() {
+            const W = originalCanvas.width;
+            const H = originalCanvas.height;
+            const margin = 40;
+            
+            origCtx.fillStyle = '#0a0a1a';
+            origCtx.fillRect(0, 0, W, H);
+            
+            if (data.length === 0) {
+                origCtx.fillStyle = '#555';
+                origCtx.font = '14px sans-serif';
+                origCtx.textAlign = 'center';
+                origCtx.fillText('Load an example dataset', W / 2, H / 2);
+                return;
+            }
+            
+            const bounds = getDataBounds(data);
+            
+            // Draw axes
+            origCtx.strokeStyle = '#333';
+            origCtx.lineWidth = 1;
+            
+            // X axis at y=0 if in bounds
+            if (bounds.yMin <= 0 && bounds.yMax >= 0) {
+                const y0 = toCanvasCoords(originalCanvas, { x: 0, y: 0 }, bounds, margin).y;
+                origCtx.beginPath();
+                origCtx.moveTo(margin, y0);
+                origCtx.lineTo(W - margin, y0);
+                origCtx.stroke();
+            }
+            
+            // Y axis at x=0 if in bounds
+            if (bounds.xMin <= 0 && bounds.xMax >= 0) {
+                const x0 = toCanvasCoords(originalCanvas, { x: 0, y: 0 }, bounds, margin).x;
+                origCtx.beginPath();
+                origCtx.moveTo(x0, margin);
+                origCtx.lineTo(x0, H - margin);
+                origCtx.stroke();
+            }
+            
+            // Draw points
+            for (let i = 0; i < data.length; i++) {
+                if (!data[i]) continue;
+                
+                const p = toCanvasCoords(originalCanvas, data[i], bounds, margin);
+                const labelIdx = labels[i] !== undefined ? labels[i] : 0;
+                const color = clusterColors[labelIdx % clusterColors.length];
+                
+                origCtx.fillStyle = color;
+                origCtx.strokeStyle = '#fff';
+                origCtx.lineWidth = 1;
+                origCtx.beginPath();
+                origCtx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                origCtx.fill();
+                origCtx.stroke();
+            }
+            
+            // Title
+            origCtx.fillStyle = '#fff';
+            origCtx.font = 'bold 11px sans-serif';
+            origCtx.textAlign = 'left';
+            origCtx.fillText('Input data with cluster labels', margin, 25);
+        }
+        
+        // ========== DRAWING: EMBEDDING ==========
+        function drawEmbedding() {
+            const W = embeddingCanvas.width;
+            const H = embeddingCanvas.height;
+            const margin = 40;
+            
+            embedCtx.fillStyle = '#0a0a1a';
+            embedCtx.fillRect(0, 0, W, H);
+            
+            if (Y.length === 0) {
+                embedCtx.fillStyle = '#555';
+                embedCtx.font = '14px sans-serif';
+                embedCtx.textAlign = 'center';
+                embedCtx.fillText('Initialize and run t-SNE', W / 2, H / 2);
+                return;
+            }
+            
+            const bounds = getDataBounds(Y);
+            
+            // Draw points
+            for (let i = 0; i < Y.length; i++) {
+                if (!Y[i]) continue;
+                
+                const p = toCanvasCoords(embeddingCanvas, Y[i], bounds, margin);
+                const labelIdx = labels[i] !== undefined ? labels[i] : 0;
+                const color = clusterColors[labelIdx % clusterColors.length];
+                
+                embedCtx.fillStyle = color;
+                embedCtx.strokeStyle = '#fff';
+                embedCtx.lineWidth = 1;
+                embedCtx.beginPath();
+                embedCtx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+                embedCtx.fill();
+                embedCtx.stroke();
+            }
+            
+            // Title
+            embedCtx.fillStyle = '#fff';
+            embedCtx.font = 'bold 11px sans-serif';
+            embedCtx.textAlign = 'left';
+            embedCtx.fillText(`t-SNE embedding (iter ${iteration})`, margin, 25);
+        }
+        
+        // ========== DRAWING: COST ==========
+        function drawCost() {
+            const W = costCanvas.width;
+            const H = costCanvas.height;
+            const margin = 50;
+            const plotW = W - 2 * margin;
+            const plotH = H - 2 * margin;
+            
+            costCtx.fillStyle = '#0a0a1a';
+            costCtx.fillRect(0, 0, W, H);
+            
+            if (costHistory.length < 2) {
+                costCtx.fillStyle = '#555';
+                costCtx.font = '14px sans-serif';
+                costCtx.textAlign = 'center';
+                costCtx.fillText('Run t-SNE to see cost curve', W / 2, H / 2);
+                return;
+            }
+            
+            const maxCost = Math.max(...costHistory) * 1.1;
+            const minCost = Math.min(...costHistory) * 0.9;
+            const range = maxCost - minCost || 1;
+            
+            // Grid
+            costCtx.strokeStyle = '#222';
+            costCtx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = margin + i * plotH / 4;
+                costCtx.beginPath();
+                costCtx.moveTo(margin, y);
+                costCtx.lineTo(W - margin, y);
+                costCtx.stroke();
+            }
+            
+            // Axes
+            costCtx.strokeStyle = '#555';
+            costCtx.lineWidth = 2;
+            costCtx.beginPath();
+            costCtx.moveTo(margin, margin);
+            costCtx.lineTo(margin, H - margin);
+            costCtx.lineTo(W - margin, H - margin);
+            costCtx.stroke();
+            
+            // Cost curve
+            costCtx.strokeStyle = '#ec4899';
+            costCtx.lineWidth = 2;
+            costCtx.beginPath();
+            
+            for (let i = 0; i < costHistory.length; i++) {
+                const px = margin + (i / (costHistory.length - 1)) * plotW;
+                const py = margin + (1 - (costHistory[i] - minCost) / range) * plotH;
+                
+                if (i === 0) costCtx.moveTo(px, py);
+                else costCtx.lineTo(px, py);
+            }
+            costCtx.stroke();
+            
+            // Labels
+            costCtx.fillStyle = '#888';
+            costCtx.font = '10px sans-serif';
+            costCtx.textAlign = 'center';
+            costCtx.fillText('Iteration', W / 2, H - 10);
+            
+            costCtx.save();
+            costCtx.translate(15, H / 2);
+            costCtx.rotate(-Math.PI / 2);
+            costCtx.fillText('KL Divergence', 0, 0);
+            costCtx.restore();
+            
+            // Title
+            costCtx.fillStyle = '#fff';
+            costCtx.font = 'bold 11px sans-serif';
+            costCtx.textAlign = 'left';
+            costCtx.fillText('Cost minimization', margin, 20);
+        }
+        
+        // ========== DRAWING: SIMILARITY MATRIX ==========
+        function drawSimilarityMatrix() {
+            const W = similarityCanvas.width;
+            const H = similarityCanvas.height;
+            const margin = 40;
+            
+            simCtx.fillStyle = '#0a0a1a';
+            simCtx.fillRect(0, 0, W, H);
+            
+            if (!P || P.length === 0 || data.length === 0) {
+                simCtx.fillStyle = '#555';
+                simCtx.font = '14px sans-serif';
+                simCtx.textAlign = 'center';
+                simCtx.fillText('Initialize to see P matrix', W / 2, H / 2);
+                return;
+            }
+            
+            const n = Math.min(data.length, P.length);
+            if (n === 0) return;
+            
+            const cellSize = Math.min((W - 2 * margin) / n, (H - 2 * margin) / n);
+            const offsetX = margin + (W - 2 * margin - cellSize * n) / 2;
+            const offsetY = margin + (H - 2 * margin - cellSize * n) / 2;
+            
+            // Find max P value for scaling
+            let maxP = 0;
+            for (let i = 0; i < n; i++) {
+                if (!P[i]) continue;
+                for (let j = 0; j < n; j++) {
+                    if (P[i][j] && P[i][j] > maxP) maxP = P[i][j];
+                }
+            }
+            
+            if (maxP === 0) maxP = 1;
+            
+            // Draw cells
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    const x = offsetX + j * cellSize;
+                    const y = offsetY + i * cellSize;
+                    
+                    if (i === j) {
+                        simCtx.fillStyle = '#1a1a2e';
+                    } else {
+                        const pVal = (P[i] && P[i][j]) ? P[i][j] : 0;
+                        const intensity = Math.sqrt(pVal / maxP);  // sqrt for better visibility
+                        simCtx.fillStyle = `rgba(139, 92, 246, ${intensity})`;
+                    }
+                    
+                    simCtx.fillRect(x, y, cellSize - 0.5, cellSize - 0.5);
+                }
+            }
+            
+            // Cluster color bars
+            if (n <= 30) {
+                for (let i = 0; i < n; i++) {
+                    const labelIdx = labels[i] !== undefined ? labels[i] : 0;
+                    const color = clusterColors[labelIdx % clusterColors.length];
+                    
+                    // Left bar
+                    simCtx.fillStyle = color;
+                    simCtx.fillRect(offsetX - 6, offsetY + i * cellSize, 4, cellSize - 0.5);
+                    
+                    // Top bar
+                    simCtx.fillRect(offsetX + i * cellSize, offsetY - 6, cellSize - 0.5, 4);
+                }
+            }
+            
+            // Title
+            simCtx.fillStyle = '#fff';
+            simCtx.font = 'bold 11px sans-serif';
+            simCtx.textAlign = 'left';
+            simCtx.fillText(`Similarity matrix P (${n}×${n})`, margin, 20);
+        }
+        
+        // ========== UPDATE FUNCTIONS ==========
+        function updateStatus(status) {
+            const badge = document.getElementById('statusBadge');
+            badge.className = 'status-badge ' + status;
+            badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        }
+        
+        function updateStats() {
+            document.getElementById('totalPoints').textContent = data.length;
+            document.getElementById('iterValue').textContent = iteration;
+            
+            const uniqueLabels = new Set(labels);
+            document.getElementById('numClusters').textContent = uniqueLabels.size;
+            
+            if (costHistory.length > 0) {
+                const kl = costHistory[costHistory.length - 1];
+                document.getElementById('klValue').textContent = kl.toFixed(2);
+            } else {
+                document.getElementById('klValue').textContent = '--';
+            }
+            
+            if (sigmas.length > 0) {
+                const minSig = Math.min(...sigmas).toFixed(2);
+                const maxSig = Math.max(...sigmas).toFixed(2);
+                document.getElementById('sigmaRange').textContent = `${minSig}-${maxSig}`;
+            } else {
+                document.getElementById('sigmaRange').textContent = '--';
+            }
+            
+            // Update cluster legend
+            updateClusterLegend();
+        }
+        
+        function updateClusterLegend() {
+            const legend = document.getElementById('clusterLegend');
+            const uniqueLabels = [...new Set(labels)].sort((a, b) => a - b);
+            
+            if (uniqueLabels.length > 0) {
+                let html = '';
+                for (const label of uniqueLabels) {
+                    const count = labels.filter(l => l === label).length;
+                    const color = clusterColors[label % clusterColors.length];
+                    html += `
+                        <div class="cluster-chip">
+                            <div class="cluster-chip-dot" style="background: ${color};"></div>
+                            <span>C${label + 1}: ${count}</span>
+                        </div>
+                    `;
+                }
+                legend.innerHTML = html;
+            } else {
+                legend.innerHTML = '';
+            }
+        }
+        
+        function drawAll() {
+            drawOriginalData();
+            drawEmbedding();
+            drawCost();
+            drawSimilarityMatrix();
+        }
+        
+        // ========== EVENT HANDLERS ==========
+        document.getElementById('perpSlider').addEventListener('input', function(e) {
+            perplexity = parseInt(e.target.value);
+            document.getElementById('perpValue').textContent = perplexity;
+        });
+        
+        document.getElementById('lrSlider').addEventListener('input', function(e) {
+            learningRate = parseInt(e.target.value);
+            document.getElementById('lrValue').textContent = learningRate;
+        });
+        
+        document.getElementById('initBtn').addEventListener('click', function() {
+            if (data.length < 2) return;
+            
+            computePairwiseSimilarities();
+            initializeEmbedding();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('stepBtn').addEventListener('click', function() {
+            if (data.length < 2) return;
+            
+            if (Y.length === 0) {
+                computePairwiseSimilarities();
+                initializeEmbedding();
+            }
+            
+            runTSNE(10);
+        });
+        
+        document.getElementById('runBtn').addEventListener('click', function() {
+            if (data.length < 2) return;
+            
+            if (Y.length === 0) {
+                computePairwiseSimilarities();
+                initializeEmbedding();
+            }
+            
+            runTSNE(500);
+        });
+        
+        document.getElementById('stopBtn').addEventListener('click', function() {
+            isRunning = false;
+            updateStatus('ready');
+        });
+        
+        // Example datasets
+        document.getElementById('clustersBtn').addEventListener('click', function() {
+            data = [];
+            labels = [];
+            Y = [];
+            costHistory = [];
+            iteration = 0;
+            
+            const centers = [
+                { x: -3, y: 2 },
+                { x: 3, y: 2 },
+                { x: 0, y: -3 }
+            ];
+            
+            for (let c = 0; c < centers.length; c++) {
+                for (let i = 0; i < 25; i++) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const r = Math.sqrt(-2 * Math.log(Math.random())) * 0.8;
+                    data.push({
+                        x: centers[c].x + r * Math.cos(angle),
+                        y: centers[c].y + r * Math.sin(angle)
+                    });
+                    labels.push(c);
+                }
+            }
+            
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('manyBtn').addEventListener('click', function() {
+            data = [];
+            labels = [];
+            Y = [];
+            costHistory = [];
+            iteration = 0;
+            
+            const centers = [
+                { x: -4, y: 3 },
+                { x: 0, y: 4 },
+                { x: 4, y: 3 },
+                { x: -3, y: -2 },
+                { x: 2, y: -1 },
+                { x: 4, y: -3 }
+            ];
+            
+            for (let c = 0; c < centers.length; c++) {
+                const numPoints = 12 + Math.floor(Math.random() * 8);
+                for (let i = 0; i < numPoints; i++) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const r = Math.sqrt(-2 * Math.log(Math.random())) * 0.6;
+                    data.push({
+                        x: centers[c].x + r * Math.cos(angle),
+                        y: centers[c].y + r * Math.sin(angle)
+                    });
+                    labels.push(c);
+                }
+            }
+            
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('nestedBtn').addEventListener('click', function() {
+            data = [];
+            labels = [];
+            Y = [];
+            costHistory = [];
+            iteration = 0;
+            
+            // Inner cluster
+            for (let i = 0; i < 20; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const r = Math.random() * 0.8;
+                data.push({
+                    x: r * Math.cos(angle),
+                    y: r * Math.sin(angle)
+                });
+                labels.push(0);
+            }
+            
+            // Middle ring
+            for (let i = 0; i < 30; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const r = 2 + (Math.random() - 0.5) * 0.5;
+                data.push({
+                    x: r * Math.cos(angle),
+                    y: r * Math.sin(angle)
+                });
+                labels.push(1);
+            }
+            
+            // Outer ring
+            for (let i = 0; i < 35; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const r = 4 + (Math.random() - 0.5) * 0.5;
+                data.push({
+                    x: r * Math.cos(angle),
+                    y: r * Math.sin(angle)
+                });
+                labels.push(2);
+            }
+            
+            updateStats();
+            drawAll();
+        });
+        
+        // Initialize
+        updateStats();
+        drawAll();
+    </script>
+</body>
+</html>
