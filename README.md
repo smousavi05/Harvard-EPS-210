@@ -144,8 +144,8 @@
       </a>
     </td>
     <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_random_forest.html">
-        <img src="interactive_visualizations/L3_random_forest.png" alt="L3_random_forest" width="200">
+      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L4_umap.html">
+        <img src="interactive_visualizations/L4_umap.png" alt="L4_umap" width="200">
       </a>
     </td>
     <td>
