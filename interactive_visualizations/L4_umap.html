@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMAP - Interactive Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0a18 0%, #1a1a30 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #f97316, #06b6d4, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+        
+        .visualizations {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .viz-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .panel h2 {
+            font-size: 1rem;
+            color: #06b6d4;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        canvas {
+            background: #0a0a1a;
+            border-radius: 12px;
+            cursor: crosshair;
+            display: block;
+            width: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .control-section h3 {
+            font-size: 0.85rem;
+            color: #f97316;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(6,182,212,0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(249,115,22,0.4);
+        }
+        
+        .btn-accent {
+            background: linear-gradient(135deg, #a855f7, #9333ea);
+            color: white;
+        }
+        
+        .btn-accent:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(168,85,247,0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #888;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        
+        .slider-group {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .slider-value {
+            color: #06b6d4;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #2a2a4a;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f97316, #06b6d4);
+            cursor: pointer;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #06b6d4;
+            font-family: monospace;
+        }
+        
+        .info-box {
+            background: rgba(6,182,212,0.1);
+            border: 1px solid rgba(6,182,212,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .equation-box {
+            background: rgba(0,0,0,0.4);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            margin: 10px 0;
+            border-left: 3px solid #06b6d4;
+        }
+        
+        .equation-box .main-eq {
+            font-size: 0.85rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .equation-box .sub-eq {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+        
+        .iteration-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .iteration-display .iter-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #a855f7;
+            font-family: monospace;
+        }
+        
+        .iteration-display .iter-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.running {
+            background: rgba(251,191,36,0.2);
+            color: #fbbf24;
+        }
+        
+        .status-badge.converged {
+            background: rgba(52,211,153,0.2);
+            color: #34d399;
+        }
+        
+        .status-badge.ready {
+            background: rgba(6,182,212,0.2);
+            color: #06b6d4;
+        }
+        
+        .param-display {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .param-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .param-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f97316, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .param-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .cluster-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        
+        .cluster-chip {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+        
+        .cluster-chip-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .viz-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>UMAP Visualization</h1>
+        <p class="subtitle">Harvard EPS-210 | Interactive tutorial — Explore Uniform Manifold Approximation and Projection</p>
+        
+        <div class="main-layout">
+            <div class="visualizations">
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Original Data (High-D Space)</h2>
+                        <canvas id="originalCanvas" width="400" height="350"></canvas>
+                        <div class="legend" id="clusterLegend">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>UMAP Embedding (2D)</h2>
+                        <canvas id="embeddingCanvas" width="400" height="350"></canvas>
+                        <div class="equation-box">
+                            <div class="main-eq">ψ(x) = 1 / (1 + a·x²ᵇ)</div>
+                            <div class="sub-eq">Smooth approximation to fuzzy membership</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="viz-row">
+                    <div class="panel">
+                        <h2>Cross-Entropy Loss</h2>
+                        <canvas id="costCanvas" width="400" height="280"></canvas>
+                    </div>
+                    
+                    <div class="panel">
+                        <h2>k-NN Graph</h2>
+                        <canvas id="graphCanvas" width="400" height="280"></canvas>
+                        <div class="equation-box">
+                            <div class="main-eq">vⱼ|ᵢ = exp(-(d(xᵢ,xⱼ) - ρᵢ) / σᵢ)</div>
+                            <div class="sub-eq">Local connectivity with adaptive σᵢ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-section">
+                    <h3>UMAP Parameters</h3>
+                    <div class="param-display">
+                        <div class="param-item">
+                            <div class="param-value" id="nNeighborsValue">15</div>
+                            <div class="param-label">n_neighbors</div>
+                        </div>
+                        <div class="param-item">
+                            <div class="param-value" id="minDistValue">0.1</div>
+                            <div class="param-label">min_dist</div>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>n_neighbors</span>
+                            <span class="slider-value" id="nNeighborsSliderValue">15</span>
+                        </div>
+                        <input type="range" id="nNeighborsSlider" min="5" max="50" step="5" value="15">
+                    </div>
+                    
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>min_dist</span>
+                            <span class="slider-value" id="minDistSliderValue">0.10</span>
+                        </div>
+                        <input type="range" id="minDistSlider" min="1" max="50" step="1" value="10">
+                    </div>
+                    
+                    <p style="font-size: 0.75rem; color: #888; margin-top: 8px;">
+                        n_neighbors: local vs global structure<br>
+                        min_dist: how tightly points cluster
+                    </p>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Algorithm</h3>
+                    <div class="iteration-display">
+                        <div>
+                            <div class="iter-value" id="iterValue">0</div>
+                            <div class="iter-label">Epoch</div>
+                        </div>
+                        <span class="status-badge ready" id="statusBadge">Ready</span>
+                    </div>
+                    <button class="btn btn-primary" id="initBtn">🎲 Initialize</button>
+                    <button class="btn btn-secondary" id="stepBtn">➡️ Step (10 epochs)</button>
+                    <button class="btn btn-accent" id="runBtn">▶️ Run (200 epochs)</button>
+                    <button class="btn btn-outline" id="stopBtn">⏹️ Stop</button>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Learning Rate</h3>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>α (alpha)</span>
+                            <span class="slider-value" id="lrValue">1.0</span>
+                        </div>
+                        <input type="range" id="lrSlider" min="5" max="20" step="1" value="10">
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Points</div>
+                            <div class="stat-value" id="totalPoints">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Loss</div>
+                            <div class="stat-value" id="lossValue">--</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Clusters</div>
+                            <div class="stat-value" id="numClusters">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Edges</div>
+                            <div class="stat-value" id="numEdges">0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Quick Examples</h3>
+                    <button class="btn btn-outline" id="clustersBtn">3 Clusters</button>
+                    <button class="btn btn-outline" id="manyBtn">6 Clusters</button>
+                    <button class="btn btn-outline" id="spiralBtn">Swiss Roll</button>
+                </div>
+                
+                <div class="info-box">
+                    <strong>How it works:</strong> UMAP constructs a fuzzy topological representation using k-NN graphs, then optimizes a low-D embedding to match this structure. Unlike t-SNE, it better preserves global structure and is generally faster.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========== CANVAS SETUP ==========
+        const originalCanvas = document.getElementById('originalCanvas');
+        const embeddingCanvas = document.getElementById('embeddingCanvas');
+        const costCanvas = document.getElementById('costCanvas');
+        const graphCanvas = document.getElementById('graphCanvas');
+        
+        const origCtx = originalCanvas.getContext('2d');
+        const embedCtx = embeddingCanvas.getContext('2d');
+        const costCtx = costCanvas.getContext('2d');
+        const graphCtx = graphCanvas.getContext('2d');
+        
+        // ========== STATE ==========
+        let data = [];
+        let labels = [];
+        let Y = [];  // UMAP embedding
+        let graph = [];  // k-NN graph with weights
+        let costHistory = [];
+        let epoch = 0;
+        let isRunning = false;
+        let nNeighbors = 15;
+        let minDist = 0.1;
+        let learningRate = 1.0;
+        
+        // UMAP parameters
+        let a = 1.576943;
+        let b = 0.8950608;
+        
+        // Cluster colors
+        const clusterColors = [
+            '#f97316', '#06b6d4', '#a855f7', '#10b981', '#f43f5e',
+            '#3b82f6', '#eab308', '#ec4899', '#14b8a6', '#8b5cf6'
+        ];
+        
+        // ========== UTILITY FUNCTIONS ==========
+        function distance(p1, p2) {
+            if (!p1 || !p2) return 0;
+            return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+        }
+        
+        function clip(x, min, max) {
+            return Math.max(min, Math.min(max, x));
+        }
+        
+        // ========== UMAP ALGORITHM ==========
+        function computeAB() {
+            // Compute a and b parameters based on min_dist
+            // These are typically precomputed; using approximation
+            const spread = 1.0;
+            
+            // Simplified: fit a, b to match min_dist
+            b = 0.8 + minDist * 0.2;
+            a = 1.5 / (minDist + 0.01);
+        }
+        
+        function buildKNNGraph() {
+            const n = data.length;
+            if (n === 0) {
+                graph = [];
+                return;
+            }
+            
+            graph = [];
+            
+            // For each point, find k nearest neighbors
+            for (let i = 0; i < n; i++) {
+                if (!data[i]) continue;
+                
+                const distances = [];
+                for (let j = 0; j < n; j++) {
+                    if (i !== j && data[j]) {
+                        distances.push({ j, d: distance(data[i], data[j]) });
+                    }
+                }
+                
+                // Sort by distance
+                distances.sort((a, b) => a.d - b.d);
+                
+                // Take k nearest
+                const k = Math.min(nNeighbors, distances.length);
+                const neighbors = distances.slice(0, k);
+                
+                // Compute rho_i (distance to nearest neighbor)
+                const rho = neighbors.length > 0 ? neighbors[0].d : 0;
+                
+                // Find sigma_i using binary search (simplified)
+                const sigma = findSigma(neighbors, rho);
+                
+                // Compute edge weights
+                for (const neighbor of neighbors) {
+                    const weight = Math.exp(-Math.max(0, neighbor.d - rho) / sigma);
+                    graph.push({
+                        i: i,
+                        j: neighbor.j,
+                        weight: weight
+                    });
+                }
+            }
+            
+            // Symmetrize the graph
+            symmetrizeGraph();
+        }
+        
+        function findSigma(neighbors, rho) {
+            const targetSum = Math.log2(nNeighbors);
+            let sigmaMin = 0.001;
+            let sigmaMax = 100;
+            let sigma = 1;
+            
+            for (let iter = 0; iter < 50; iter++) {
+                let sum = 0;
+                for (const n of neighbors) {
+                    sum += Math.exp(-Math.max(0, n.d - rho) / sigma);
+                }
+                
+                if (Math.abs(sum - targetSum) < 0.01) break;
+                
+                if (sum > targetSum) {
+                    sigmaMax = sigma;
+                    sigma = (sigma + sigmaMin) / 2;
+                } else {
+                    sigmaMin = sigma;
+                    sigma = (sigma + sigmaMax) / 2;
+                }
+            }
+            
+            return Math.max(sigma, 0.001);
+        }
+        
+        function symmetrizeGraph() {
+            const n = data.length;
+            const matrix = Array(n).fill(null).map(() => Array(n).fill(0));
+            
+            // Fill matrix with edge weights
+            for (const edge of graph) {
+                matrix[edge.i][edge.j] = edge.weight;
+            }
+            
+            // Symmetrize: w_ij = w_ij + w_ji - w_ij * w_ji
+            graph = [];
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    const wij = matrix[i][j];
+                    const wji = matrix[j][i];
+                    const symWeight = wij + wji - wij * wji;
+                    
+                    if (symWeight > 0.001) {
+                        graph.push({ i, j, weight: symWeight });
+                    }
+                }
+            }
+        }
+        
+        function initializeEmbedding() {
+            const n = data.length;
+            Y = [];
+            
+            // Initialize with spectral embedding approximation (simplified: use scaled random)
+            // In practice, spectral initialization is better
+            for (let i = 0; i < n; i++) {
+                Y.push({
+                    x: (Math.random() - 0.5) * 10,
+                    y: (Math.random() - 0.5) * 10
+                });
+            }
+            
+            costHistory = [];
+            epoch = 0;
+        }
+        
+        function lowDimWeight(dist) {
+            // 1 / (1 + a * d^(2b))
+            return 1 / (1 + a * Math.pow(dist, 2 * b));
+        }
+        
+        function computeLoss() {
+            if (graph.length === 0 || Y.length === 0) return 0;
+            
+            let loss = 0;
+            const n = Y.length;
+            
+            // Attractive term (from graph edges)
+            for (const edge of graph) {
+                if (!Y[edge.i] || !Y[edge.j]) continue;
+                
+                const d = distance(Y[edge.i], Y[edge.j]);
+                const q = lowDimWeight(d);
+                
+                if (q > 1e-10) {
+                    loss -= edge.weight * Math.log(q + 1e-10);
+                }
+            }
+            
+            // Repulsive term (simplified sampling)
+            const numNegSamples = Math.min(5 * graph.length, n * n / 2);
+            for (let s = 0; s < numNegSamples; s++) {
+                const i = Math.floor(Math.random() * n);
+                const j = Math.floor(Math.random() * n);
+                
+                if (i !== j && Y[i] && Y[j]) {
+                    const d = distance(Y[i], Y[j]);
+                    const q = lowDimWeight(d);
+                    loss -= 0.5 * Math.log(1 - q + 1e-10);
+                }
+            }
+            
+            return loss / graph.length;
+        }
+        
+        function umapStep() {
+            const n = Y.length;
+            if (n === 0 || graph.length === 0) return;
+            
+            const alpha = learningRate * (1 - epoch / 500);  // Learning rate decay
+            
+            // Process edges with SGD
+            const shuffledEdges = [...graph].sort(() => Math.random() - 0.5);
+            
+            for (const edge of shuffledEdges) {
+                if (!Y[edge.i] || !Y[edge.j]) continue;
+                
+                const i = edge.i;
+                const j = edge.j;
+                
+                const dx = Y[i].x - Y[j].x;
+                const dy = Y[i].y - Y[j].y;
+                const d = Math.sqrt(dx * dx + dy * dy + 0.001);
+                
+                // Attractive force
+                const wHigh = edge.weight;
+                const wLow = lowDimWeight(d);
+                
+                // Gradient for attractive term
+                const gradCoeff = -2 * a * b * Math.pow(d, 2 * b - 2) / (1 + a * Math.pow(d, 2 * b));
+                const attractiveGrad = wHigh * gradCoeff;
+                
+                Y[i].x += alpha * attractiveGrad * dx;
+                Y[i].y += alpha * attractiveGrad * dy;
+                Y[j].x -= alpha * attractiveGrad * dx;
+                Y[j].y -= alpha * attractiveGrad * dy;
+                
+                // Negative sampling (repulsive)
+                for (let neg = 0; neg < 5; neg++) {
+                    const k = Math.floor(Math.random() * n);
+                    if (k === i || !Y[k]) continue;
+                    
+                    const dxk = Y[i].x - Y[k].x;
+                    const dyk = Y[i].y - Y[k].y;
+                    const dk = Math.sqrt(dxk * dxk + dyk * dyk + 0.001);
+                    
+                    const wLowK = lowDimWeight(dk);
+                    
+                    // Gradient for repulsive term
+                    const repGradCoeff = 2 * b / ((0.001 + dk * dk) * (1 + a * Math.pow(dk, 2 * b)));
+                    const repulsiveGrad = (1 - wHigh) * repGradCoeff;
+                    
+                    Y[i].x += alpha * repulsiveGrad * dxk;
+                    Y[i].y += alpha * repulsiveGrad * dyk;
+                }
+            }
+            
+            // Clip coordinates to prevent explosion
+            for (const p of Y) {
+                if (p) {
+                    p.x = clip(p.x, -100, 100);
+                    p.y = clip(p.y, -100, 100);
+                }
+            }
+            
+            epoch++;
+            
+            if (epoch % 5 === 0) {
+                costHistory.push(computeLoss());
+            }
+        }
+        
+        function runUMAP(numEpochs) {
+            if (data.length < 2) return;
+            
+            isRunning = true;
+            updateStatus('running');
+            
+            let epochsRun = 0;
+            
+            function animate() {
+                if (!isRunning || epochsRun >= numEpochs) {
+                    isRunning = false;
+                    updateStatus('ready');
+                    return;
+                }
+                
+                for (let i = 0; i < 5 && epochsRun < numEpochs; i++) {
+                    umapStep();
+                    epochsRun++;
+                }
+                
+                updateStats();
+                drawAll();
+                
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+        
+        // ========== COORDINATE TRANSFORMS ==========
+        function getDataBounds(points) {
+            if (!points || points.length === 0) return { xMin: -5, xMax: 5, yMin: -5, yMax: 5 };
+            
+            let xMin = Infinity, xMax = -Infinity;
+            let yMin = Infinity, yMax = -Infinity;
+            let validCount = 0;
+            
+            for (const p of points) {
+                if (p && typeof p.x === 'number' && typeof p.y === 'number' && isFinite(p.x) && isFinite(p.y)) {
+                    if (p.x < xMin) xMin = p.x;
+                    if (p.x > xMax) xMax = p.x;
+                    if (p.y < yMin) yMin = p.y;
+                    if (p.y > yMax) yMax = p.y;
+                    validCount++;
+                }
+            }
+            
+            if (validCount === 0) return { xMin: -5, xMax: 5, yMin: -5, yMax: 5 };
+            
+            const rangeX = xMax - xMin || 1;
+            const rangeY = yMax - yMin || 1;
+            const padding = Math.max(rangeX, rangeY) * 0.1 + 0.5;
+            
+            return {
+                xMin: xMin - padding,
+                xMax: xMax + padding,
+                yMin: yMin - padding,
+                yMax: yMax + padding
+            };
+        }
+        
+        function toCanvasCoords(canvas, point, bounds, margin = 40) {
+            const w = canvas.width - 2 * margin;
+            const h = canvas.height - 2 * margin;
+            
+            return {
+                x: margin + (point.x - bounds.xMin) / (bounds.xMax - bounds.xMin) * w,
+                y: margin + (bounds.yMax - point.y) / (bounds.yMax - bounds.yMin) * h
+            };
+        }
+        
+        // ========== DRAWING: ORIGINAL DATA ==========
+        function drawOriginalData() {
+            const W = originalCanvas.width;
+            const H = originalCanvas.height;
+            const margin = 40;
+            
+            origCtx.fillStyle = '#0a0a1a';
+            origCtx.fillRect(0, 0, W, H);
+            
+            if (data.length === 0) {
+                origCtx.fillStyle = '#555';
+                origCtx.font = '14px sans-serif';
+                origCtx.textAlign = 'center';
+                origCtx.fillText('Load an example dataset', W / 2, H / 2);
+                return;
+            }
+            
+            const bounds = getDataBounds(data);
+            
+            // Draw k-NN edges (faded)
+            origCtx.strokeStyle = 'rgba(6, 182, 212, 0.15)';
+            origCtx.lineWidth = 1;
+            
+            for (const edge of graph) {
+                if (!data[edge.i] || !data[edge.j]) continue;
+                
+                const p1 = toCanvasCoords(originalCanvas, data[edge.i], bounds, margin);
+                const p2 = toCanvasCoords(originalCanvas, data[edge.j], bounds, margin);
+                
+                origCtx.beginPath();
+                origCtx.moveTo(p1.x, p1.y);
+                origCtx.lineTo(p2.x, p2.y);
+                origCtx.stroke();
+            }
+            
+            // Draw points
+            for (let i = 0; i < data.length; i++) {
+                if (!data[i]) continue;
+                
+                const p = toCanvasCoords(originalCanvas, data[i], bounds, margin);
+                const labelIdx = labels[i] !== undefined ? labels[i] : 0;
+                const color = clusterColors[labelIdx % clusterColors.length];
+                
+                origCtx.fillStyle = color;
+                origCtx.strokeStyle = '#fff';
+                origCtx.lineWidth = 1;
+                origCtx.beginPath();
+                origCtx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                origCtx.fill();
+                origCtx.stroke();
+            }
+            
+            // Title
+            origCtx.fillStyle = '#fff';
+            origCtx.font = 'bold 11px sans-serif';
+            origCtx.textAlign = 'left';
+            origCtx.fillText('Input data with k-NN graph', margin, 25);
+        }
+        
+        // ========== DRAWING: EMBEDDING ==========
+        function drawEmbedding() {
+            const W = embeddingCanvas.width;
+            const H = embeddingCanvas.height;
+            const margin = 40;
+            
+            embedCtx.fillStyle = '#0a0a1a';
+            embedCtx.fillRect(0, 0, W, H);
+            
+            if (Y.length === 0) {
+                embedCtx.fillStyle = '#555';
+                embedCtx.font = '14px sans-serif';
+                embedCtx.textAlign = 'center';
+                embedCtx.fillText('Initialize and run UMAP', W / 2, H / 2);
+                return;
+            }
+            
+            const bounds = getDataBounds(Y);
+            
+            // Draw points
+            for (let i = 0; i < Y.length; i++) {
+                if (!Y[i]) continue;
+                
+                const p = toCanvasCoords(embeddingCanvas, Y[i], bounds, margin);
+                
+                if (!isFinite(p.x) || !isFinite(p.y)) continue;
+                
+                const labelIdx = labels[i] !== undefined ? labels[i] : 0;
+                const color = clusterColors[labelIdx % clusterColors.length];
+                
+                embedCtx.fillStyle = color;
+                embedCtx.strokeStyle = '#fff';
+                embedCtx.lineWidth = 1;
+                embedCtx.beginPath();
+                embedCtx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+                embedCtx.fill();
+                embedCtx.stroke();
+            }
+            
+            // Title
+            embedCtx.fillStyle = '#fff';
+            embedCtx.font = 'bold 11px sans-serif';
+            embedCtx.textAlign = 'left';
+            embedCtx.fillText(`UMAP embedding (epoch ${epoch})`, margin, 25);
+        }
+        
+        // ========== DRAWING: COST ==========
+        function drawCost() {
+            const W = costCanvas.width;
+            const H = costCanvas.height;
+            const margin = 50;
+            const plotW = W - 2 * margin;
+            const plotH = H - 2 * margin;
+            
+            costCtx.fillStyle = '#0a0a1a';
+            costCtx.fillRect(0, 0, W, H);
+            
+            if (costHistory.length < 2) {
+                costCtx.fillStyle = '#555';
+                costCtx.font = '14px sans-serif';
+                costCtx.textAlign = 'center';
+                costCtx.fillText('Run UMAP to see loss curve', W / 2, H / 2);
+                return;
+            }
+            
+            // Filter valid values
+            const validCosts = costHistory.filter(c => isFinite(c));
+            if (validCosts.length < 2) return;
+            
+            const maxCost = Math.max(...validCosts) * 1.1;
+            const minCost = Math.min(...validCosts) * 0.9;
+            const range = maxCost - minCost || 1;
+            
+            // Grid
+            costCtx.strokeStyle = '#222';
+            costCtx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = margin + i * plotH / 4;
+                costCtx.beginPath();
+                costCtx.moveTo(margin, y);
+                costCtx.lineTo(W - margin, y);
+                costCtx.stroke();
+            }
+            
+            // Axes
+            costCtx.strokeStyle = '#555';
+            costCtx.lineWidth = 2;
+            costCtx.beginPath();
+            costCtx.moveTo(margin, margin);
+            costCtx.lineTo(margin, H - margin);
+            costCtx.lineTo(W - margin, H - margin);
+            costCtx.stroke();
+            
+            // Cost curve
+            costCtx.strokeStyle = '#f97316';
+            costCtx.lineWidth = 2;
+            costCtx.beginPath();
+            
+            let started = false;
+            for (let i = 0; i < costHistory.length; i++) {
+                if (!isFinite(costHistory[i])) continue;
+                
+                const px = margin + (i / (costHistory.length - 1)) * plotW;
+                const py = margin + (1 - (costHistory[i] - minCost) / range) * plotH;
+                
+                if (!started) {
+                    costCtx.moveTo(px, py);
+                    started = true;
+                } else {
+                    costCtx.lineTo(px, py);
+                }
+            }
+            costCtx.stroke();
+            
+            // Labels
+            costCtx.fillStyle = '#888';
+            costCtx.font = '10px sans-serif';
+            costCtx.textAlign = 'center';
+            costCtx.fillText('Epoch', W / 2, H - 10);
+            
+            costCtx.save();
+            costCtx.translate(15, H / 2);
+            costCtx.rotate(-Math.PI / 2);
+            costCtx.fillText('Cross-Entropy', 0, 0);
+            costCtx.restore();
+            
+            // Title
+            costCtx.fillStyle = '#fff';
+            costCtx.font = 'bold 11px sans-serif';
+            costCtx.textAlign = 'left';
+            costCtx.fillText('Loss minimization', margin, 20);
+        }
+        
+        // ========== DRAWING: K-NN GRAPH ==========
+        function drawGraph() {
+            const W = graphCanvas.width;
+            const H = graphCanvas.height;
+            const margin = 40;
+            
+            graphCtx.fillStyle = '#0a0a1a';
+            graphCtx.fillRect(0, 0, W, H);
+            
+            if (data.length === 0 || graph.length === 0) {
+                graphCtx.fillStyle = '#555';
+                graphCtx.font = '14px sans-serif';
+                graphCtx.textAlign = 'center';
+                graphCtx.fillText('Initialize to see k-NN graph', W / 2, H / 2);
+                return;
+            }
+            
+            const bounds = getDataBounds(data);
+            
+            // Find max weight for scaling
+            let maxWeight = 0;
+            for (const edge of graph) {
+                if (edge.weight > maxWeight) maxWeight = edge.weight;
+            }
+            
+            // Draw edges with weight-based opacity
+            for (const edge of graph) {
+                if (!data[edge.i] || !data[edge.j]) continue;
+                
+                const p1 = toCanvasCoords(graphCanvas, data[edge.i], bounds, margin);
+                const p2 = toCanvasCoords(graphCanvas, data[edge.j], bounds, margin);
+                
+                const alpha = 0.2 + 0.6 * (edge.weight / maxWeight);
+                graphCtx.strokeStyle = `rgba(6, 182, 212, ${alpha})`;
+                graphCtx.lineWidth = 1 + 2 * (edge.weight / maxWeight);
+                
+                graphCtx.beginPath();
+                graphCtx.moveTo(p1.x, p1.y);
+                graphCtx.lineTo(p2.x, p2.y);
+                graphCtx.stroke();
+            }
+            
+            // Draw points
+            for (let i = 0; i < data.length; i++) {
+                if (!data[i]) continue;
+                
+                const p = toCanvasCoords(graphCanvas, data[i], bounds, margin);
+                const labelIdx = labels[i] !== undefined ? labels[i] : 0;
+                const color = clusterColors[labelIdx % clusterColors.length];
+                
+                graphCtx.fillStyle = color;
+                graphCtx.beginPath();
+                graphCtx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                graphCtx.fill();
+            }
+            
+            // Title
+            graphCtx.fillStyle = '#fff';
+            graphCtx.font = 'bold 11px sans-serif';
+            graphCtx.textAlign = 'left';
+            graphCtx.fillText(`k-NN graph (k=${nNeighbors})`, margin, 20);
+            
+            graphCtx.fillStyle = '#888';
+            graphCtx.font = '10px sans-serif';
+            graphCtx.fillText('Edge thickness = connection strength', margin, 35);
+        }
+        
+        // ========== UPDATE FUNCTIONS ==========
+        function updateStatus(status) {
+            const badge = document.getElementById('statusBadge');
+            badge.className = 'status-badge ' + status;
+            badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        }
+        
+        function updateStats() {
+            document.getElementById('totalPoints').textContent = data.length;
+            document.getElementById('iterValue').textContent = epoch;
+            
+            const uniqueLabels = new Set(labels);
+            document.getElementById('numClusters').textContent = uniqueLabels.size;
+            document.getElementById('numEdges').textContent = graph.length;
+            
+            if (costHistory.length > 0) {
+                const loss = costHistory[costHistory.length - 1];
+                document.getElementById('lossValue').textContent = isFinite(loss) ? loss.toFixed(2) : '--';
+            } else {
+                document.getElementById('lossValue').textContent = '--';
+            }
+            
+            // Update cluster legend
+            updateClusterLegend();
+        }
+        
+        function updateClusterLegend() {
+            const legend = document.getElementById('clusterLegend');
+            const uniqueLabels = [...new Set(labels)].sort((a, b) => a - b);
+            
+            if (uniqueLabels.length > 0) {
+                let html = '';
+                for (const label of uniqueLabels) {
+                    const count = labels.filter(l => l === label).length;
+                    const color = clusterColors[label % clusterColors.length];
+                    html += `
+                        <div class="cluster-chip">
+                            <div class="cluster-chip-dot" style="background: ${color};"></div>
+                            <span>C${label + 1}: ${count}</span>
+                        </div>
+                    `;
+                }
+                legend.innerHTML = html;
+            } else {
+                legend.innerHTML = '';
+            }
+        }
+        
+        function drawAll() {
+            drawOriginalData();
+            drawEmbedding();
+            drawCost();
+            drawGraph();
+        }
+        
+        // ========== EVENT HANDLERS ==========
+        document.getElementById('nNeighborsSlider').addEventListener('input', function(e) {
+            nNeighbors = parseInt(e.target.value);
+            document.getElementById('nNeighborsValue').textContent = nNeighbors;
+            document.getElementById('nNeighborsSliderValue').textContent = nNeighbors;
+        });
+        
+        document.getElementById('minDistSlider').addEventListener('input', function(e) {
+            minDist = parseInt(e.target.value) / 100;
+            document.getElementById('minDistValue').textContent = minDist.toFixed(2);
+            document.getElementById('minDistSliderValue').textContent = minDist.toFixed(2);
+            computeAB();
+        });
+        
+        document.getElementById('lrSlider').addEventListener('input', function(e) {
+            learningRate = parseInt(e.target.value) / 10;
+            document.getElementById('lrValue').textContent = learningRate.toFixed(1);
+        });
+        
+        document.getElementById('initBtn').addEventListener('click', function() {
+            if (data.length < 2) return;
+            
+            computeAB();
+            buildKNNGraph();
+            initializeEmbedding();
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('stepBtn').addEventListener('click', function() {
+            if (data.length < 2) return;
+            
+            if (Y.length === 0) {
+                computeAB();
+                buildKNNGraph();
+                initializeEmbedding();
+            }
+            
+            runUMAP(10);
+        });
+        
+        document.getElementById('runBtn').addEventListener('click', function() {
+            if (data.length < 2) return;
+            
+            if (Y.length === 0) {
+                computeAB();
+                buildKNNGraph();
+                initializeEmbedding();
+            }
+            
+            runUMAP(200);
+        });
+        
+        document.getElementById('stopBtn').addEventListener('click', function() {
+            isRunning = false;
+            updateStatus('ready');
+        });
+        
+        // Example datasets
+        document.getElementById('clustersBtn').addEventListener('click', function() {
+            data = [];
+            labels = [];
+            Y = [];
+            graph = [];
+            costHistory = [];
+            epoch = 0;
+            
+            const centers = [
+                { x: -3, y: 2 },
+                { x: 3, y: 2 },
+                { x: 0, y: -3 }
+            ];
+            
+            for (let c = 0; c < centers.length; c++) {
+                for (let i = 0; i < 25; i++) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const r = Math.sqrt(-2 * Math.log(Math.random())) * 0.8;
+                    data.push({
+                        x: centers[c].x + r * Math.cos(angle),
+                        y: centers[c].y + r * Math.sin(angle)
+                    });
+                    labels.push(c);
+                }
+            }
+            
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('manyBtn').addEventListener('click', function() {
+            data = [];
+            labels = [];
+            Y = [];
+            graph = [];
+            costHistory = [];
+            epoch = 0;
+            
+            const centers = [
+                { x: -4, y: 3 },
+                { x: 0, y: 4 },
+                { x: 4, y: 3 },
+                { x: -3, y: -2 },
+                { x: 2, y: -1 },
+                { x: 4, y: -3 }
+            ];
+            
+            for (let c = 0; c < centers.length; c++) {
+                const numPoints = 12 + Math.floor(Math.random() * 8);
+                for (let i = 0; i < numPoints; i++) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const r = Math.sqrt(-2 * Math.log(Math.random())) * 0.6;
+                    data.push({
+                        x: centers[c].x + r * Math.cos(angle),
+                        y: centers[c].y + r * Math.sin(angle)
+                    });
+                    labels.push(c);
+                }
+            }
+            
+            updateStats();
+            drawAll();
+        });
+        
+        document.getElementById('spiralBtn').addEventListener('click', function() {
+            data = [];
+            labels = [];
+            Y = [];
+            graph = [];
+            costHistory = [];
+            epoch = 0;
+            
+            // Swiss roll - a classic manifold learning test
+            for (let i = 0; i < 100; i++) {
+                const t = 1.5 * Math.PI * (1 + 2 * i / 100);
+                const x = t * Math.cos(t) / 5;
+                const y = t * Math.sin(t) / 5;
+                
+                data.push({
+                    x: x + (Math.random() - 0.5) * 0.3,
+                    y: y + (Math.random() - 0.5) * 0.3
+                });
+                
+                // Color by position along spiral
+                labels.push(Math.floor(i / 20));
+            }
+            
+            updateStats();
+            drawAll();
+        });
+        
+        // Initialize
+        computeAB();
+        updateStats();
+        drawAll();
+    </script>
+</body>
+</html>
