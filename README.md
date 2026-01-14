@@ -129,7 +129,7 @@
   <tr align="center">
     <th>Principal Component Analysis</th>
     <th>t-SNE</th>
-    <th>Random Forest</th>
+    <th>UMAP</th>
   </tr>
   
   <tr align="center">
