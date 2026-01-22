@@ -1,5 +1,5 @@
 # EPS-210 Final Project Report Guide
-## Machine Learning in Earth Science
+## AI for Earth and Planetary Science
 
 ---
 
