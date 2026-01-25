@@ -1,4 +1,7 @@
 # Harvard-EPS-210
+## Tutorials
+[Lab 1](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab1.ipynb)
+
 
 ## Interactive Visualizations
 
