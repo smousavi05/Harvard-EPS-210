@@ -2,7 +2,7 @@
 ## Tutorials
 [**Lab 1**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab1.ipynb): Data Understanding and Preparation
 
----------------------------------------------------------
+
 ## Interactive Visualizations
 
 ### Click on each image to see the live interactive version:
