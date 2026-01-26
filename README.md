@@ -36,7 +36,7 @@
 </table>
 
 ---------------------------------------------------------
-## Lecture 3: Traditional Machine Learning (Statistical Learning) Methods I
+## Lecture 2: Traditional Machine Learning (Statistical Learning) - Supervised Methods
 
 <table>
   <tr align="center">
@@ -104,7 +104,7 @@
 
 ---------------------------------------------------------
 
-## Lecture 4: Traditional Machine Learning (Statistical Learning) Methods II
+## Lecture 3: Traditional Machine Learning (Statistical Learning) - Unsupervised Methods
 
 <table>
   <tr align="center">
