@@ -13,6 +13,13 @@
     Activity 1: Random Forest for Lithology Classification from Well Logs (9 Parts, 55 Minutes)
     Activity 2: Using Automatic Feature Engineering (AFE) Tools (4 Parts, 15 Minutes)
 
+[**Lab 3**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab3.ipynb): Traditional Machine Learning - Unsupervised Methods
+
+    Activity 1: Earthquake Clustering with K-Means and DBSCAN (5 Parts, 25 Minutes)
+    Activity 2: Gaussian Mixture Models for Soft Clustering (2 Parts, 10 Minutes)
+    Activity 3: Hierarchical Clustering (2 Parts, 10 Minutes)
+    Activity 4: Dimensionality Reduction with Hyperspectral Data (4 Parts, 10 Minutes)
+    Activity 5: Synthesis Challenge (Bonus)
   
 ## Interactive Visualizations
 
