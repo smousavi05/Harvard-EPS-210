@@ -2,6 +2,12 @@
 ## Tutorials
 [**Lab 1**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab1.ipynb): Data Understanding and Preparation
 
+    Activity 1: Seismology – The 1D Time-Series (4 Parts, 20 Minutes)
+    Activity 2: Remote Sensing – The 3D Tensor (3 Parts, 10 Minutes)
+    Activity 3: Climate Science – The 4D Hypercube (1 Part, 5 Minutes)
+    Activity 4: GPS Data Preparation (7 Parts, 30 Minutes)
+    Activity 5: The "Long Tail" & Distributions (2 Parts, 5 Minutes)
+
 [**Lab 2**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab2.ipynb): Traditional Machine Learning - Supervised Methods
 
     Activity 1: Random Forest for Lithology Classification from Well Logs (9 Parts, 55 Minutes)
