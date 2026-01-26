@@ -20,7 +20,9 @@
     Activity 3: Hierarchical Clustering (2 Parts, 10 Minutes)
     Activity 4: Dimensionality Reduction with Hyperspectral Data (4 Parts, 10 Minutes)
     Activity 5: Synthesis Challenge (Bonus)
-  
+
+---------------------------------------------------------
+
 ## Interactive Visualizations
 
 ### Click on each image to see the live interactive version:
