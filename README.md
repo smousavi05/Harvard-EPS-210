@@ -1,8 +1,11 @@
 # Harvard-EPS-210
 ## Tutorials
 [**Lab 1**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab1.ipynb): Data Understanding and Preparation
+
 [**Lab 2**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab2.ipynb): Traditional Machine Learning - Supervised Methods
+
     * Activity 1: Random Forest for Lithology Classification from Well Logs (9 Parts, 55 Minutes)
+
     * Activity 2: Using Automatic Feature Engineering (AFE) Tools (4 Parts, 15 Minutes)
 
   
