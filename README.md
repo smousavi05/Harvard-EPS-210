@@ -21,6 +21,10 @@
     Activity 4: Dimensionality Reduction with Hyperspectral Data (4 Parts, 10 Minutes)
     Activity 5: Synthesis Challenge (Bonus)
 
+[**Lab 4**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab4.ipynb): Multilayer Perceptron
+
+    Activity 1: Seismic Event Classification using Fully Connected Neural Networks (5 Parts, 70 Minutes)
+    
 ---------------------------------------------------------
 
 ## Interactive Visualizations
