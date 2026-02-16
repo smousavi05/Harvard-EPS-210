@@ -24,6 +24,32 @@
 [**Lab 4**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab4.ipynb): Multilayer Perceptron
 
     Activity 1: Seismic Event Classification using Fully Connected Neural Networks (5 Parts, 70 Minutes)
+
+[**Lab 5**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab5.ipynb): CNNs in EPS
+
+    Activity 1:  Building Change Detection from Satellite Imagery
+    Activity 2:  Martian Crater Detection with YOLO
+
+[**Lab 6**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab6.ipynb): RNNs and Transformers in EPS
+
+    Activity 1:  LSTM-Based Streamflow Forecasting (1-Hour Accelerated Lab)
+
+[**Lab 7**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab7.ipynb): GNNs in EPS
+
+    Activity 1: GraphCast-Style GNN for Atmospheric CO₂ Transport (1-Hour Accelerated Lab)
+
+[**Lab 8**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab8.ipynb): Generative AI in EPS
+
+    Activity 1: Understand the architecture and training of Generative Adverserial (GANs) and how it can be used for percipitation nowcasting.
+    Activity 2: Understand the architecture and training of Variational Autoencoders (VAEs) and how it can be used for downscaling climate data.
+
+[**Lab 9**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab9.ipynb): Geofoundational Models
+
+    Activity 1: Fine-Tuning Prithvi-EO-2.0 for Wildfire Burn Scar Mapping
+
+[**Lab 10**](https://github.com/smousavi05/Harvard-EPS-210/blob/main/EPS210_Lab10.ipynb): Turstworthy AI
+
+    Activity 1: Uncertainty Quantification in Deep Learning for Earth Sciences
     
 ---------------------------------------------------------
 
