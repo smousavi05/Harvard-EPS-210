@@ -1,4 +1,4 @@
-# Harvard EPS-210 AI for Earth and Planetary Science
+# **Harvard EPS-210**: AI for Earth and Planetary Science
   **Instructor**: Mostafa Mouasvi
 
 ## Tutorials
