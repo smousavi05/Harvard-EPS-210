@@ -191,11 +191,6 @@
         <img src="interactive_visualizations/L4_pca.png" alt="L4_pca" width="200">
       </a>
     </td>
-    <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_knn.html">
-        <img src="interactive_visualizations/L3_knn.png" alt="L3_knn" width="200">
-      </a>
-    </td>
   </tr>
 </table>
 ---------------------------------------------------------
