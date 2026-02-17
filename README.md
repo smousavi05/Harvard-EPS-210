@@ -194,16 +194,6 @@
       </a>
     </td>
     <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L4_tsne.html">
-        <img src="interactive_visualizations/L4_tsne.png" alt="L4_tsne" width="200">
-      </a>
-    </td>
-    <td>
-      <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L4_umap.html">
-        <img src="interactive_visualizations/L4_umap.png" alt="L4_umap" width="200">
-      </a>
-    </td>
-    <td>
       <a href="https://smousavi05.github.io/Harvard-EPS-210/interactive_visualizations/L3_knn.html">
         <img src="interactive_visualizations/L3_knn.png" alt="L3_knn" width="200">
       </a>
